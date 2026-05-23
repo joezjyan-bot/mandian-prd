@@ -59,6 +59,19 @@
 | 服务中心 | `merchant/08-服务中心/README.md` | 已记录 |
 | 权限管理 | `merchant/09-权限管理/README.md` | 已记录 |
 
+## 门店移动端页面文档
+
+> 门店移动端和 PC 商家中心属于同一商家主体。PC 端偏商品、经营配置和完整管理；移动端偏办单、待办、订单、钱包和拓店。
+
+| 模块 | 文档 | 状态 |
+|---|---|---|
+| 登录入驻 | `store-mobile/01-登录入驻/README.md` | 已记录 |
+| 工作台设置 | `store-mobile/02-工作台设置/README.md` | 已记录 |
+| 订单风控 | `store-mobile/03-订单风控/README.md` | 已记录 |
+| 开单助手 | `store-mobile/04-开单助手/README.md` | 已记录 |
+| 钱包对账 | `store-mobile/05-钱包对账/README.md` | 已记录 |
+| 采购拓店 | `store-mobile/06-采购拓店/README.md` | 已记录 |
+
 ## 页面文档模板
 
 ```text

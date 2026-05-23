@@ -29,7 +29,7 @@ mandian-prd/
 │   │   ├── full.md                 完整版总文档（5 万字）
 │   │   ├── split/                  分章节文档（按部门，10 份 + 1 README）
 │   │   └── changelog.md            修订日志
-│   └── V0.2/                       V0.2 短租 PRD（待补）
+│   └── V0.2/                       V0.2 重构基线与页面级 PRD 工作区
 └── 评审反馈/                       历史反馈归档
 ```
 
@@ -54,7 +54,7 @@ AI 修订（在本 GitHub 仓库修订源文件 + 生成修订对照表 + Change
 | 版本 | 内容 | 状态 | 日期 |
 |---|---|---|---|
 | V0.1 | 长租总体大纲 | ✅ 当前 | 2026-05-21 |
-| V0.2 | 短租业务补充 | 📋 待启动 | - |
+| V0.2 | 重构基线、三端模块地图、商品/办单助手/订单核心链路、UI 原型规范 | 🚧 进行中 | 2026-05-23 |
 | V1.0 | 落地版 | 📋 待启动 | - |
 
 ---
@@ -64,6 +64,7 @@ AI 修订（在本 GitHub 仓库修订源文件 + 生成修订对照表 + Change
 - 操作手册：门店端、商家端、运营端
 - 操作演示视频：5 个
 - 代码参考：[惠讯租办单助手](https://github.com/joezjyan-bot/calculator/tree/main/phone-rent)、[悦租租计算器](https://github.com/joezjyan-bot/calculator/blob/main/config.js)
+- UI 参考：[企业财务中台](https://github.com/joezjyan-bot/finance-zhongtai) 的 `static/admin-v2`
 - 业务公告：同行公告 3 份
 
 ---

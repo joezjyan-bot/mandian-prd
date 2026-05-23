@@ -45,6 +45,20 @@
 | 数据管理 | `pages/16-数据管理/README.md` | 已记录 |
 | 权限管理 | `pages/17-权限管理/README.md` | 已记录 |
 
+## 商家中心页面文档
+
+| 模块 | 文档 | 状态 |
+|---|---|---|
+| 首页 | `merchant/01-首页/README.md` | 已记录 |
+| 订单管理 | `merchant/02-订单管理/README.md` | 已记录 |
+| 店铺管理 | `merchant/03-店铺管理/README.md` | 已记录 |
+| 商品管理 | `merchant/04-商品管理/README.md` | 已记录 |
+| 营销管理 | `merchant/05-营销管理/README.md` | 已记录 |
+| 数据管理 | `merchant/06-数据管理/README.md` | 已记录 |
+| 财务管理 | `merchant/07-财务管理/README.md` | 已记录 |
+| 服务中心 | `merchant/08-服务中心/README.md` | 已记录 |
+| 权限管理 | `merchant/09-权限管理/README.md` | 已记录 |
+
 ## 页面文档模板
 
 ```text

@@ -1,4 +1,8 @@
-# 满点 PRD 配套 UI 原型
+# 满点租赁系统 · UI 原型
+
+> ⚠️ **本目录属于「满点租赁系统重构」项目（mandian-prd / 即将落地 mandian-rental PHP 项目）**。
+>
+> **不是中控台**。中控台是另一个独立项目，仓库在 [`mandian-zhongkong`](https://github.com/joezjyan-bot/mandian-zhongkong)，它只做"客户调用第三方接口的统一入口 + 计费引擎 + 运营管理后台"，**不包含分配资方 / 分红订单 / 留购 / 催收**等租赁业务概念。
 
 本目录存放 PRD V0.2 配套的可视化 UI 原型，作为飞书 PRD 的补充材料。
 
@@ -6,6 +10,24 @@
 > - PM ↔ 研发对齐字段口径
 > - 研发评估实现难度
 > - UI 设计师在此之上做最终视觉打磨
+
+---
+
+## 两个项目的边界（防止混淆）
+
+| 项目 | 仓库 | 业务范围 | 用户 |
+|---|---|---|---|
+| **满点租赁系统重构** | `mandian-prd`（本仓库）+ 未来的 `mandian-rental` | 手机/电车租赁全流程：商品 / 订单 / 资方 / 合同 / 分期 / 催收 / 留购 / 分账 | C 端租客 / 商家 / 资方 / 满点运营 |
+| **满点中控台** | `mandian-zhongkong` | 第三方接口聚合 + 客户接入 + 计费 / 限流 / Webhook + 员工后台查询 | B 端付费客户 / 满点员工 |
+
+**两个项目都属于 Hudson，但用户、场景、数据模型完全不同**：
+
+- 租赁系统里的"客户"= C 端租手机的小王同学
+- 中控台里的"客户"= B 端来调中控台 API 的某科技公司
+- 租赁系统的"订单"= 一笔租机合同（DZ20260524000183）
+- 中控台的"调用日志"= 一次 API 调用（LOG-20260523-000001）
+
+本目录的原型**只针对租赁系统**。中控台后台的 UI 在 `mandian-zhongkong/frontend/src/views/` 已经用 Vue 3 实现了 Stage 1+2，不再单独画原型。
 
 ---
 
@@ -23,7 +45,7 @@
 
 ## 推荐查看顺序
 
-按 **"运营员一天的工作流"** 看，体验最连贯：
+按 **"租赁运营员一天的工作流"** 看，体验最连贯：
 
 ```
 1️⃣ 工作台首页 (#3)
@@ -31,7 +53,7 @@
 2️⃣ 订单列表 (#1)
    ↓ 点开 DZ20260524000183 这单
 3️⃣ 订单详情抽屉 (#2)
-   ↓ 审核通过 / 拒绝 / 风控复核
+   ↓ 审核通过 / 拒绝 / 风控复核 / 分配资方
 ```
 
 ---
@@ -105,16 +127,16 @@ start mandian-prd/prototypes/operations-order-list.html
 
 ## 待补充原型清单（参考 PRD §5.1）
 
-以下是 PRD 列出但尚未画原型的页面，按优先级排序：
+> 范围严格按 [`PRD/V0.2/04_UI风格与页面原型规范.md`](../PRD/V0.2/04_UI%E9%A3%8E%E6%A0%BC%E4%B8%8E%E9%A1%B5%E9%9D%A2%E5%8E%9F%E5%9E%8B%E8%A7%84%E8%8C%83.md) §5 列出的页面，**全部属于租赁系统**，不要把中控台的页面塞进来。
 
 ### P1 - 评审最需要看到的（建议接下来 3-5 个）
 
 | 页面 | 配套 PRD 模块 | 进度 |
 |---|---|---|
-| ~~订单详情抽屉~~ | ~~`modules/运营端/订单管理/02_订单详情.md`~~ | ✅ 已交付（#2） |
+| ~~订单详情抽屉~~ | ~~运营端订单详情~~ | ✅ 已交付（#2） |
 | ~~运营工作台首页~~ | ~~PRD §5.1 第 1 项~~ | ✅ 已交付（#3） |
-| 商品列表 | 待补，PRD §5.1 第 2 项 | ⏸ |
-| 门店 H5 办单助手 | 待补，与 PC 完全不同的视觉语言 | ⏸ |
+| 商品列表 | PRD §5.1 第 2 项 | ⏸ |
+| 门店 H5 办单助手 | PRD §5.3 第 5 项 | ⏸ |
 | 客户登录页 | `modules/全局/01_登录页.md` | ⏸ |
 
 ### P2 - 业务核心补充
@@ -126,10 +148,11 @@ start mandian-prd/prototypes/operations-order-list.html
 | 归还续租 |
 | 资方分配工作台 |
 | 财务分账明细 |
+| 商家 PC 工作台 |
 
 ### P3 - 长尾页面
 
-其余 PRD §5.1 列出的 30+ 个页面。
+其余 PRD §5.1 - §5.4 列出的 30+ 个页面。
 
 ---
 
@@ -138,7 +161,8 @@ start mandian-prd/prototypes/operations-order-list.html
 1. 在本目录新增 `<page-name>.html`（standalone，零依赖，直接打开就能渲染）
 2. 顶部加 banner（深色 + "原型" tag + 链回 PRD 章节）
 3. 更新本 README 的"当前原型清单"表格
-4. （可选）开 PR review，合并后自动出现在 GitHub Pages
+4. **严格按 PRD 写的字段画**，不要自己添加 PRD 没提到的概念（如果 PRD 漏了关键概念，先回 PRD 补充，再画 UI）
+5. （可选）开 PR review，合并后自动出现在 GitHub Pages
 
 **HTML 文件体积建议**：
 - 单文件 < 40KB（GitHub MCP push 在 25-37KB 实测可成功；50KB+ 极可能 4 分钟超时）
@@ -157,17 +181,20 @@ start mandian-prd/prototypes/operations-order-list.html
 operations-order-list.html          运营端 + 订单 + 列表
 operations-order-detail.html        运营端 + 订单 + 详情
 operations-workbench-home.html      运营端 + 工作台 + 首页
-merchant-product-list.html          商家端 + 商品 + 列表
+merchant-product-list.html          商家 PC 端 + 商品 + 列表
 mobile-staff-workbench.html         门店 H5 + 员工 + 工作台
 global-login.html                   全局 + 登录
 ```
+
+> 命名只用租赁系统的端口分类：`operations / merchant / mobile / channel / funder / global`。
+> **不会有** `zhongkong-*` 这类前缀——中控台的 UI 不在这个目录。
 
 ---
 
 ## 与 PRD 的关系
 
 ```
-飞书 PRD（V0.2）
+飞书 PRD（V0.2，租赁系统）
     │
     │  内容流向
     ↓

@@ -1,0 +1,556 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=1280,initial-scale=1"><title>运营工作台首页原型 · 满点租赁系统重构</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.5.0/dist/tabler-icons.min.css"><style>:root{--p:#2B5CE6;--ph:#1E4FD4;--pl:#EEF3FE;--g50:#FAFBFC;--g1:#F4F5F7;--g2:#E5E7EB;--g3:#D1D5DB;--g4:#9CA3AF;--g5:#6B7280;--g6:#4B5563;--g7:#374151;--g8:#1F2937;--g9:#111827;--s:#10B981;--sl:#ECFDF5;--w:#F59E0B;--wl:#FFFBEB;--d:#EF4444;--dl:#FEF2F2;--ind:#7C3AED;--indl:#F5F3FF}*{box-sizing:border-box;margin:0;padding:0}html,body{height:100%}body{background:var(--g50);color:var(--g9);font-family:Inter,-apple-system,BlinkMacSystemFont,"SF Pro SC","PingFang SC","Microsoft YaHei UI",sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}.mono{font-family:"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;font-feature-settings:"tnum"}
+.bn{background:#0F172A;color:#fff;padding:10px 24px;font-size:13px;display:flex;justify-content:space-between;gap:16px;align-items:center}
+.bn-l{display:flex;align-items:center;gap:10px}
+.bn-tag{background:var(--p);color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500}
+.bn a{color:#93C5FD;text-decoration:none}.bn a:hover{text-decoration:underline}
+.app{min-height:calc(100vh - 40px)}
+.shell{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 40px)}
+.side{background:#fff;border-right:1px solid var(--g2);padding:14px 12px;position:sticky;top:0;height:calc(100vh - 40px);overflow:auto}
+.brand{display:flex;align-items:center;gap:10px;padding:6px 8px 16px;border-bottom:1px solid var(--g2);margin-bottom:12px}
+.bm{width:30px;height:30px;border-radius:8px;background:var(--p);color:#fff;display:grid;place-items:center;font-weight:500;font-size:14px;box-shadow:0 8px 20px rgba(43,92,230,.16)}
+.bname{font-size:15px;font-weight:500}
+.sg{font-size:11px;color:var(--g4);padding:14px 8px 4px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.si{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;color:var(--g5);cursor:pointer;margin-bottom:2px;font-size:13px;transition:all .15s}
+.si:hover{background:var(--g50);color:var(--g9)}
+.si.on{background:var(--pl);color:var(--p);font-weight:500;position:relative}
+.si.on::before{content:"";position:absolute;left:-12px;top:8px;bottom:8px;width:3px;border-radius:0 4px 4px 0;background:var(--p)}
+.si.on .ti{color:var(--p)}
+.si .ti{font-size:17px;color:var(--g4)}
+.si .badge{margin-left:auto;font-size:10px;padding:1px 6px;border-radius:999px;background:var(--d);color:#fff;font-weight:600;font-family:"SF Mono",monospace}
+.main{display:flex;flex-direction:column;min-width:0}
+.top{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid var(--g2);background:#fff;font-size:13px;position:sticky;top:40px;z-index:20}
+.cr{color:var(--g4)}
+.cr b{color:var(--g7);font-weight:500;margin:0 8px}
+.cr .nw{color:var(--g9);font-weight:500}
+.tr{display:flex;align-items:center;gap:16px;color:var(--g5)}
+.tr .ti{font-size:18px;cursor:pointer}
+.tu{display:flex;align-items:center;gap:8px}
+.av{width:28px;height:28px;border-radius:50%;background:var(--pl);color:var(--p);display:grid;place-items:center;font-size:12px;font-weight:500}
+.page{padding:18px 24px 28px;display:flex;flex-direction:column;gap:14px;max-width:1440px;margin:0 auto;width:100%}
+/* Welcome banner */
+.hello{background:linear-gradient(135deg,#fff 0%,#FAFBFC 100%);border:1px solid var(--g2);border-radius:10px;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;gap:20px}
+.hello-l{flex:1}
+.hello-t{font-size:18px;font-weight:600;color:var(--g9);margin-bottom:4px}
+.hello-t .greet{color:var(--p)}
+.hello-s{font-size:13px;color:var(--g5);line-height:1.5}
+.hello-s b{color:var(--g7);font-weight:500}
+.hello-r{display:flex;gap:12px;align-items:center}
+.live{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--g4);font-family:"SF Mono",monospace}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--s);animation:pul 2s infinite}
+@keyframes pul{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+.btn{height:34px;padding:0 14px;display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--g2);border-radius:6px;color:var(--g7);font-size:13px;cursor:pointer;font-family:inherit;font-weight:500}
+.btn:hover{background:var(--g50)}
+.btn.pp{background:var(--p);color:#fff;border-color:var(--p)}
+.btn .ti{font-size:15px}
+/* KPI Cards */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{background:#fff;border:1px solid var(--g2);border-radius:10px;padding:16px 18px;position:relative;overflow:hidden;cursor:pointer;transition:all .15s}
+.kpi:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.06)}
+.kpi.alert{border-color:#FCA5A5}
+.kpi.alert::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--d)}
+.kpi.warn{border-color:#FDE68A}
+.kpi.warn::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--w)}
+.kpi.ok::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--s)}
+.kpi.info::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--p)}
+.kpi-h{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.kpi-lbl{font-size:12px;color:var(--g5);font-weight:500;display:flex;align-items:center;gap:5px}
+.kpi-lbl .ti{font-size:13px}
+.kpi-trend{font-size:11px;color:var(--g5);display:flex;align-items:center;gap:2px;font-family:"SF Mono",monospace}
+.kpi-trend.up{color:var(--d)}
+.kpi-trend.down{color:var(--s)}
+.kpi-trend .ti{font-size:13px}
+.kpi-v{font-size:30px;font-weight:600;color:var(--g9);font-family:"SF Mono",monospace;line-height:1.1;margin-bottom:6px}
+.kpi.alert .kpi-v{color:var(--d)}
+.kpi.warn .kpi-v{color:#92400E}
+.kpi.ok .kpi-v{color:var(--s)}
+.kpi.info .kpi-v{color:var(--p)}
+.kpi-v .unit{font-size:13px;color:var(--g5);font-weight:400;margin-left:3px;font-family:inherit}
+.kpi-sub{font-size:11px;color:var(--g5);line-height:1.5}
+.kpi-sub b{font-weight:500;color:var(--g7)}
+.kpi-go{position:absolute;bottom:14px;right:18px;color:var(--g3);font-size:13px}
+.kpi:hover .kpi-go{color:var(--p)}
+/* 双栏 */
+.two{display:grid;grid-template-columns:1.4fr 1fr;gap:12px}
+.card{background:#fff;border:1px solid var(--g2);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.cd-head{padding:12px 18px;border-bottom:1px solid var(--g2);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(180deg,#fff 0%,#FAFBFC 100%)}
+.cd-title{font-size:14px;font-weight:600;color:var(--g8);display:flex;align-items:center;gap:6px}
+.cd-title .ti{font-size:16px;color:var(--p)}
+.cd-title .cnt{font-size:11px;background:var(--g1);color:var(--g5);padding:1px 7px;border-radius:999px;font-family:"SF Mono",monospace;font-weight:600;margin-left:4px}
+.cd-action{font-size:12px;color:var(--p);cursor:pointer;display:flex;align-items:center;gap:3px}
+.cd-action .ti{font-size:13px}
+.cd-action:hover{color:var(--ph)}
+.cd-body{padding:6px 0}
+/* 我的待办 */
+.todo-row{padding:10px 18px;border-bottom:1px solid var(--g1);display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .15s}
+.todo-row:last-child{border-bottom:0}
+.todo-row:hover{background:var(--g50)}
+.todo-icon{width:36px;height:36px;border-radius:8px;display:grid;place-items:center;flex-shrink:0}
+.todo-icon.alert{background:var(--dl);color:var(--d)}
+.todo-icon.warn{background:var(--wl);color:var(--w)}
+.todo-icon.info{background:var(--pl);color:var(--p)}
+.todo-icon.purple{background:var(--indl);color:var(--ind)}
+.todo-icon .ti{font-size:18px}
+.todo-info{flex:1;min-width:0}
+.todo-title{font-size:13px;color:var(--g9);font-weight:500;margin-bottom:2px;display:flex;align-items:center;gap:8px}
+.todo-num{font-family:"SF Mono",monospace;color:var(--g7)}
+.todo-sub{font-size:11px;color:var(--g5);line-height:1.5}
+.todo-sub b{color:var(--g7);font-weight:500}
+.todo-priority{font-size:10px;padding:1px 6px;border-radius:3px;background:var(--dl);color:#B91C1C;font-weight:500}
+.todo-priority.medium{background:var(--wl);color:#92400E}
+.todo-priority.low{background:var(--g1);color:var(--g5)}
+.todo-act{display:flex;gap:6px;align-items:center;flex-shrink:0}
+.todo-go{color:var(--g3);font-size:16px}
+.todo-row:hover .todo-go{color:var(--p)}
+/* 活动流 */
+.feed-list{padding:6px 0}
+.feed-row{padding:10px 18px;display:flex;gap:10px;border-bottom:1px solid var(--g1);font-size:12px;cursor:pointer;transition:background .15s}
+.feed-row:last-child{border-bottom:0}
+.feed-row:hover{background:var(--g50)}
+.feed-time{font-size:11px;color:var(--g4);font-family:"SF Mono",monospace;flex-shrink:0;width:46px;line-height:1.6}
+.feed-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.feed-dot.d{background:var(--d)}
+.feed-dot.w{background:var(--w)}
+.feed-dot.s{background:var(--s)}
+.feed-dot.p{background:var(--p)}
+.feed-dot.gr{background:var(--g3)}
+.feed-body{flex:1;min-width:0;line-height:1.5}
+.feed-text{color:var(--g7)}
+.feed-text b{color:var(--g9);font-weight:500}
+.feed-text .id{font-family:"SF Mono",monospace;font-size:11px;color:var(--g5)}
+.feed-tag{display:inline-block;padding:0 5px;font-size:10px;border-radius:3px;background:var(--g1);color:var(--g7);font-weight:500;margin-right:4px;vertical-align:1px}
+.feed-tag.d{background:var(--dl);color:#B91C1C}
+.feed-tag.w{background:var(--wl);color:#92400E}
+.feed-tag.s{background:var(--sl);color:#047857}
+.feed-tag.p{background:var(--pl);color:var(--p)}
+/* 趋势图 */
+.trend-body{padding:18px}
+.trend-legend{display:flex;gap:18px;margin-bottom:14px;font-size:12px}
+.trend-leg{display:flex;align-items:center;gap:5px;color:var(--g6)}
+.trend-leg-dot{width:10px;height:10px;border-radius:2px}
+.trend-leg-dot.new{background:var(--p)}
+.trend-leg-dot.done{background:var(--s)}
+.trend-leg-dot.late{background:var(--d)}
+.trend-svg{width:100%;height:200px}
+.trend-axis{stroke:var(--g2);stroke-width:1}
+.trend-grid{stroke:var(--g1);stroke-width:1;stroke-dasharray:2 3}
+.trend-x{fill:var(--g5);font-size:10px;font-family:"SF Mono",monospace}
+.trend-y{fill:var(--g5);font-size:10px;font-family:"SF Mono",monospace}
+.trend-bar-new{fill:var(--p);opacity:.7}
+.trend-bar-done{fill:var(--s);opacity:.7}
+.trend-line{stroke:var(--d);stroke-width:2;fill:none}
+.trend-dot{fill:var(--d);stroke:#fff;stroke-width:2}
+/* 榜单 */
+.rank-row{padding:10px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--g1);cursor:pointer}
+.rank-row:last-child{border-bottom:0}
+.rank-row:hover{background:var(--g50)}
+.rank-num{width:22px;height:22px;border-radius:5px;display:grid;place-items:center;font-size:11px;font-weight:600;color:var(--g4);background:var(--g1);font-family:"SF Mono",monospace;flex-shrink:0}
+.rank-row:nth-child(1) .rank-num{background:#FEF3C7;color:#92400E}
+.rank-row:nth-child(2) .rank-num{background:#F1F5F9;color:var(--g6)}
+.rank-row:nth-child(3) .rank-num{background:#FFF7ED;color:#9A3412}
+.rank-name{flex:1;min-width:0}
+.rank-t{font-size:13px;color:var(--g9);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank-s{font-size:11px;color:var(--g5);margin-top:1px;display:flex;align-items:center;gap:5px}
+.rank-s .sep{color:var(--g3)}
+.rank-r{text-align:right;font-family:"SF Mono",monospace;flex-shrink:0}
+.rank-r-v{font-size:14px;font-weight:600;color:var(--g8)}
+.rank-r-s{font-size:10px;color:var(--g5);margin-top:2px}
+.rank-r-s.up{color:var(--s)}
+.rank-r-s.down{color:var(--d)}
+/* 资方告警卡内列表 */
+.fund-list{padding:6px 0}
+.fund-row{padding:10px 18px;display:grid;grid-template-columns:1fr auto 30px;gap:14px;align-items:center;border-bottom:1px solid var(--g1);cursor:pointer}
+.fund-row:last-child{border-bottom:0}
+.fund-row:hover{background:var(--g50)}
+.fund-info-t{font-size:13px;color:var(--g9);font-weight:500}
+.fund-info-s{font-size:11px;color:var(--g5);margin-top:2px}
+.fund-bar{width:80px;display:flex;flex-direction:column;gap:3px;align-items:flex-end}
+.fund-bar-bg{width:100%;height:5px;background:var(--g1);border-radius:3px;overflow:hidden}
+.fund-bar-fill{height:100%;background:var(--p);border-radius:3px}
+.fund-bar-fill.warn{background:var(--w)}
+.fund-bar-fill.alert{background:var(--d)}
+.fund-bar-val{font-size:10px;color:var(--g5);font-family:"SF Mono",monospace}
+.fund-bar-val.warn{color:#92400E;font-weight:500}
+.fund-bar-val.alert{color:#B91C1C;font-weight:500}
+.fund-go{color:var(--g3);font-size:16px}
+.fund-row:hover .fund-go{color:var(--p)}
+</style></head><body>
+<div class="bn">
+<div class="bn-l">
+<span class="bn-tag">原型</span>
+<span>满点租赁系统重构 · 运营工作台首页</span>
+<span style="color:#94A3B8">·</span>
+<span style="color:#94A3B8">配套 PRD §5.1 运营端首页</span>
+</div>
+<div><a href="https://github.com/joezjyan-bot/mandian-prd/blob/main/PRD/V0.2/04_UI%E9%A3%8E%E6%A0%BC%E4%B8%8E%E9%A1%B5%E9%9D%A2%E5%8E%9F%E5%9E%8B%E8%A7%84%E8%8C%83.md">查看源 PRD</a></div>
+</div>
+
+<div class="app"><div class="shell">
+
+<aside class="side">
+<div class="brand"><div class="bm">满</div><div class="bname">满点运营</div></div>
+<div class="sg">工作台</div>
+<div class="si on"><i class="ti ti-home"></i>首页</div>
+<div class="si"><i class="ti ti-clipboard-list"></i>待办任务<span class="badge">13</span></div>
+<div class="sg">订单</div>
+<div class="si"><i class="ti ti-receipt"></i>订单列表</div>
+<div class="si"><i class="ti ti-checkup-list"></i>待审核<span class="badge" style="background:var(--w)">38</span></div>
+<div class="si"><i class="ti ti-clock-exclamation"></i>逾期管理<span class="badge">23</span></div>
+<div class="si"><i class="ti ti-rotate-clockwise"></i>归还续租</div>
+<div class="sg">商品 / 资方</div>
+<div class="si"><i class="ti ti-package"></i>商品库</div>
+<div class="si"><i class="ti ti-building-bank"></i>资方管理</div>
+<div class="si"><i class="ti ti-coin"></i>财务分账</div>
+<div class="sg">设置</div>
+<div class="si"><i class="ti ti-shield-half"></i>风控规则</div>
+<div class="si"><i class="ti ti-users"></i>账号权限</div>
+</aside>
+
+<div class="main">
+<div class="top">
+<div class="cr">运营端<b>/</b><span class="nw">工作台首页</span></div>
+<div class="tr">
+<i class="ti ti-search"></i><i class="ti ti-bell" style="position:relative" title="3 条未读"></i><i class="ti ti-help-circle"></i>
+<div class="tu"><div class="av">韩</div><span style="color:var(--g7)">韩静</span></div>
+</div>
+</div>
+
+<div class="page">
+
+<!-- Welcome -->
+<div class="hello">
+<div class="hello-l">
+<div class="hello-t">下午好，<span class="greet">韩静</span>，今天有 <span class="greet">13</span> 项待办需要你处理</div>
+<div class="hello-s">2026 年 5 月 24 日 · 星期日 · 你已连续办理订单 <b>14</b> 天 · 今日处理 <b>9</b> 单（耗时中位 <b>4'22"</b>）</div>
+</div>
+<div class="hello-r">
+<div class="live"><span class="live-dot"></span>实时数据 · 2026-05-24 14:32:18</div>
+<button class="btn"><i class="ti ti-refresh"></i>刷新</button>
+<button class="btn pp"><i class="ti ti-clipboard-list"></i>进入待办</button>
+</div>
+</div>
+
+<!-- KPI Cards -->
+<div class="kpis">
+<div class="kpi alert">
+<div class="kpi-h">
+<span class="kpi-lbl"><i class="ti ti-clock-exclamation"></i>已逾期</span>
+<span class="kpi-trend up"><i class="ti ti-trending-up"></i>+5</span>
+</div>
+<div class="kpi-v">23<span class="unit">单</span></div>
+<div class="kpi-sub">涉及金额 <b>¥189,420</b> · 较昨日 <b>+5 单</b></div>
+<i class="ti ti-arrow-right kpi-go"></i>
+</div>
+
+<div class="kpi warn">
+<div class="kpi-h">
+<span class="kpi-lbl"><i class="ti ti-checkup-list"></i>待审核</span>
+<span class="kpi-trend up"><i class="ti ti-trending-up"></i>+12</span>
+</div>
+<div class="kpi-v">38<span class="unit">单</span></div>
+<div class="kpi-sub">高风险 <b>7</b> · 待分配资方 <b>7</b> · 平均等待 <b>2.3h</b></div>
+<i class="ti ti-arrow-right kpi-go"></i>
+</div>
+
+<div class="kpi warn">
+<div class="kpi-h">
+<span class="kpi-lbl"><i class="ti ti-building-bank"></i>资方额度告警</span>
+<span class="kpi-trend"><i class="ti ti-minus"></i></span>
+</div>
+<div class="kpi-v">3<span class="unit">家</span></div>
+<div class="kpi-sub">紧张 <b>2</b> · 已告罄 <b>1</b> · 影响 <b>14</b> 单待分配</div>
+<i class="ti ti-arrow-right kpi-go"></i>
+</div>
+
+<div class="kpi info">
+<div class="kpi-h">
+<span class="kpi-lbl"><i class="ti ti-shopping-cart"></i>今日新单</span>
+<span class="kpi-trend down"><i class="ti ti-trending-up"></i>+18%</span>
+</div>
+<div class="kpi-v">142<span class="unit">单</span></div>
+<div class="kpi-sub">成交 <b>¥1.24M</b> · 较昨日 <b>+18%</b> · 转化率 <b>83%</b></div>
+<i class="ti ti-arrow-right kpi-go"></i>
+</div>
+</div>
+
+<!-- 资方额度告警明细（这是个重要分布卡，单独占一行）-->
+<div class="card">
+<div class="cd-head">
+<div class="cd-title"><i class="ti ti-building-bank"></i>资方剩余额度<span class="cnt">3 家告警</span></div>
+<span class="cd-action">资方管理<i class="ti ti-arrow-right"></i></span>
+</div>
+<div class="fund-list">
+<div class="fund-row">
+<div><div class="fund-info-t">合融租赁 · 上海</div><div class="fund-info-s">本月剩余 ¥240,000 / 总额度 ¥3,000,000 · 单笔上限 ¥30,000</div></div>
+<div class="fund-bar"><div class="fund-bar-bg"><div class="fund-bar-fill alert" style="width:8%"></div></div><span class="fund-bar-val alert">已用 92%</span></div>
+<i class="ti ti-arrow-right fund-go"></i>
+</div>
+<div class="fund-row">
+<div><div class="fund-info-t">浦发租赁 · 总部</div><div class="fund-info-s">本月剩余 ¥1,150,000 / 总额度 ¥5,000,000 · 单笔上限 ¥50,000</div></div>
+<div class="fund-bar"><div class="fund-bar-bg"><div class="fund-bar-fill warn" style="width:23%"></div></div><span class="fund-bar-val warn">已用 77%</span></div>
+<i class="ti ti-arrow-right fund-go"></i>
+</div>
+<div class="fund-row">
+<div><div class="fund-info-t">招商金租 · 华东</div><div class="fund-info-s"><span style="color:var(--d);font-weight:500">本月额度已告罄</span> · 6 月 1 日重新开放 · 当前 14 单转待分配</div></div>
+<div class="fund-bar"><div class="fund-bar-bg"><div class="fund-bar-fill alert" style="width:100%"></div></div><span class="fund-bar-val alert">已用 100%</span></div>
+<i class="ti ti-arrow-right fund-go"></i>
+</div>
+<div class="fund-row">
+<div><div class="fund-info-t">建信金租 · 上海</div><div class="fund-info-s">本月剩余 ¥3,420,000 / 总额度 ¥8,000,000 · 单笔上限 ¥80,000</div></div>
+<div class="fund-bar"><div class="fund-bar-bg"><div class="fund-bar-fill" style="width:58%"></div></div><span class="fund-bar-val">已用 42%</span></div>
+<i class="ti ti-arrow-right fund-go"></i>
+</div>
+</div>
+</div>
+
+<!-- 双栏：我的待办 + 实时流 -->
+<div class="two">
+
+<div class="card">
+<div class="cd-head">
+<div class="cd-title"><i class="ti ti-clipboard-list"></i>我的待办<span class="cnt">13 项</span></div>
+<span class="cd-action">查看全部<i class="ti ti-arrow-right"></i></span>
+</div>
+<div>
+<div class="todo-row">
+<div class="todo-icon alert"><i class="ti ti-shield-half"></i></div>
+<div class="todo-info">
+<div class="todo-title">8 单待审核 · 含 <span class="todo-num">3</span> 单风控触发 <span class="todo-priority">高优先级</span></div>
+<div class="todo-sub">最早 <b>DZ20260524000183</b> 已等待 <b>5h 18min</b> · 客户 小王同学</div>
+</div>
+<i class="ti ti-arrow-right todo-go"></i>
+</div>
+
+<div class="todo-row">
+<div class="todo-icon warn"><i class="ti ti-building-bank"></i></div>
+<div class="todo-info">
+<div class="todo-title">3 单待分配资方 <span class="todo-priority medium">中优先级</span></div>
+<div class="todo-sub">合融租赁额度紧张，建议优先分配 <b>建信金租</b> · 涉及金额 <b>¥27,432</b></div>
+</div>
+<i class="ti ti-arrow-right todo-go"></i>
+</div>
+
+<div class="todo-row">
+<div class="todo-icon alert"><i class="ti ti-phone-call"></i></div>
+<div class="todo-info">
+<div class="todo-title">2 单催收 · 逾期已超 <span class="todo-num">10</span> 天 <span class="todo-priority">高优先级</span></div>
+<div class="todo-sub">客户 <b>李*强</b> 已逾 14 天，三次代扣失败，电话不通</div>
+</div>
+<i class="ti ti-arrow-right todo-go"></i>
+</div>
+
+<div class="todo-row">
+<div class="todo-icon info"><i class="ti ti-rotate-clockwise"></i></div>
+<div class="todo-info">
+<div class="todo-title">5 单租期到期 · <span class="todo-num">3</span> 天内 <span class="todo-priority medium">中优先级</span></div>
+<div class="todo-sub">需联系客户确认续租 / 归还 / 留购意向</div>
+</div>
+<i class="ti ti-arrow-right todo-go"></i>
+</div>
+
+<div class="todo-row">
+<div class="todo-icon purple"><i class="ti ti-message-circle"></i></div>
+<div class="todo-info">
+<div class="todo-title">2 条客户咨询待回复 <span class="todo-priority low">低优先级</span></div>
+<div class="todo-sub">最早一条已等待 <b>23min</b> · 来自客户 <b>陈*君</b></div>
+</div>
+<i class="ti ti-arrow-right todo-go"></i>
+</div>
+</div>
+</div>
+
+<div class="card">
+<div class="cd-head">
+<div class="cd-title"><i class="ti ti-activity"></i>实时活动流<span class="cnt">近 1 小时</span></div>
+<span class="cd-action">全部活动<i class="ti ti-arrow-right"></i></span>
+</div>
+<div class="feed-list">
+<div class="feed-row"><span class="feed-time">14:31</span><span class="feed-dot d"></span><div class="feed-body"><div class="feed-text"><span class="feed-tag d">风控触发</span>订单 <span class="id">DZ20260524000287</span> 命中 <b>多头借贷</b>，已转人工审核</div></div></div>
+<div class="feed-row"><span class="feed-time">14:28</span><span class="feed-dot s"></span><div class="feed-body"><div class="feed-text"><span class="feed-tag s">完成</span>订单 <span class="id">DZ20260524000241</span> · MacBook Air 已发货，物流 SF1234567890</div></div></div>
+<div class="feed-row"><span class="feed-time">14:24</span><span class="feed-dot p"></span><div class="feed-body"><div class="feed-text"><span class="feed-tag p">分配</span>同事 <b>陈梓</b> 将 <span class="id">DZ20260524000172</span> 分配给 <b>合融租赁</b></div></div></div>
+<div class="feed-row"><span class="feed-time">14:18</span><span class="feed-dot d"></span><div class="feed-body"><div class="feed-text"><span class="feed-tag d">代扣失败</span>客户 <b>李*强</b> 订单 <span class="id">DZ20260523000451</span> 第 4 次代扣失败</div></div></div>
+<div class="feed-row"><span class="feed-time">14:15</span><span class="feed-dot w"></span><div class="feed-body"><div class="feed-text"><span class="feed-tag w">商户备注</span><b>鼎租浦东店</b> 在 <span class="id">DZ20260524000183</span> 留言：客户愿意补缴押金，希望尽快放款</div></div></div>
+<div class="feed-row"><span class="feed-time">14:08</span><span class="feed-dot s"></span><div class="feed-body"><div class="feed-text"><span class="feed-tag s">支付</span>订单 <span class="id">DZ20260524000302</span> 首期 ¥1,889 支付成功</div></div></div>
+<div class="feed-row"><span class="feed-time">14:02</span><span class="feed-dot p"></span><div class="feed-body"><div class="feed-text"><span class="feed-tag p">下单</span>用户 <b>赵***</b> 通过 <b>满点小程序</b> 下单 iPad Air · 12 期</div></div></div>
+<div class="feed-row"><span class="feed-time">13:58</span><span class="feed-dot gr"></span><div class="feed-body"><div class="feed-text"><span class="feed-tag">系统</span>资方 <b>招商金租</b> 本月额度告罄，自动停止分配</div></div></div>
+</div>
+</div>
+
+</div>
+
+<!-- 业务趋势 -->
+<div class="card">
+<div class="cd-head">
+<div class="cd-title"><i class="ti ti-chart-line"></i>业务趋势 · 最近 7 天</div>
+<div style="display:flex;gap:14px;align-items:center">
+<span class="cd-action">查看完整报表<i class="ti ti-arrow-right"></i></span>
+</div>
+</div>
+<div class="trend-body">
+<div class="trend-legend">
+<div class="trend-leg"><span class="trend-leg-dot new"></span>新增订单</div>
+<div class="trend-leg"><span class="trend-leg-dot done"></span>完成订单</div>
+<div class="trend-leg"><span class="trend-leg-dot late"></span>新增逾期</div>
+</div>
+<svg class="trend-svg" viewBox="0 0 720 200" preserveAspectRatio="none">
+<line class="trend-axis" x1="40" y1="170" x2="700" y2="170"/>
+<line class="trend-grid" x1="40" y1="130" x2="700" y2="130"/>
+<line class="trend-grid" x1="40" y1="90" x2="700" y2="90"/>
+<line class="trend-grid" x1="40" y1="50" x2="700" y2="50"/>
+<text class="trend-y" x="35" y="174" text-anchor="end">0</text>
+<text class="trend-y" x="35" y="134" text-anchor="end">50</text>
+<text class="trend-y" x="35" y="94" text-anchor="end">100</text>
+<text class="trend-y" x="35" y="54" text-anchor="end">150</text>
+
+<!-- 7 天柱状（每天两根柱 - 新增 + 完成） -->
+<g transform="translate(50,0)">
+<rect class="trend-bar-new" x="0" y="78" width="18" height="92"/>
+<rect class="trend-bar-done" x="22" y="100" width="18" height="70"/>
+<text class="trend-x" x="20" y="186" text-anchor="middle">05-18</text>
+
+<rect class="trend-bar-new" x="92" y="62" width="18" height="108"/>
+<rect class="trend-bar-done" x="114" y="80" width="18" height="90"/>
+<text class="trend-x" x="112" y="186" text-anchor="middle">05-19</text>
+
+<rect class="trend-bar-new" x="184" y="58" width="18" height="112"/>
+<rect class="trend-bar-done" x="206" y="76" width="18" height="94"/>
+<text class="trend-x" x="204" y="186" text-anchor="middle">05-20</text>
+
+<rect class="trend-bar-new" x="276" y="48" width="18" height="122"/>
+<rect class="trend-bar-done" x="298" y="68" width="18" height="102"/>
+<text class="trend-x" x="296" y="186" text-anchor="middle">05-21</text>
+
+<rect class="trend-bar-new" x="368" y="42" width="18" height="128"/>
+<rect class="trend-bar-done" x="390" y="60" width="18" height="110"/>
+<text class="trend-x" x="388" y="186" text-anchor="middle">05-22</text>
+
+<rect class="trend-bar-new" x="460" y="34" width="18" height="136"/>
+<rect class="trend-bar-done" x="482" y="58" width="18" height="112"/>
+<text class="trend-x" x="480" y="186" text-anchor="middle">05-23</text>
+
+<rect class="trend-bar-new" x="552" y="28" width="18" height="142"/>
+<rect class="trend-bar-done" x="574" y="68" width="18" height="102"/>
+<text class="trend-x" x="572" y="186" text-anchor="middle">05-24</text>
+
+<!-- 逾期折线 -->
+<polyline class="trend-line" points="20,158 112,154 204,150 296,148 388,146 480,142 572,138"/>
+<circle class="trend-dot" cx="20" cy="158" r="3"/>
+<circle class="trend-dot" cx="112" cy="154" r="3"/>
+<circle class="trend-dot" cx="204" cy="150" r="3"/>
+<circle class="trend-dot" cx="296" cy="148" r="3"/>
+<circle class="trend-dot" cx="388" cy="146" r="3"/>
+<circle class="trend-dot" cx="480" cy="142" r="3"/>
+<circle class="trend-dot" cx="572" cy="138" r="3"/>
+</g>
+</svg>
+</div>
+</div>
+
+<!-- 双榜 -->
+<div class="two">
+
+<div class="card">
+<div class="cd-head">
+<div class="cd-title"><i class="ti ti-trophy"></i>今日商户榜<span class="cnt">按订单量</span></div>
+<span class="cd-action">商户管理<i class="ti ti-arrow-right"></i></span>
+</div>
+<div>
+<div class="rank-row">
+<div class="rank-num">1</div>
+<div class="rank-name">
+<div class="rank-t">鼎租自营 · 浦东运营组</div>
+<div class="rank-s">门店订单 <span class="sep">·</span> 自营 <span class="sep">·</span> 风控通过率 <b style="color:var(--s)">94%</b></div>
+</div>
+<div class="rank-r"><div class="rank-r-v">38</div><div class="rank-r-s up">↑ +12 vs 昨日</div></div>
+</div>
+<div class="rank-row">
+<div class="rank-num">2</div>
+<div class="rank-name">
+<div class="rank-t">惠讯租 · 杨浦五角场店</div>
+<div class="rank-s">门店 + 分红 <span class="sep">·</span> 加盟 <span class="sep">·</span> 平均订单 <b>¥6,234</b></div>
+</div>
+<div class="rank-r"><div class="rank-r-v">24</div><div class="rank-r-s up">↑ +6 vs 昨日</div></div>
+</div>
+<div class="rank-row">
+<div class="rank-num">3</div>
+<div class="rank-name">
+<div class="rank-t">满点直营 · 平台单</div>
+<div class="rank-s">平台订单 <span class="sep">·</span> 渠道：小程序 + 抖音 <span class="sep">·</span> 转化率 <b>71%</b></div>
+</div>
+<div class="rank-r"><div class="rank-r-v">21</div><div class="rank-r-s down">↓ -3 vs 昨日</div></div>
+</div>
+<div class="rank-row">
+<div class="rank-num">4</div>
+<div class="rank-name">
+<div class="rank-t">数码先锋 · 徐汇店</div>
+<div class="rank-s">门店订单 <span class="sep">·</span> 加盟 <span class="sep">·</span> 平均处理时长 <b>3'42"</b></div>
+</div>
+<div class="rank-r"><div class="rank-r-v">17</div><div class="rank-r-s up">↑ +2 vs 昨日</div></div>
+</div>
+<div class="rank-row">
+<div class="rank-num">5</div>
+<div class="rank-name">
+<div class="rank-t">华星科技 · 静安店</div>
+<div class="rank-s">门店 + 分红 <span class="sep">·</span> 加盟 <span class="sep">·</span> 客单价 <b>¥8,120</b></div>
+</div>
+<div class="rank-r"><div class="rank-r-v">14</div><div class="rank-r-s">— 持平</div></div>
+</div>
+</div>
+</div>
+
+<div class="card">
+<div class="cd-head">
+<div class="cd-title"><i class="ti ti-fire"></i>今日热门商品<span class="cnt">按下单量</span></div>
+<span class="cd-action">商品库<i class="ti ti-arrow-right"></i></span>
+</div>
+<div>
+<div class="rank-row">
+<div class="rank-num">1</div>
+<div class="rank-name">
+<div class="rank-t">iPhone 15 Pro Max 256GB · 自然钛</div>
+<div class="rank-s">手机 <span class="sep">·</span> 月租 <b>¥489</b> <span class="sep">·</span> 转化率 <b style="color:var(--s)">38%</b></div>
+</div>
+<div class="rank-r"><div class="rank-r-v">42</div><div class="rank-r-s up">↑ +9 vs 昨日</div></div>
+</div>
+<div class="rank-row">
+<div class="rank-num">2</div>
+<div class="rank-name">
+<div class="rank-t">MacBook Air M3 13" · 16G/512G</div>
+<div class="rank-s">笔记本 <span class="sep">·</span> 月租 <b>¥698</b> <span class="sep">·</span> 平均 <b>14 期</b></div>
+</div>
+<div class="rank-r"><div class="rank-r-v">28</div><div class="rank-r-s up">↑ +4 vs 昨日</div></div>
+</div>
+<div class="rank-row">
+<div class="rank-num">3</div>
+<div class="rank-name">
+<div class="rank-t">iPad Air 6 · Wi-Fi 256GB</div>
+<div class="rank-s">平板 <span class="sep">·</span> 月租 <b>¥389</b> <span class="sep">·</span> 学生用户占 <b>62%</b></div>
+</div>
+<div class="rank-r"><div class="rank-r-v">19</div><div class="rank-r-s up">↑ +5 vs 昨日</div></div>
+</div>
+<div class="rank-row">
+<div class="rank-num">4</div>
+<div class="rank-name">
+<div class="rank-t">小米 14 Ultra · 16G/512G</div>
+<div class="rank-s">手机 <span class="sep">·</span> 月租 <b>¥459</b> <span class="sep">·</span> 风控通过率 <b>89%</b></div>
+</div>
+<div class="rank-r"><div class="rank-r-v">14</div><div class="rank-r-s down">↓ -2 vs 昨日</div></div>
+</div>
+<div class="rank-row">
+<div class="rank-num">5</div>
+<div class="rank-name">
+<div class="rank-t">华为 Mate 60 Pro · 12G/512G</div>
+<div class="rank-s">手机 <span class="sep">·</span> 月租 <b>¥529</b> <span class="sep">·</span> 留购率 <b style="color:var(--s)">45%</b></div>
+</div>
+<div class="rank-r"><div class="rank-r-v">11</div><div class="rank-r-s up">↑ +3 vs 昨日</div></div>
+</div>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div></div>
+
+</body></html>

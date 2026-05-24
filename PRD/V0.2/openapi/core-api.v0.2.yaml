@@ -1,0 +1,741 @@
+openapi: 3.0.3
+info:
+  title: Mandian Rental Core API
+  version: 0.2.0
+  description: 满点租赁系统 V0.2 核心接口草案，覆盖入驻、办单、下单、审核、资方、财务和回调主链路。
+servers:
+  - url: https://api.example.com
+    description: placeholder only
+tags:
+  - name: onboarding
+  - name: assistant
+  - name: customer-order
+  - name: review
+  - name: finance
+  - name: callback
+security:
+  - bearerAuth: []
+paths:
+  /merchant-applications:
+    post:
+      tags: [onboarding]
+      summary: 创建商家入驻申请
+      operationId: createMerchantApplication
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ClientType'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMerchantApplicationRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/MerchantApplicationCreated'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          $ref: '#/components/responses/IdempotencyConflict'
+  /merchant-applications/{application_id}/review:
+    post:
+      tags: [onboarding]
+      summary: 审核商家入驻申请
+      operationId: reviewMerchantApplication
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ApplicationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewMerchantApplicationRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ReviewMerchantApplicationResult'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '409':
+          $ref: '#/components/responses/StatusConflict'
+  /assistant/quotes:
+    post:
+      tags: [assistant]
+      summary: 生成办单助手报价
+      operationId: createQuote
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ClientType'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateQuoteRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/QuoteSnapshot'
+        '409':
+          $ref: '#/components/responses/BusinessRuleBlocked'
+  /assistant/qrcodes:
+    post:
+      tags: [assistant]
+      summary: 生成客户下单二维码
+      operationId: createOrderQrcode
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateQrcodeRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/QrcodeResult'
+  /customer/orders:
+    post:
+      tags: [customer-order]
+      summary: 客户扫码创建订单
+      operationId: createCustomerOrder
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ClientType'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCustomerOrderRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/OrderCreated'
+        '410':
+          description: Quote expired or disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /customer/orders/{order_id}/profile:
+    post:
+      tags: [customer-order]
+      summary: 客户提交实名和资料
+      operationId: submitCustomerProfile
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/OrderId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitCustomerProfileRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ProfileSubmitResult'
+  /orders/{order_id}/review/approve:
+    post:
+      tags: [review]
+      summary: 审核通过订单
+      operationId: approveOrderReview
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/OrderId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproveOrderRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/OrderStateResult'
+        '409':
+          $ref: '#/components/responses/StatusConflict'
+  /orders/{order_id}/funder-assignment:
+    post:
+      tags: [review]
+      summary: 分配资方
+      operationId: assignFunder
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/OrderId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignFunderRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/FunderAssignmentResult'
+        '409':
+          $ref: '#/components/responses/BusinessRuleBlocked'
+  /wallets/{wallet_id}/withdrawals:
+    post:
+      tags: [finance]
+      summary: 发起提现
+      operationId: createWithdrawal
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - name: wallet_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWithdrawalRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/WithdrawalResult'
+  /callbacks/{channel}/{event_type}:
+    post:
+      tags: [callback]
+      summary: 第三方回调统一入口
+      operationId: receiveCallback
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - name: channel
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: event_type
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/CallbackAccepted'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    RequestId:
+      name: X-Request-Id
+      in: header
+      required: true
+      schema:
+        type: string
+    IdempotencyKey:
+      name: X-Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+    ClientType:
+      name: X-Client-Type
+      in: header
+      required: true
+      schema:
+        type: string
+        enum: [ops, merchant_pc, store_mobile, customer, channel]
+    ApplicationId:
+      name: application_id
+      in: path
+      required: true
+      schema:
+        type: string
+    OrderId:
+      name: order_id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    ValidationError:
+      description: Validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    PermissionDenied:
+      description: Permission denied
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    IdempotencyConflict:
+      description: Idempotency conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    StatusConflict:
+      description: Status conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BusinessRuleBlocked:
+      description: Business rule blocked
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    ApiResponse:
+      type: object
+      required: [code, message, request_id]
+      properties:
+        code:
+          type: string
+          example: OK
+        message:
+          type: string
+          example: success
+        request_id:
+          type: string
+        warnings:
+          type: array
+          items:
+            type: string
+    ErrorResponse:
+      type: object
+      required: [code, message, request_id]
+      properties:
+        code:
+          type: string
+          example: VALIDATION_FAILED
+        message:
+          type: string
+        request_id:
+          type: string
+        field_errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              reason:
+                type: string
+    CreateMerchantApplicationRequest:
+      type: object
+      required: [mobile, password, sms_code, agree_terms]
+      properties:
+        mobile:
+          type: string
+        password:
+          type: string
+          format: password
+        sms_code:
+          type: string
+        invite_code:
+          type: string
+        agree_terms:
+          type: boolean
+    MerchantApplicationCreated:
+      type: object
+      properties:
+        application_id:
+          type: string
+        merchant_id:
+          type: string
+        store_id:
+          type: string
+        next_step:
+          type: string
+    ReviewMerchantApplicationRequest:
+      type: object
+      required: [review_result]
+      properties:
+        review_result:
+          type: string
+          enum: [approved, rejected]
+        reject_reason:
+          type: string
+        enabled_capabilities:
+          type: array
+          items:
+            type: string
+            enum: [store_order, dividend_order, platform_order]
+    ReviewMerchantApplicationResult:
+      type: object
+      properties:
+        merchant_status:
+          type: string
+        store_status:
+          type: string
+        wallet_id:
+          type: string
+        default_config_version:
+          type: string
+    CreateQuoteRequest:
+      type: object
+      required: [order_type, merchant_id, store_id, product_id, sku_id, rent_mode, billing_unit, term]
+      properties:
+        order_type:
+          $ref: '#/components/schemas/OrderType'
+        merchant_id:
+          type: string
+        store_id:
+          type: string
+        product_id:
+          type: string
+        sku_id:
+          type: string
+        rent_mode:
+          type: string
+          enum: [long, short]
+        billing_unit:
+          type: string
+          enum: [hour, day, week, month]
+        term:
+          type: integer
+          minimum: 1
+        down_payment:
+          type: integer
+          description: amount in cents
+        selected_service_ids:
+          type: array
+          items:
+            type: string
+        funding_ratio:
+          type: integer
+          minimum: 20
+          maximum: 80
+    QuoteSnapshot:
+      type: object
+      properties:
+        quote_snapshot_id:
+          type: string
+        price_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PriceItem'
+        bill_plan_preview:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillPreviewItem'
+        funding_preview:
+          $ref: '#/components/schemas/FundingPreview'
+        config_version_id:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+    PriceItem:
+      type: object
+      properties:
+        code:
+          type: string
+        label:
+          type: string
+        amount:
+          type: integer
+          description: amount in cents
+    BillPreviewItem:
+      type: object
+      properties:
+        period_no:
+          type: integer
+        bill_type:
+          type: string
+        amount_due:
+          type: integer
+        due_rule:
+          type: string
+    FundingPreview:
+      type: object
+      properties:
+        funding_ratio:
+          type: integer
+        store_ratio:
+          type: integer
+        funder_amount:
+          type: integer
+        store_amount:
+          type: integer
+    CreateQrcodeRequest:
+      type: object
+      required: [quote_snapshot_id, valid_minutes]
+      properties:
+        quote_snapshot_id:
+          type: string
+        valid_minutes:
+          type: integer
+        channel_id:
+          type: string
+        staff_id:
+          type: string
+    QrcodeResult:
+      type: object
+      properties:
+        qrcode_id:
+          type: string
+        qrcode_payload:
+          type: string
+        qrcode_image_url:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+    CreateCustomerOrderRequest:
+      type: object
+      required: [qrcode_payload, quote_snapshot_id, customer_source]
+      properties:
+        qrcode_payload:
+          type: string
+        quote_snapshot_id:
+          type: string
+        customer_open_id:
+          type: string
+        customer_source:
+          type: string
+          enum: [alipay, wechat, h5, app]
+    OrderCreated:
+      type: object
+      properties:
+        order_id:
+          type: string
+        order_no:
+          type: string
+        order_type:
+          $ref: '#/components/schemas/OrderType'
+        main_status:
+          type: string
+        pending_tasks:
+          type: array
+          items:
+            type: string
+    SubmitCustomerProfileRequest:
+      type: object
+      properties:
+        real_name:
+          type: string
+        id_card_encrypted:
+          type: string
+        mobile:
+          type: string
+        address:
+          type: object
+          additionalProperties: true
+        contacts:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        attachment_ids:
+          type: array
+          items:
+            type: string
+        location:
+          type: object
+          additionalProperties: true
+    ProfileSubmitResult:
+      type: object
+      properties:
+        profile_status:
+          type: string
+        review_status:
+          type: string
+        missing_fields:
+          type: array
+          items:
+            type: string
+        next_tasks:
+          type: array
+          items:
+            type: string
+    ApproveOrderRequest:
+      type: object
+      required: [review_note, confirm_token]
+      properties:
+        review_note:
+          type: string
+        confirm_token:
+          type: string
+        next_actions:
+          type: array
+          items:
+            type: string
+            enum: [create_contract, create_notary, create_payment, create_ship_task]
+    OrderStateResult:
+      type: object
+      properties:
+        order_id:
+          type: string
+        main_status:
+          type: string
+        review_status:
+          type: string
+        generated_tasks:
+          type: array
+          items:
+            type: string
+        operation_log_id:
+          type: string
+    AssignFunderRequest:
+      type: object
+      required: [funder_id, funding_amount, funding_ratio]
+      properties:
+        funder_id:
+          type: string
+        funding_amount:
+          type: integer
+        funding_ratio:
+          type: integer
+        allocation_rule:
+          type: object
+          additionalProperties: true
+    FunderAssignmentResult:
+      type: object
+      properties:
+        assignment_id:
+          type: string
+        funder_available_credit:
+          type: integer
+        allocation_snapshot_id:
+          type: string
+    CreateWithdrawalRequest:
+      type: object
+      required: [amount, receive_account_id, owner_type, owner_id]
+      properties:
+        amount:
+          type: integer
+        receive_account_id:
+          type: string
+        owner_type:
+          type: string
+          enum: [merchant, funder, channel]
+        owner_id:
+          type: string
+    WithdrawalResult:
+      type: object
+      properties:
+        withdraw_id:
+          type: string
+        withdraw_status:
+          type: string
+        frozen_amount:
+          type: integer
+        wallet_balance:
+          type: integer
+    CallbackAccepted:
+      type: object
+      properties:
+        callback_event_id:
+          type: string
+        verify_status:
+          type: string
+        process_status:
+          type: string
+    OrderType:
+      type: string
+      enum: [store, dividend, platform]

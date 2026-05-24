@@ -1,0 +1,592 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=1280,initial-scale=1"><title>运营端订单详情抽屉原型 · 满点租赁系统重构</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.5.0/dist/tabler-icons.min.css"><style>:root{--p:#2B5CE6;--ph:#1E4FD4;--pl:#EEF3FE;--g50:#FAFBFC;--g1:#F4F5F7;--g2:#E5E7EB;--g3:#D1D5DB;--g4:#9CA3AF;--g5:#6B7280;--g6:#4B5563;--g7:#374151;--g8:#1F2937;--g9:#111827;--s:#10B981;--sl:#ECFDF5;--w:#F59E0B;--wl:#FFFBEB;--d:#EF4444;--dl:#FEF2F2}*{box-sizing:border-box;margin:0;padding:0}html,body{height:100%}body{background:var(--g50);color:var(--g9);font-family:Inter,-apple-system,BlinkMacSystemFont,"SF Pro SC","PingFang SC","Microsoft YaHei UI",sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}.mono{font-family:"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;font-feature-settings:"tnum"}
+.bn{background:#0F172A;color:#fff;padding:10px 24px;font-size:13px;display:flex;justify-content:space-between;gap:16px;align-items:center}
+.bn-l{display:flex;align-items:center;gap:10px}
+.bn-tag{background:var(--p);color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500}
+.bn a{color:#93C5FD;text-decoration:none}.bn a:hover{text-decoration:underline}
+/* 演示用背景层：模拟订单列表页 */
+.bg-list{padding:30px;background:var(--g50);min-height:calc(100vh - 40px);position:relative;overflow:hidden}
+.bg-fade{position:absolute;inset:0;background:rgba(15,23,42,0.4);z-index:5;pointer-events:none}
+.bg-card{background:#fff;border:1px solid var(--g2);border-radius:8px;padding:14px 16px;margin-bottom:10px;filter:blur(0.5px);opacity:0.65}
+.bg-card-head{display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--g2);font-size:11px;color:var(--g5);font-family:"SF Mono",monospace}
+.bg-card-body{padding-top:10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.bg-cell{padding:8px;background:var(--g50);border-radius:4px;height:90px;font-size:10px;color:var(--g4);overflow:hidden;line-height:1.3}
+.bg-tip{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);background:#0F172A;color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;z-index:6;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.bg-tip .ti{font-size:14px;color:#93C5FD;vertical-align:-2px;margin-right:4px}
+/* 抽屉本体 */
+.drawer{position:fixed;right:0;top:40px;bottom:0;width:1280px;max-width:90vw;background:#fff;box-shadow:-12px 0 32px rgba(0,0,0,.12);z-index:10;display:flex;flex-direction:column;border-left:1px solid var(--g2)}
+.dr-head{padding:14px 24px 12px;border-bottom:1px solid var(--g2);display:flex;justify-content:space-between;align-items:flex-start;flex-shrink:0}
+.dr-head-l{flex:1;min-width:0}
+.dr-title-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+.dr-title{font-size:16px;font-weight:600;color:var(--g9)}
+.dr-id{font-family:"SF Mono",monospace;color:var(--g6);font-size:13px;font-weight:500}
+.dr-id .ti{font-size:13px;color:var(--g4);cursor:pointer;margin-left:3px;vertical-align:-2px}
+.dr-status{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:500}
+.dr-status.review{background:var(--wl);color:#92400E}
+.pul{width:6px;height:6px;border-radius:50%;background:currentColor;animation:pl 1.4s infinite}
+@keyframes pl{0%,100%{opacity:.4;transform:scale(.85)}50%{opacity:1;transform:scale(1)}}
+.dr-meta{display:flex;flex-wrap:wrap;gap:16px;font-size:12px;color:var(--g5)}
+.dr-meta-i{display:flex;align-items:center;gap:4px}
+.dr-meta-i .ti{font-size:13px;color:var(--g4)}
+.dr-meta-i b{color:var(--g7);font-weight:500}
+.dr-close{width:32px;height:32px;border-radius:6px;display:grid;place-items:center;color:var(--g4);cursor:pointer;background:transparent;border:0;flex-shrink:0}
+.dr-close:hover{background:var(--g1);color:var(--g7)}
+.dr-close .ti{font-size:18px}
+/* 顶部摘要卡 */
+.summary{padding:14px 24px;background:linear-gradient(180deg,#FAFBFC 0%,#fff 100%);border-bottom:1px solid var(--g2);display:grid;grid-template-columns:repeat(6,1fr);gap:0;flex-shrink:0}
+.sm-cell{display:flex;flex-direction:column;gap:3px;padding-right:14px;border-right:1px solid var(--g2);min-width:0}
+.sm-cell:last-child{border-right:0;padding-right:0}
+.sm-lbl{font-size:11px;color:var(--g4);font-weight:500;letter-spacing:.02em}
+.sm-val{font-size:16px;font-weight:600;color:var(--g9);font-family:"SF Mono",monospace}
+.sm-val .small{font-size:11px;color:var(--g4);font-weight:400;font-family:inherit;margin-left:3px}
+.sm-val .ok{color:var(--s)}
+.sm-val .dg{color:var(--d)}
+.sm-val .ph{color:var(--p)}
+.sm-sub{font-size:11px;color:var(--g5)}
+/* 进度时间线 */
+.tl-bar{padding:14px 24px;background:#fff;border-bottom:1px solid var(--g2);flex-shrink:0}
+.tl-track{display:flex;align-items:center;gap:0;position:relative}
+.tl-node{display:flex;flex-direction:column;align-items:center;flex:1;min-width:0;position:relative;cursor:pointer}
+.tl-node:not(:last-child)::after{content:"";position:absolute;top:11px;left:50%;width:100%;height:2px;background:var(--g2);z-index:0}
+.tl-node.done:not(:last-child)::after{background:var(--p)}
+.tl-node.cur:not(:last-child)::after{background:linear-gradient(90deg,var(--p) 50%,var(--g2) 50%)}
+.tl-dot{width:24px;height:24px;border-radius:50%;background:#fff;border:2px solid var(--g3);display:grid;place-items:center;color:var(--g4);position:relative;z-index:1;font-size:11px;font-weight:600}
+.tl-node.done .tl-dot{background:var(--p);border-color:var(--p);color:#fff}
+.tl-node.cur .tl-dot{background:#fff;border-color:var(--p);color:var(--p);box-shadow:0 0 0 4px rgba(43,92,230,.15)}
+.tl-node.cur .tl-dot::before{content:"";position:absolute;inset:-8px;border:2px solid var(--p);border-radius:50%;opacity:0.3;animation:pul 1.6s infinite}
+@keyframes pul{0%,100%{transform:scale(1);opacity:0.3}50%{transform:scale(1.15);opacity:0}}
+.tl-lbl{margin-top:6px;font-size:11px;color:var(--g5);text-align:center;line-height:1.3}
+.tl-node.done .tl-lbl,.tl-node.cur .tl-lbl{color:var(--g7);font-weight:500}
+.tl-time{font-size:10px;color:var(--g4);font-family:"SF Mono",monospace;margin-top:2px}
+/* 主体两栏 */
+.body{flex:1;display:grid;grid-template-columns:1fr 380px;overflow:hidden;min-height:0}
+.body-l{overflow-y:auto;padding:18px 24px;display:flex;flex-direction:column;gap:14px;border-right:1px solid var(--g2)}
+.body-r{overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:14px;background:var(--g50)}
+/* 通用 section */
+.sec{background:#fff;border:1px solid var(--g2);border-radius:8px;overflow:hidden}
+.body-r .sec{background:#fff}
+.sec-head{padding:10px 14px;border-bottom:1px solid var(--g2);display:flex;justify-content:space-between;align-items:center;background:var(--g50)}
+.sec-title{font-size:13px;font-weight:600;color:var(--g8);display:flex;align-items:center;gap:6px}
+.sec-title .ti{font-size:15px;color:var(--p)}
+.sec-action{font-size:12px;color:var(--p);cursor:pointer;display:flex;align-items:center;gap:3px}
+.sec-action .ti{font-size:13px}
+.sec-action:hover{color:var(--ph)}
+.sec-body{padding:14px}
+/* 商品卡 */
+.prod{display:flex;gap:12px;align-items:flex-start}
+.prod-img{width:64px;height:64px;border-radius:6px;background:var(--pl);color:var(--p);display:grid;place-items:center;flex-shrink:0;border:1px solid var(--g2)}
+.prod-img .ti{font-size:32px}
+.prod-info{flex:1;min-width:0}
+.prod-name{font-size:14px;font-weight:500;color:var(--g9);margin-bottom:3px}
+.prod-sku{font-size:11px;color:var(--g4);font-family:"SF Mono",monospace;margin-bottom:6px}
+.prod-tags{display:flex;gap:4px;flex-wrap:wrap}
+.tg{font-size:10px;padding:2px 6px;border-radius:3px;background:var(--g1);color:var(--g5);font-weight:500}
+.tg.sv{background:var(--pl);color:var(--p)}
+.tg.sh{background:var(--wl);color:#92400E}
+/* 价格明细 */
+.price{margin-top:12px;border-top:1px dashed var(--g2);padding-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:6px 16px}
+.price-row{display:flex;justify-content:space-between;font-size:12px}
+.price-row .lbl{color:var(--g5)}
+.price-row .val{color:var(--g9);font-family:"SF Mono",monospace}
+.price-row.total{grid-column:1/-1;border-top:1px solid var(--g2);padding-top:8px;margin-top:4px}
+.price-row.total .lbl{font-weight:500;color:var(--g7)}
+.price-row.total .val{font-size:14px;font-weight:600;color:var(--p)}
+/* 字段表 desc list */
+.dl{display:grid;grid-template-columns:90px 1fr;gap:8px 16px}
+.dl dt{font-size:12px;color:var(--g5);line-height:1.7}
+.dl dd{font-size:13px;color:var(--g9);line-height:1.7;font-family:"SF Mono",monospace;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.dl dd .copy{font-size:13px;color:var(--g4);cursor:pointer}
+.dl dd .copy:hover{color:var(--p)}
+.dl dd.txt{font-family:inherit}
+/* 资料原图 */
+.docs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
+.doc{aspect-ratio:1.4/1;border-radius:6px;background:var(--g50);border:1px solid var(--g2);display:flex;flex-direction:column;cursor:pointer;overflow:hidden;position:relative}
+.doc:hover{border-color:var(--p);box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.doc-img{flex:1;display:grid;place-items:center;color:var(--g3);background:repeating-linear-gradient(45deg,#FFF,#FFF 5px,#FAFBFC 5px,#FAFBFC 10px)}
+.doc-img .ti{font-size:32px}
+.doc-foot{padding:5px 8px;font-size:10px;color:var(--g5);background:#fff;border-top:1px solid var(--g2);display:flex;justify-content:space-between}
+.doc-foot .ti{font-size:11px}
+.doc.ok .doc-foot{color:var(--s)}
+.doc.warn .doc-foot{color:#92400E}
+.doc.alert .doc-foot{color:var(--d)}
+.doc-tag{position:absolute;top:5px;right:5px;font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(0,0,0,0.55);color:#fff;font-weight:500}
+/* 合同 */
+.contract{display:flex;gap:10px;align-items:center;padding:10px;background:var(--g50);border-radius:6px;margin-bottom:6px}
+.contract:last-child{margin-bottom:0}
+.contract-ic{width:36px;height:36px;border-radius:5px;background:#fff;border:1px solid var(--g2);display:grid;place-items:center;color:var(--d);flex-shrink:0}
+.contract-ic .ti{font-size:18px}
+.contract-info{flex:1;min-width:0}
+.contract-name{font-size:13px;font-weight:500;color:var(--g9);margin-bottom:2px}
+.contract-meta{font-size:11px;color:var(--g5);display:flex;gap:8px;flex-wrap:wrap}
+.contract-meta b{font-family:"SF Mono",monospace;font-weight:500;color:var(--g7)}
+.contract-act{display:flex;gap:4px}
+.icon-btn{width:28px;height:28px;display:grid;place-items:center;background:#fff;border:1px solid var(--g2);border-radius:4px;color:var(--g6);cursor:pointer}
+.icon-btn:hover{background:var(--pl);color:var(--p);border-color:var(--p)}
+.icon-btn .ti{font-size:14px}
+/* 账单 */
+.bill-table{width:100%;border-collapse:collapse;font-size:12px}
+.bill-table th{padding:8px 6px;text-align:left;background:var(--g50);color:var(--g5);font-weight:500;border-bottom:1px solid var(--g2);font-size:11px}
+.bill-table td{padding:8px 6px;border-bottom:1px solid var(--g1);color:var(--g7);font-family:"SF Mono",monospace}
+.bill-table tr:last-child td{border-bottom:0}
+.bill-table .row-current{background:#FFFBF0}
+.bill-row-status{display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:500;font-family:inherit}
+.bill-row-status.paid{background:var(--sl);color:#047857}
+.bill-row-status.pending{background:var(--wl);color:#92400E}
+.bill-row-status.future{background:var(--g1);color:var(--g5)}
+/* 风控 */
+.risk-score{display:flex;align-items:center;gap:14px;padding:12px;background:#FEF2F2;border-radius:6px;margin-bottom:10px}
+.risk-num{font-size:28px;font-weight:700;color:#B91C1C;font-family:"SF Mono",monospace;line-height:1}
+.risk-band{flex:1}
+.risk-band-bar{height:6px;background:linear-gradient(90deg,var(--s) 0%,var(--w) 50%,var(--d) 100%);border-radius:3px;position:relative}
+.risk-band-bar::after{content:"";position:absolute;top:-3px;left:65%;width:2px;height:12px;background:#0F172A;border-radius:1px}
+.risk-band-lbl{display:flex;justify-content:space-between;margin-top:3px;font-size:10px;color:var(--g5);font-family:"SF Mono",monospace}
+.risk-band-name{font-size:12px;font-weight:600;color:#B91C1C;margin-top:6px}
+.risk-list{display:flex;flex-direction:column;gap:6px}
+.risk-item{display:flex;gap:8px;padding:8px;border-radius:5px;background:var(--g50);font-size:12px;line-height:1.5}
+.risk-item.danger{background:#FEF2F2}
+.risk-item.warn{background:#FFFBEB}
+.risk-item .ti{font-size:14px;flex-shrink:0;margin-top:2px}
+.risk-item.danger .ti{color:var(--d)}
+.risk-item.warn .ti{color:var(--w)}
+.risk-item.ok .ti{color:var(--s)}
+.risk-item .ttl{font-weight:500;color:var(--g8);margin-right:6px}
+.risk-item .desc{color:var(--g6)}
+/* API 报文 */
+.api-tabs{display:flex;gap:0;border-bottom:1px solid var(--g2);padding:0 14px}
+.api-tab{padding:8px 12px;font-size:12px;color:var(--g5);cursor:pointer;border-bottom:2px solid transparent;display:inline-flex;align-items:center;gap:4px}
+.api-tab.on{color:var(--p);border-color:var(--p);font-weight:500}
+.api-tab .ti{font-size:13px}
+.api-body{padding:0}
+.api-row{padding:10px 14px;border-bottom:1px solid var(--g1);font-size:12px;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.api-row:last-child{border-bottom:0}
+.api-row:hover{background:var(--g50)}
+.api-row-l{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.api-row-meta{display:flex;gap:8px;align-items:center;font-family:"SF Mono",monospace;color:var(--g5);font-size:11px}
+.api-method{display:inline-block;padding:1px 5px;border-radius:3px;background:var(--pl);color:var(--p);font-size:10px;font-weight:600}
+.api-method.get{background:var(--sl);color:var(--s)}
+.api-row-url{color:var(--g8);font-family:"SF Mono",monospace;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.api-row-r{display:flex;gap:8px;align-items:center}
+.api-code{padding:1px 7px;border-radius:3px;font-size:11px;font-weight:600;font-family:"SF Mono",monospace}
+.api-code.ok{background:var(--sl);color:#047857}
+.api-code.err{background:var(--dl);color:#B91C1C}
+.api-time{font-size:10px;color:var(--g4);font-family:"SF Mono",monospace}
+/* 右栏时间线 */
+.feed{display:flex;flex-direction:column;gap:0}
+.feed-item{display:flex;gap:10px;padding:0;position:relative}
+.feed-item:not(:last-child)::after{content:"";position:absolute;left:11px;top:24px;bottom:-12px;width:2px;background:var(--g2)}
+.feed-dot{width:24px;height:24px;border-radius:50%;background:#fff;border:2px solid var(--g3);flex-shrink:0;display:grid;place-items:center;color:var(--g4);position:relative;z-index:1}
+.feed-dot .ti{font-size:12px}
+.feed-dot.p{border-color:var(--p);background:var(--pl);color:var(--p)}
+.feed-dot.s{border-color:var(--s);background:var(--sl);color:var(--s)}
+.feed-dot.w{border-color:var(--w);background:var(--wl);color:var(--w)}
+.feed-dot.d{border-color:var(--d);background:var(--dl);color:var(--d)}
+.feed-content{flex:1;min-width:0;padding-bottom:14px}
+.feed-title{font-size:13px;font-weight:500;color:var(--g8);line-height:1.4;display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.feed-title-l{flex:1}
+.feed-time{font-size:11px;color:var(--g4);font-family:"SF Mono",monospace;flex-shrink:0}
+.feed-desc{font-size:12px;color:var(--g6);margin-top:3px;line-height:1.6}
+.feed-tag{display:inline-block;padding:1px 5px;font-size:10px;border-radius:3px;background:var(--g1);color:var(--g7);font-weight:500;margin-right:4px}
+.feed-tag.sys{background:#F5F3FF;color:#7C3AED}
+.feed-tag.cb{background:var(--pl);color:var(--p)}
+.feed-tag.user{background:var(--sl);color:#047857}
+.feed-actor{font-size:11px;color:var(--g5);margin-top:3px;display:flex;align-items:center;gap:4px}
+.feed-actor .av{width:16px;height:16px;border-radius:50%;background:var(--pl);color:var(--p);display:grid;place-items:center;font-size:9px;font-weight:600}
+.feed-foot{padding:8px;background:var(--g1);border-radius:5px;font-size:11px;color:var(--g6);margin-top:6px;line-height:1.5;font-family:"SF Mono",monospace}
+/* 底部操作栏 */
+.dr-foot{flex-shrink:0;padding:12px 24px;background:#fff;border-top:1px solid var(--g2);display:flex;justify-content:space-between;align-items:center;gap:14px;box-shadow:0 -4px 12px rgba(0,0,0,0.04)}
+.dr-foot-l{display:flex;gap:8px;align-items:center}
+.dr-foot-l .ic{width:32px;height:32px;display:grid;place-items:center;color:var(--g5);cursor:pointer;border-radius:5px;border:1px solid var(--g2);background:#fff}
+.dr-foot-l .ic:hover{background:var(--pl);color:var(--p);border-color:var(--p)}
+.dr-foot-l .ic .ti{font-size:16px}
+.dr-foot-l .gap{width:1px;height:20px;background:var(--g2)}
+.dr-foot-r{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.btn{height:36px;padding:0 16px;display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--g2);border-radius:6px;color:var(--g7);font-size:13px;cursor:pointer;font-family:inherit;font-weight:500}
+.btn:hover{background:var(--g50)}
+.btn .ti{font-size:15px}
+.btn.pp{background:var(--p);color:#fff;border-color:var(--p)}
+.btn.pp:hover{background:var(--ph)}
+.btn.dg{color:#B91C1C;border-color:#FCA5A5;background:var(--dl)}
+.btn.dg:hover{background:#FEE2E2}
+.btn.wr{color:#92400E;border-color:#FDE68A;background:var(--wl)}
+.btn.wr:hover{background:#FEF3C7}
+</style></head><body>
+
+<div class="bn">
+<div class="bn-l">
+<span class="bn-tag">原型</span>
+<span>满点租赁系统重构 · 运营端订单详情抽屉</span>
+<span style="color:#94A3B8">·</span>
+<span style="color:#94A3B8">配套 PRD §7.3 详情页边界</span>
+</div>
+<div><a href="https://github.com/joezjyan-bot/mandian-prd/blob/main/PRD/V0.2/04_UI%E9%A3%8E%E6%A0%BC%E4%B8%8E%E9%A1%B5%E9%9D%A2%E5%8E%9F%E5%9E%8B%E8%A7%84%E8%8C%83.md">查看源 PRD</a></div>
+</div>
+
+<!-- 模拟列表页背景（虚化） -->
+<div class="bg-list">
+<div class="bg-card"><div class="bg-card-head"><span>DZ20260524000172 · 待分配资方</span><span>2026-05-24 08:42</span></div><div class="bg-card-body"><div class="bg-cell">MacBook Air M3 13" · ¥698 / 月 · 12 期</div><div class="bg-cell">CodeRunner · 陈*君 · 137****9921</div><div class="bg-cell">已付 ¥1,898 / 9,074 · 押金 ¥1,200</div></div></div>
+<div class="bg-card"><div class="bg-card-head"><span>DZ20260523000451 · 已逾期 14 天</span><span>2026-05-23 21:08</span></div><div class="bg-card-body"><div class="bg-cell">AirPods Pro 2 · ¥189 / 月</div><div class="bg-cell">爱听耳机的小李 · 132****4108</div><div class="bg-cell">未付 2/12 期 · 欠押金 ¥380</div></div></div>
+<div class="bg-card"><div class="bg-card-head"><span>DZ20260523000409 · 已完成</span><span>2026-05-23 14:21</span></div><div class="bg-card-body"><div class="bg-cell">iPad Air · ¥389 / 月 · 已留购</div><div class="bg-cell">小明 · 138****1234</div><div class="bg-cell">已付 ¥8,234 / 8,234 · 已留购</div></div></div>
+<div class="bg-card"><div class="bg-card-head"><span>DZ20260523000351 · 待归还</span><span>2026-05-23 11:08</span></div><div class="bg-card-body"><div class="bg-cell">小米平板 6 Pro · ¥229 / 月</div><div class="bg-cell">用户A · 139****8888</div><div class="bg-cell">已付 ¥2,748 / 2,748 · 待归还</div></div></div>
+<div class="bg-fade"></div>
+<div class="bg-tip"><i class="ti ti-info-circle"></i>详情抽屉打开中，背景列表被弱化（演示效果）</div>
+</div>
+
+<!-- 详情抽屉本体 -->
+<div class="drawer">
+
+<!-- 顶部头部 -->
+<div class="dr-head">
+<div class="dr-head-l">
+<div class="dr-title-row">
+<span class="dr-title">订单详情</span>
+<span class="dr-id">DZ20260524000183 <i class="ti ti-copy"></i></span>
+<span class="dr-status review"><span class="pul"></span>待审核 · 风控触发</span>
+</div>
+<div class="dr-meta">
+<span class="dr-meta-i"><i class="ti ti-building-store"></i>商户 <b>鼎租自营 · 浦东运营组</b></span>
+<span class="dr-meta-i"><i class="ti ti-tag"></i>类型 <b>门店订单</b></span>
+<span class="dr-meta-i"><i class="ti ti-clock"></i>下单 <b>2026-05-24 09:14</b></span>
+<span class="dr-meta-i"><i class="ti ti-user-check"></i>当前办理人 <b>韩静</b></span>
+</div>
+</div>
+<button class="dr-close" title="关闭"><i class="ti ti-x"></i></button>
+</div>
+
+<!-- 摘要卡（6 个核心 KPI）-->
+<div class="summary">
+<div class="sm-cell">
+<span class="sm-lbl">已付 / 总租金</span>
+<span class="sm-val"><span class="ok">¥1,489</span><span class="small">/ ¥6,357</span></span>
+<span class="sm-sub">首期已支付</span>
+</div>
+<div class="sm-cell">
+<span class="sm-lbl">期数</span>
+<span class="sm-val">1<span class="small">/ 12 期</span></span>
+<span class="sm-sub">月租 ¥489.00</span>
+</div>
+<div class="sm-cell">
+<span class="sm-lbl">押金 + 留购</span>
+<span class="sm-val">¥3,899</span>
+<span class="sm-sub">押金 ¥1,000 + 留购 ¥2,899</span>
+</div>
+<div class="sm-cell">
+<span class="sm-lbl">支付方式</span>
+<span class="sm-val" style="font-size:13px;font-family:inherit">支付宝代扣</span>
+<span class="sm-sub">已签 · 待生效</span>
+</div>
+<div class="sm-cell">
+<span class="sm-lbl">合同状态</span>
+<span class="sm-val" style="font-size:13px;font-family:inherit"><span class="ok">已生成</span> · <span style="color:var(--g4)">未公证</span></span>
+<span class="sm-sub">编号 HT-20260524-0183</span>
+</div>
+<div class="sm-cell">
+<span class="sm-lbl">风险评分</span>
+<span class="sm-val"><span class="dg">72</span><span class="small">/ 100</span></span>
+<span class="sm-sub" style="color:var(--d)">高风险 · 建议复核</span>
+</div>
+</div>
+
+<!-- 状态时间线 -->
+<div class="tl-bar">
+<div class="tl-track">
+<div class="tl-node done"><div class="tl-dot"><i class="ti ti-check" style="font-size:12px"></i></div><div class="tl-lbl">已下单</div><div class="tl-time">05-24 09:14</div></div>
+<div class="tl-node done"><div class="tl-dot"><i class="ti ti-check" style="font-size:12px"></i></div><div class="tl-lbl">首期已付</div><div class="tl-time">05-24 09:14</div></div>
+<div class="tl-node cur"><div class="tl-dot">3</div><div class="tl-lbl">待审核</div><div class="tl-time">进行中</div></div>
+<div class="tl-node"><div class="tl-dot">4</div><div class="tl-lbl">待签约</div><div class="tl-time">—</div></div>
+<div class="tl-node"><div class="tl-dot">5</div><div class="tl-lbl">待发货</div><div class="tl-time">—</div></div>
+<div class="tl-node"><div class="tl-dot">6</div><div class="tl-lbl">租赁中</div><div class="tl-time">—</div></div>
+<div class="tl-node"><div class="tl-dot">7</div><div class="tl-lbl">归还/留购</div><div class="tl-time">—</div></div>
+</div>
+</div>
+
+<!-- 主体两栏 -->
+<div class="body">
+
+<!-- 左栏 -->
+<div class="body-l">
+
+<!-- 商品 + 价格 -->
+<div class="sec">
+<div class="sec-head"><div class="sec-title"><i class="ti ti-package"></i>商品 / 价格明细</div><span class="sec-action">查看 SKU 详情<i class="ti ti-arrow-right"></i></span></div>
+<div class="sec-body">
+<div class="prod">
+<div class="prod-img"><i class="ti ti-device-mobile"></i></div>
+<div class="prod-info">
+<div class="prod-name">iPhone 15 Pro Max 256GB · 自然钛</div>
+<div class="prod-sku">SKU · IP15PM-256-NTI · 商品 ID 100384</div>
+<div class="prod-tags">
+<span class="tg sv">屏幕保 · 12 个月</span>
+<span class="tg sv">延保 2 年</span>
+<span class="tg sh">顺丰到付 · ¥45</span>
+</div>
+</div>
+</div>
+<div class="price">
+<div class="price-row"><span class="lbl">月租 × 12 期</span><span class="val">¥489.00 × 12</span></div>
+<div class="price-row"><span class="lbl">首期</span><span class="val">¥1,489.00</span></div>
+<div class="price-row"><span class="lbl">押金</span><span class="val">¥1,000.00</span></div>
+<div class="price-row"><span class="lbl">运费</span><span class="val">¥45.00（到付）</span></div>
+<div class="price-row"><span class="lbl">屏幕保 12 个月</span><span class="val">¥168.00</span></div>
+<div class="price-row"><span class="lbl">延保 2 年</span><span class="val">¥360.00</span></div>
+<div class="price-row total"><span class="lbl">合计（含留购可选）</span><span class="val">¥9,256.00</span></div>
+</div>
+</div>
+</div>
+
+<!-- 用户信息 + 资料原图 -->
+<div class="sec">
+<div class="sec-head"><div class="sec-title"><i class="ti ti-user"></i>用户信息 / 资料原图</div><span class="sec-action">查看银行卡<i class="ti ti-arrow-right"></i></span></div>
+<div class="sec-body">
+<dl class="dl">
+<dt>昵称</dt><dd class="txt">小王同学</dd>
+<dt>实名</dt><dd>王*伟 <span style="font-size:10px;padding:1px 5px;background:var(--sl);color:#047857;border-radius:3px;font-family:inherit;font-weight:500"><i class="ti ti-shield-check" style="font-size:10px;vertical-align:-1px"></i>已实名</span></dd>
+<dt>身份证</dt><dd>310101****1234 <i class="ti ti-eye copy" title="查看完整"></i></dd>
+<dt>手机号</dt><dd>138****6234 <i class="ti ti-phone copy" title="拨打"></i></dd>
+<dt>居住地址</dt><dd class="txt" style="font-family:inherit">上海市浦东新区世纪大道****弄 ** 号 *** 室</dd>
+<dt>定位</dt><dd class="txt" style="font-family:inherit"><i class="ti ti-map-2" style="color:var(--s);font-size:14px"></i>浦东新区（与居住地一致）</dd>
+<dt>银行卡</dt><dd>3 张已绑定 · 主卡 6228****1357</dd>
+<dt>历史订单</dt><dd>3 笔（含 1 次逾期 1 天，已还清）</dd>
+</dl>
+
+<div style="margin-top:12px">
+<div class="sec-title" style="font-size:12px;margin-bottom:6px"><i class="ti ti-folder" style="font-size:13px"></i>身份资料原图</div>
+<div class="docs">
+<div class="doc ok"><div class="doc-img"><i class="ti ti-id"></i></div><span class="doc-tag">人像面</span><div class="doc-foot"><span>身份证 · 人像</span><i class="ti ti-circle-check"></i></div></div>
+<div class="doc ok"><div class="doc-img"><i class="ti ti-id"></i></div><span class="doc-tag">国徽面</span><div class="doc-foot"><span>身份证 · 国徽</span><i class="ti ti-circle-check"></i></div></div>
+<div class="doc ok"><div class="doc-img"><i class="ti ti-user-scan"></i></div><span class="doc-tag">活体</span><div class="doc-foot"><span>人脸活体</span><i class="ti ti-circle-check"></i></div></div>
+<div class="doc warn"><div class="doc-img"><i class="ti ti-credit-card"></i></div><span class="doc-tag">手持</span><div class="doc-foot"><span>手持身份证</span><i class="ti ti-alert-triangle"></i></div></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 风控 -->
+<div class="sec">
+<div class="sec-head"><div class="sec-title"><i class="ti ti-shield-half"></i>风控决策</div><span class="sec-action">查看完整报告<i class="ti ti-arrow-right"></i></span></div>
+<div class="sec-body">
+
+<div class="risk-score">
+<div class="risk-num">72</div>
+<div class="risk-band">
+<div class="risk-band-bar"></div>
+<div class="risk-band-lbl"><span>0 低风险</span><span>50</span><span>100 高风险</span></div>
+<div class="risk-band-name">高风险等级 · 触发人工复核</div>
+</div>
+</div>
+
+<div class="risk-list">
+<div class="risk-item danger">
+<i class="ti ti-alert-triangle"></i>
+<div><span class="ttl">疑似多头借贷</span><span class="desc">近 7 天在 3 家同业平台同时申请，命中规则 R-2031 "短期多头"</span></div>
+</div>
+<div class="risk-item warn">
+<i class="ti ti-history"></i>
+<div><span class="ttl">历史逾期 1 次</span><span class="desc">订单 DZ20240301000091 逾期 1 天后还清（影响 +15 分）</span></div>
+</div>
+<div class="risk-item ok">
+<i class="ti ti-shield-check"></i>
+<div><span class="ttl">实名 + 活体 通过</span><span class="desc">公安联网核查 + 银联鉴权 + 活体动作 全部通过</span></div>
+</div>
+<div class="risk-item ok">
+<i class="ti ti-map-pin"></i>
+<div><span class="ttl">定位匹配</span><span class="desc">GPS 浦东新区 与居住地址同区，无异地申请风险</span></div>
+</div>
+</div>
+
+</div>
+</div>
+
+<!-- 账单计划 -->
+<div class="sec">
+<div class="sec-head"><div class="sec-title"><i class="ti ti-calendar-due"></i>账单计划（12 期）</div><span class="sec-action">导出 CSV<i class="ti ti-download"></i></span></div>
+<div class="sec-body" style="padding:0">
+<table class="bill-table">
+<thead><tr><th>期数</th><th>到期日</th><th>本金</th><th>手续费</th><th>本期合计</th><th style="text-align:right">状态</th></tr></thead>
+<tbody>
+<tr class="row-current"><td>1</td><td>2026-05-24</td><td>¥489.00</td><td>¥0.00</td><td>¥489.00</td><td style="text-align:right"><span class="bill-row-status paid"><i class="ti ti-check" style="font-size:10px"></i>已付</span></td></tr>
+<tr><td>2</td><td>2026-06-24</td><td>¥489.00</td><td>¥0.00</td><td>¥489.00</td><td style="text-align:right"><span class="bill-row-status pending">待扣款</span></td></tr>
+<tr><td>3</td><td>2026-07-24</td><td>¥489.00</td><td>¥0.00</td><td>¥489.00</td><td style="text-align:right"><span class="bill-row-status future">未到期</span></td></tr>
+<tr><td>4-11</td><td>—</td><td>¥489.00 × 8</td><td>¥0.00</td><td>¥3,912.00</td><td style="text-align:right"><span class="bill-row-status future">折叠 ·8 期</span></td></tr>
+<tr><td>12</td><td>2027-04-24</td><td>¥489.00</td><td>¥0.00</td><td>¥489.00 + 留购 ¥2,899</td><td style="text-align:right"><span class="bill-row-status future">末期 · 含留购</span></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<!-- 合同 -->
+<div class="sec">
+<div class="sec-head"><div class="sec-title"><i class="ti ti-file-text"></i>合同 / 签署</div><span class="sec-action">发起公证<i class="ti ti-stamp"></i></span></div>
+<div class="sec-body">
+<div class="contract">
+<div class="contract-ic"><i class="ti ti-file-text"></i></div>
+<div class="contract-info">
+<div class="contract-name">满点租赁三方协议（鼎租 v3.2）</div>
+<div class="contract-meta">
+<span>编号 <b>HT-20260524-0183</b></span>
+<span>状态 <span style="color:var(--s);font-weight:500"><i class="ti ti-circle-check" style="font-size:11px;vertical-align:-1px"></i>已生成 · 待签</span></span>
+<span>页数 <b>12</b></span>
+</div>
+</div>
+<div class="contract-act">
+<button class="icon-btn" title="预览"><i class="ti ti-eye"></i></button>
+<button class="icon-btn" title="下载 PDF"><i class="ti ti-download"></i></button>
+<button class="icon-btn" title="发起签署"><i class="ti ti-pen"></i></button>
+</div>
+</div>
+<div class="contract">
+<div class="contract-ic" style="color:var(--g4)"><i class="ti ti-stamp"></i></div>
+<div class="contract-info">
+<div class="contract-name">公证文件（待发起）</div>
+<div class="contract-meta">
+<span>状态 <span style="color:var(--g4)">未公证</span></span>
+<span>建议 <span style="color:#92400E"><i class="ti ti-bulb" style="font-size:11px;vertical-align:-1px"></i>高风险订单建议公证</span></span>
+</div>
+</div>
+<div class="contract-act">
+<button class="icon-btn" title="发起公证"><i class="ti ti-stamp"></i></button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- API 报文 -->
+<div class="sec">
+<div class="sec-head"><div class="sec-title"><i class="ti ti-api"></i>接口报文（共 7 次调用）</div><span class="sec-action">完整链路追踪<i class="ti ti-arrow-right"></i></span></div>
+<div style="border-top:1px solid var(--g2)">
+<div class="api-tabs">
+<div class="api-tab on"><i class="ti ti-list"></i>全部 7</div>
+<div class="api-tab"><i class="ti ti-check"></i>成功 6</div>
+<div class="api-tab"><i class="ti ti-alert-triangle"></i>失败 1</div>
+</div>
+<div class="api-body">
+<div class="api-row">
+<div class="api-row-l">
+<div class="api-row-meta"><span class="api-method">POST</span><span>实名鉴权 · IDCheck</span></div>
+<div class="api-row-url">/api/v1/idcheck/verify</div>
+</div>
+<div class="api-row-r"><span class="api-code ok">200</span><span class="api-time">324ms · 09:14:23</span><i class="ti ti-chevron-right" style="color:var(--g4)"></i></div>
+</div>
+<div class="api-row">
+<div class="api-row-l">
+<div class="api-row-meta"><span class="api-method">POST</span><span>人脸活体 · FaceLive</span></div>
+<div class="api-row-url">/api/v1/face/liveness</div>
+</div>
+<div class="api-row-r"><span class="api-code ok">200</span><span class="api-time">1.2s · 09:14:27</span><i class="ti ti-chevron-right" style="color:var(--g4)"></i></div>
+</div>
+<div class="api-row">
+<div class="api-row-l">
+<div class="api-row-meta"><span class="api-method">POST</span><span>多头借贷查询 · RiskCheck</span></div>
+<div class="api-row-url">/api/v1/risk/multi-loan</div>
+</div>
+<div class="api-row-r"><span class="api-code err">200 · 命中</span><span class="api-time">589ms · 09:14:31</span><i class="ti ti-chevron-right" style="color:var(--g4)"></i></div>
+</div>
+<div class="api-row">
+<div class="api-row-l">
+<div class="api-row-meta"><span class="api-method get">GET</span><span>银行卡鉴权 · BankAuth</span></div>
+<div class="api-row-url">/api/v1/bank/auth</div>
+</div>
+<div class="api-row-r"><span class="api-code ok">200</span><span class="api-time">412ms · 09:14:36</span><i class="ti ti-chevron-right" style="color:var(--g4)"></i></div>
+</div>
+<div class="api-row">
+<div class="api-row-l">
+<div class="api-row-meta"><span class="api-method">POST</span><span>支付宝代扣签约 · AlipaySignAgent</span></div>
+<div class="api-row-url">/api/v1/alipay/agent-sign</div>
+</div>
+<div class="api-row-r"><span class="api-code ok">200</span><span class="api-time">678ms · 09:14:41</span><i class="ti ti-chevron-right" style="color:var(--g4)"></i></div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+
+<!-- 右栏：时间线 -->
+<div class="body-r">
+
+<div class="sec">
+<div class="sec-head" style="background:#fff"><div class="sec-title"><i class="ti ti-timeline"></i>操作日志</div><span class="sec-action">查看完整 24 条<i class="ti ti-arrow-right"></i></span></div>
+<div class="sec-body" style="padding:14px 14px 4px">
+
+<div class="feed">
+
+<div class="feed-item">
+<div class="feed-dot d"><i class="ti ti-alert-triangle"></i></div>
+<div class="feed-content">
+<div class="feed-title"><div class="feed-title-l">风控触发 · 转人工复核</div><span class="feed-time">09:14:33</span></div>
+<div class="feed-desc"><span class="feed-tag sys">系统</span>命中规则 R-2031 "短期多头借贷"，自动转人工审核队列</div>
+<div class="feed-foot">rule_id: R-2031<br>score_before: 50 → after: 72<br>queue: review_high_risk</div>
+</div>
+</div>
+
+<div class="feed-item">
+<div class="feed-dot p"><i class="ti ti-credit-card"></i></div>
+<div class="feed-content">
+<div class="feed-title"><div class="feed-title-l">首期支付成功</div><span class="feed-time">09:13:42</span></div>
+<div class="feed-desc"><span class="feed-tag cb">支付回调</span>支付宝订单 2026052422001458 · ¥1,489.00</div>
+<div class="feed-actor"><span class="av">用</span>客户提交</div>
+</div>
+</div>
+
+<div class="feed-item">
+<div class="feed-dot s"><i class="ti ti-pen"></i></div>
+<div class="feed-content">
+<div class="feed-title"><div class="feed-title-l">已签代扣协议</div><span class="feed-time">09:13:08</span></div>
+<div class="feed-desc"><span class="feed-tag cb">代扣签约</span>支付宝免密签约成功 · 协议号 2026052422001458</div>
+</div>
+</div>
+
+<div class="feed-item">
+<div class="feed-dot w"><i class="ti ti-message"></i></div>
+<div class="feed-content">
+<div class="feed-title"><div class="feed-title-l">商户备注</div><span class="feed-time">09:11:55</span></div>
+<div class="feed-desc">客户表示愿意补缴押金，希望尽快放款。客户朋友介绍来的，可信度较高。</div>
+<div class="feed-actor"><span class="av">店</span>鼎租自营 · 浦东运营组 · 李店长</div>
+</div>
+</div>
+
+<div class="feed-item">
+<div class="feed-dot p"><i class="ti ti-user-scan"></i></div>
+<div class="feed-content">
+<div class="feed-title"><div class="feed-title-l">实名 + 活体 + 银行卡核验</div><span class="feed-time">09:10:24</span></div>
+<div class="feed-desc"><span class="feed-tag sys">系统</span>三方核验全部通过，证件有效，年龄 28</div>
+</div>
+</div>
+
+<div class="feed-item">
+<div class="feed-dot p"><i class="ti ti-shopping-cart"></i></div>
+<div class="feed-content">
+<div class="feed-title"><div class="feed-title-l">下单</div><span class="feed-time">09:09:48</span></div>
+<div class="feed-desc">通过<span class="feed-tag user">店内扫码</span>下单 · iPhone 15 Pro Max 256GB</div>
+<div class="feed-actor"><span class="av">用</span>小王同学</div>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+
+</div>
+
+</div>
+
+<!-- 底部固定操作栏 -->
+<div class="dr-foot">
+<div class="dr-foot-l">
+<button class="ic" title="标记重要"><i class="ti ti-star"></i></button>
+<button class="ic" title="加备注"><i class="ti ti-message-plus"></i></button>
+<button class="ic" title="转交"><i class="ti ti-user-share"></i></button>
+<button class="ic" title="打印"><i class="ti ti-printer"></i></button>
+<div class="gap"></div>
+<button class="ic" title="交易快照"><i class="ti ti-camera"></i></button>
+</div>
+<div class="dr-foot-r">
+<button class="btn dg"><i class="ti ti-ban"></i>加黑</button>
+<button class="btn"><i class="ti ti-x"></i>拒绝</button>
+<button class="btn wr"><i class="ti ti-shield-half"></i>风控复核</button>
+<button class="btn"><i class="ti ti-building-bank"></i>分配资方</button>
+<button class="btn pp"><i class="ti ti-check"></i>审核通过</button>
+</div>
+</div>
+
+</div>
+
+</body></html>

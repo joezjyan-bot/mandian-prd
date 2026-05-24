@@ -1,0 +1,280 @@
+{
+  "tenant": {
+    "tenant_id": "tenant_demo_main",
+    "platform_id": "platform_demo_main",
+    "default_commission_rate": 0.02,
+    "default_currency": "CNY"
+  },
+  "roles": [
+    {
+      "account_id": "ops_admin_demo",
+      "role": "ops_admin",
+      "scope": "all"
+    },
+    {
+      "account_id": "review_staff_demo",
+      "role": "review_staff",
+      "scope": "assigned_orders"
+    },
+    {
+      "account_id": "finance_staff_demo",
+      "role": "finance_staff",
+      "scope": "finance"
+    },
+    {
+      "account_id": "merchant_owner_demo",
+      "role": "merchant_owner",
+      "scope": "merchant_demo_001"
+    },
+    {
+      "account_id": "merchant_staff_demo",
+      "role": "merchant_staff",
+      "scope": "store_demo_001"
+    },
+    {
+      "account_id": "channel_user_demo",
+      "role": "channel_user",
+      "scope": "channel_demo_001"
+    }
+  ],
+  "merchants": [
+    {
+      "merchant_id": "merchant_demo_001",
+      "store_id": "store_demo_001",
+      "merchant_name": "示例商家A",
+      "store_name": "示例门店A",
+      "status": "active",
+      "capabilities": ["store", "dividend", "platform"],
+      "receive_account_status": "verified",
+      "esign_auth_status": "completed",
+      "channel_id": "channel_demo_001"
+    },
+    {
+      "merchant_id": "merchant_demo_002",
+      "store_id": "store_demo_002",
+      "merchant_name": "示例商家B",
+      "store_name": "示例门店B",
+      "status": "active",
+      "capabilities": ["store", "platform"],
+      "receive_account_status": "authorization_required",
+      "esign_auth_status": "pending",
+      "channel_id": null
+    }
+  ],
+  "channels": [
+    {
+      "channel_id": "channel_demo_001",
+      "channel_name": "示例渠道A",
+      "invite_code": "INVITE-DEMO-A",
+      "commission_rule": {
+        "mode": "fixed",
+        "fixed_amount": 5000,
+        "ratio": 0
+      }
+    }
+  ],
+  "funders": [
+    {
+      "funder_id": "funder_demo_001",
+      "funder_name": "示例资方A",
+      "status": "active",
+      "available_limit": 10000000
+    }
+  ],
+  "products": [
+    {
+      "product_id": "prod_demo_ev_001",
+      "name": "示例电动车",
+      "category": "electric_vehicle",
+      "rent_modes": ["long", "short"],
+      "assistant_sync_enabled": true,
+      "service_ids": ["svc_notary", "svc_device_manage"],
+      "review_status": "approved"
+    },
+    {
+      "product_id": "prod_demo_phone_001",
+      "name": "示例手机",
+      "category": "phone",
+      "rent_modes": ["long"],
+      "assistant_sync_enabled": true,
+      "service_ids": ["svc_notary"],
+      "review_status": "approved"
+    }
+  ],
+  "skus": [
+    {
+      "sku_id": "sku_demo_new_001",
+      "product_id": "prod_demo_ev_001",
+      "condition": "new",
+      "billing_units": ["month", "day"],
+      "device_required": true
+    },
+    {
+      "sku_id": "sku_demo_used_001",
+      "product_id": "prod_demo_ev_001",
+      "condition": "used",
+      "billing_units": ["month", "day", "hour"],
+      "device_required": true
+    },
+    {
+      "sku_id": "sku_demo_new_002",
+      "product_id": "prod_demo_phone_001",
+      "condition": "new",
+      "billing_units": ["month"],
+      "device_required": false
+    }
+  ],
+  "devices": [
+    {
+      "device_id": "device_demo_001",
+      "product_id": "prod_demo_ev_001",
+      "device_code": "DEVICE-DEMO-001",
+      "status": "in_stock",
+      "warehouse_id": "warehouse_store_demo"
+    },
+    {
+      "device_id": "device_demo_002",
+      "product_id": "prod_demo_ev_001",
+      "device_code": "DEVICE-DEMO-002",
+      "status": "locked_for_order",
+      "warehouse_id": "warehouse_store_demo"
+    }
+  ],
+  "orders": [
+    {
+      "order_id": "order_demo_store_001",
+      "display_no": "DEMO-ORDER-STORE-001",
+      "order_type": "store",
+      "merchant_id": "merchant_demo_001",
+      "store_id": "store_demo_001",
+      "customer_id": "customer_demo_001",
+      "product_id": "prod_demo_ev_001",
+      "sku_id": "sku_demo_new_001",
+      "review_owner": "merchant",
+      "gross_amount": 100000,
+      "platform_commission_rate": 0.02,
+      "channel_commission": 0,
+      "expected_wallet_entries": [
+        {
+          "owner_type": "merchant",
+          "owner_id": "merchant_demo_001",
+          "amount": 98000
+        },
+        {
+          "owner_type": "platform",
+          "owner_id": "platform_demo_main",
+          "amount": 2000
+        }
+      ]
+    },
+    {
+      "order_id": "order_demo_dividend_001",
+      "display_no": "DEMO-ORDER-DIVIDEND-001",
+      "order_type": "dividend",
+      "merchant_id": "merchant_demo_001",
+      "store_id": "store_demo_001",
+      "customer_id": "customer_demo_002",
+      "product_id": "prod_demo_ev_001",
+      "sku_id": "sku_demo_used_001",
+      "review_owner": "platform",
+      "funder_id": "funder_demo_001",
+      "device_price": 500000,
+      "funding_ratio": 0.8,
+      "merchant_share_ratio": 0.2,
+      "funder_share_ratio": 0.8,
+      "gross_amount": 100000,
+      "platform_commission_rate": 0.02,
+      "expected_wallet_entries": [
+        {
+          "owner_type": "merchant",
+          "owner_id": "merchant_demo_001",
+          "amount": 19600
+        },
+        {
+          "owner_type": "funder",
+          "owner_id": "funder_demo_001",
+          "amount": 78400
+        },
+        {
+          "owner_type": "platform",
+          "owner_id": "platform_demo_main",
+          "amount": 2000
+        }
+      ]
+    },
+    {
+      "order_id": "order_demo_platform_001",
+      "display_no": "DEMO-ORDER-PLATFORM-001",
+      "order_type": "platform",
+      "merchant_id": "merchant_demo_001",
+      "store_id": "store_demo_001",
+      "customer_id": "customer_demo_003",
+      "product_id": "prod_demo_phone_001",
+      "sku_id": "sku_demo_new_002",
+      "review_owner": "platform",
+      "funder_id": "funder_demo_001",
+      "merchant_share_ratio": 0,
+      "funder_share_ratio": 1,
+      "gross_amount": 100000,
+      "platform_commission_rate": 0.02,
+      "expected_wallet_entries": [
+        {
+          "owner_type": "funder",
+          "owner_id": "funder_demo_001",
+          "amount": 98000
+        },
+        {
+          "owner_type": "platform",
+          "owner_id": "platform_demo_main",
+          "amount": 2000
+        }
+      ]
+    }
+  ],
+  "bills": [
+    {
+      "bill_id": "bill_demo_store_001",
+      "order_id": "order_demo_store_001",
+      "period_no": 1,
+      "bill_type": "first",
+      "amount_due": 100000,
+      "status": "unpaid"
+    },
+    {
+      "bill_id": "bill_demo_dividend_001",
+      "order_id": "order_demo_dividend_001",
+      "period_no": 1,
+      "bill_type": "first",
+      "amount_due": 100000,
+      "status": "unpaid"
+    },
+    {
+      "bill_id": "bill_demo_platform_001",
+      "order_id": "order_demo_platform_001",
+      "period_no": 1,
+      "bill_type": "first",
+      "amount_due": 100000,
+      "status": "unpaid"
+    }
+  ],
+  "negative_cases": [
+    {
+      "case_id": "negative_amount_not_balanced",
+      "payment_amount": 100000,
+      "allocated_amount": 99000,
+      "expected_error": "AMOUNT_NOT_BALANCED"
+    },
+    {
+      "case_id": "negative_refund_amount_exceeded",
+      "refundable_amount": 50000,
+      "request_amount": 60000,
+      "expected_error": "REFUND_AMOUNT_EXCEEDED"
+    },
+    {
+      "case_id": "negative_staff_wallet_access",
+      "account_id": "merchant_staff_demo",
+      "target_api": "wallet_entries",
+      "expected_error": "PERMISSION_DENIED"
+    }
+  ]
+}

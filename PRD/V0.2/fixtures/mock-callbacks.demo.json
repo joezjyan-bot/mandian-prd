@@ -1,0 +1,106 @@
+{
+  "callbacks": [
+    {
+      "mock_event_id": "callback_demo_payment_success",
+      "provider": "mock_payment_provider",
+      "business_type": "payment",
+      "business_id": "pay_demo_store_001",
+      "order_id": "order_demo_store_001",
+      "event_status": "success",
+      "event_time": "2026-05-24T10:00:00+08:00",
+      "signature_status": "valid",
+      "expected_result": "bill_paid_and_allocation_created",
+      "payload": {
+        "amount": 100000,
+        "channel_trade_id": "mock_trade_store_001"
+      }
+    },
+    {
+      "mock_event_id": "callback_demo_payment_invalid_signature",
+      "provider": "mock_payment_provider",
+      "business_type": "payment",
+      "business_id": "pay_demo_invalid_001",
+      "order_id": "order_demo_dividend_001",
+      "event_status": "success",
+      "event_time": "2026-05-24T10:01:00+08:00",
+      "signature_status": "invalid",
+      "expected_result": "callback_logged_without_state_change",
+      "payload": {
+        "amount": 100000,
+        "channel_trade_id": "mock_trade_invalid_001"
+      }
+    },
+    {
+      "mock_event_id": "callback_demo_payment_duplicate",
+      "provider": "mock_payment_provider",
+      "business_type": "payment",
+      "business_id": "pay_demo_store_001",
+      "order_id": "order_demo_store_001",
+      "event_status": "success",
+      "event_time": "2026-05-24T10:02:00+08:00",
+      "signature_status": "valid",
+      "expected_result": "duplicate_callback_ignored",
+      "payload": {
+        "amount": 100000,
+        "channel_trade_id": "mock_trade_store_001"
+      }
+    },
+    {
+      "mock_event_id": "callback_demo_contract_completed",
+      "provider": "mock_contract_provider",
+      "business_type": "contract",
+      "business_id": "contract_demo_001",
+      "order_id": "order_demo_platform_001",
+      "event_status": "completed",
+      "event_time": "2026-05-24T10:03:00+08:00",
+      "signature_status": "valid",
+      "expected_result": "contract_status_completed",
+      "payload": {
+        "contract_file_id": "file_contract_demo_001"
+      }
+    },
+    {
+      "mock_event_id": "callback_demo_notary_timeout",
+      "provider": "mock_notary_provider",
+      "business_type": "notary",
+      "business_id": "notary_demo_001",
+      "order_id": "order_demo_dividend_001",
+      "event_status": "timeout",
+      "event_time": "2026-05-24T10:04:00+08:00",
+      "signature_status": "valid",
+      "expected_result": "notary_exception_queue",
+      "payload": {
+        "retryable": true
+      }
+    },
+    {
+      "mock_event_id": "callback_demo_logistics_signed",
+      "provider": "mock_logistics_provider",
+      "business_type": "shipment",
+      "business_id": "shipment_demo_001",
+      "order_id": "order_demo_store_001",
+      "event_status": "signed",
+      "event_time": "2026-05-24T10:05:00+08:00",
+      "signature_status": "valid",
+      "expected_result": "order_rent_started",
+      "payload": {
+        "signed_by": "customer_demo_001"
+      }
+    },
+    {
+      "mock_event_id": "callback_demo_complaint_unmatched",
+      "provider": "mock_complaint_provider",
+      "business_type": "complaint",
+      "business_id": "complaint_demo_001",
+      "order_id": null,
+      "event_status": "unmatched",
+      "event_time": "2026-05-24T10:06:00+08:00",
+      "signature_status": "valid",
+      "expected_result": "complaint_pending_manual_match",
+      "payload": {
+        "complaint_type": "service",
+        "content": "mock complaint content"
+      }
+    }
+  ]
+}

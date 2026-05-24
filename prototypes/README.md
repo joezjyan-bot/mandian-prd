@@ -15,8 +15,24 @@
 |---|---|---|---|---|
 | 1 | [`operations-order-list.html`](operations-order-list.html) | [V0.2 §7 订单列表 UI 规则](../PRD/V0.2/04_UI%E9%A3%8E%E6%A0%BC%E4%B8%8E%E9%A1%B5%E9%9D%A2%E5%8E%9F%E5%9E%8B%E8%A7%84%E8%8C%83.md) | ✅ 已交付 | [打开 →](https://htmlpreview.github.io/?https://github.com/joezjyan-bot/mandian-prd/blob/main/prototypes/operations-order-list.html) |
 | 2 | [`operations-order-detail.html`](operations-order-detail.html) | [V0.2 §7.3 详情页边界](../PRD/V0.2/04_UI%E9%A3%8E%E6%A0%BC%E4%B8%8E%E9%A1%B5%E9%9D%A2%E5%8E%9F%E5%9E%8B%E8%A7%84%E8%8C%83.md) | ✅ 已交付 | [打开 →](https://htmlpreview.github.io/?https://github.com/joezjyan-bot/mandian-prd/blob/main/prototypes/operations-order-detail.html) |
+| 3 | [`operations-workbench-home.html`](operations-workbench-home.html) | [V0.2 §5.1 运营端首页](../PRD/V0.2/04_UI%E9%A3%8E%E6%A0%BC%E4%B8%8E%E9%A1%B5%E9%9D%A2%E5%8E%9F%E5%9E%8B%E8%A7%84%E8%8C%83.md) | ✅ 已交付 | [打开 →](https://htmlpreview.github.io/?https://github.com/joezjyan-bot/mandian-prd/blob/main/prototypes/operations-workbench-home.html) |
 
-> 📌 **数据连贯性**：原型 #2 展示的订单 `DZ20260524000183` 与原型 #1 列表里第一条"待审核 + 风控触发"是**同一笔订单**，方便对照"列表 → 详情"的视觉与字段衔接。
+> 📌 **数据连贯性**：原型 #1 #2 #3 共享同一笔订单 `DZ20260524000183`（小王同学 · iPhone 15 Pro Max · 待审核 + 风控触发），方便对照工作台 → 列表 → 详情整个工作流。
+
+---
+
+## 推荐查看顺序
+
+按 **"运营员一天的工作流"** 看，体验最连贯：
+
+```
+1️⃣ 工作台首页 (#3)
+   ↓ 看到 "8 单待审核 · 含 3 单风控触发"
+2️⃣ 订单列表 (#1)
+   ↓ 点开 DZ20260524000183 这单
+3️⃣ 订单详情抽屉 (#2)
+   ↓ 审核通过 / 拒绝 / 风控复核
+```
 
 ---
 
@@ -76,6 +92,7 @@ start mandian-prd/prototypes/operations-order-list.html
 - 操作按钮主次分明（主操作蓝色 / 危险操作红色 outline）
 - 数字脱敏（手机 / 身份证 / 地址）
 - 等宽字体 + tnum 让数字对齐
+- 所有 KPI / 卡片都直接可点 → 跳到对应工作流
 
 ❌ **不该有的**：
 - 营销风大首屏 / 渐变背景
@@ -94,9 +111,9 @@ start mandian-prd/prototypes/operations-order-list.html
 
 | 页面 | 配套 PRD 模块 | 进度 |
 |---|---|---|
-| ~~订单详情抽屉~~ | ~~`modules/运营端/订单管理/02_订单详情.md`（待补）~~ | ✅ 已交付（#2） |
-| 运营工作台首页 | 待补，承载逾期 / 待审核 / 资方额度告警等核心 KPI | ⏸ |
-| 商品列表 | 待补，PRD 5.1 第 2 项 | ⏸ |
+| ~~订单详情抽屉~~ | ~~`modules/运营端/订单管理/02_订单详情.md`~~ | ✅ 已交付（#2） |
+| ~~运营工作台首页~~ | ~~PRD §5.1 第 1 项~~ | ✅ 已交付（#3） |
+| 商品列表 | 待补，PRD §5.1 第 2 项 | ⏸ |
 | 门店 H5 办单助手 | 待补，与 PC 完全不同的视觉语言 | ⏸ |
 | 客户登录页 | `modules/全局/01_登录页.md` | ⏸ |
 
@@ -104,11 +121,11 @@ start mandian-prd/prototypes/operations-order-list.html
 
 | 页面 |
 |---|
-| 待审核工作台 |
+| 待审核工作台（订单列表筛选预设）|
 | 逾期管理 |
 | 归还续租 |
 | 资方分配工作台 |
-| 财务分账 |
+| 财务分账明细 |
 
 ### P3 - 长尾页面
 
@@ -137,11 +154,12 @@ start mandian-prd/prototypes/operations-order-list.html
 <端>-<功能>-<视图>.html
 
 例：
-operations-order-list.html       运营端 + 订单 + 列表
-operations-order-detail.html     运营端 + 订单 + 详情
-merchant-product-list.html       商家端 + 商品 + 列表
-mobile-staff-workbench.html      门店 H5 + 员工 + 工作台
-global-login.html                全局 + 登录
+operations-order-list.html          运营端 + 订单 + 列表
+operations-order-detail.html        运营端 + 订单 + 详情
+operations-workbench-home.html      运营端 + 工作台 + 首页
+merchant-product-list.html          商家端 + 商品 + 列表
+mobile-staff-workbench.html         门店 H5 + 员工 + 工作台
+global-login.html                   全局 + 登录
 ```
 
 ---

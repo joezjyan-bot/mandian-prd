@@ -205,15 +205,15 @@
 
 ---
 
-## 6. 订单绑定唯一设备
+## 6. 订单记录设备识别码
 
 请求：
 
 ```json
 {
-  "device_code": "DEVICE-DEMO-001",
-  "bind_reason": "delivery",
-  "warehouse_id": "warehouse_store_demo"
+  "device_identifier": "IMEI-SN-VIN-DEMO",
+  "identifier_type": "SN",
+  "record_reason": "delivery"
 }
 ```
 
@@ -225,8 +225,8 @@
   "message": "success",
   "request_id": "req_demo",
   "data": {
-    "device_id": "device_demo",
-    "device_status": "locked_for_order",
+    "device_identifier": "IMEI-SN-VIN-DEMO",
+    "identifier_type": "SN",
     "order_id": "order_demo"
   },
   "warnings": []

@@ -413,22 +413,21 @@ paths:
                     properties:
                       data:
                         $ref: '#/components/schemas/ShipmentResult'
-  /orders/{order_id}/devices/{device_id}/bind:
+  /orders/{order_id}/device-identifier:
     post:
       tags: [fulfillment]
-      summary: 订单绑定唯一设备
-      operationId: bindOrderDevice
+      summary: 订单记录长租设备识别码
+      operationId: recordOrderDeviceIdentifier
       parameters:
         - $ref: '#/components/parameters/RequestId'
         - $ref: '#/components/parameters/IdempotencyKey'
         - $ref: '#/components/parameters/OrderId'
-        - $ref: '#/components/parameters/DeviceId'
       requestBody:
-        required: false
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BindDeviceRequest'
+              $ref: '#/components/schemas/RecordDeviceIdentifierRequest'
       responses:
         '200':
           description: OK
@@ -440,7 +439,7 @@ paths:
                   - type: object
                     properties:
                       data:
-                        $ref: '#/components/schemas/DeviceBindingResult'
+                        $ref: '#/components/schemas/RecordDeviceIdentifierResult'
   /orders/{order_id}/return-inspections:
     post:
       tags: [fulfillment]
@@ -1258,21 +1257,27 @@ components:
           type: string
         device_required:
           type: boolean
-    BindDeviceRequest:
+    RecordDeviceIdentifierRequest:
       type: object
+      required: [device_identifier]
       properties:
-        bind_reason:
+        device_identifier:
+          type: string
+        identifier_type:
+          type: string
+          enum: [IMEI, SN, VIN, OTHER]
+        record_reason:
           type: string
         attachment_ids:
           type: array
           items:
             type: string
-    DeviceBindingResult:
+    RecordDeviceIdentifierResult:
       type: object
       properties:
-        binding_id:
+        device_identifier:
           type: string
-        device_status:
+        identifier_type:
           type: string
         order_ship_status:
           type: string

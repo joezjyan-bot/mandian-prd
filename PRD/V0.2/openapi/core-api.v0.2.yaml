@@ -8,10 +8,16 @@ servers:
     description: placeholder only
 tags:
   - name: onboarding
+  - name: product
   - name: assistant
   - name: customer-order
   - name: review
+  - name: contract
+  - name: fulfillment
   - name: finance
+  - name: channel
+  - name: post-rent
+  - name: complaint
   - name: callback
 security:
   - bearerAuth: []
@@ -78,6 +84,81 @@ paths:
           $ref: '#/components/responses/PermissionDenied'
         '409':
           $ref: '#/components/responses/StatusConflict'
+  /products:
+    post:
+      tags: [product]
+      summary: 创建商品和规格
+      operationId: createProduct
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ClientType'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ProductResult'
+  /products/{product_id}/submit-review:
+    post:
+      tags: [product]
+      summary: 商家提交商品审核
+      operationId: submitProductReview
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ProductId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ProductResult'
+  /products/{product_id}/copy-to-merchants:
+    post:
+      tags: [product]
+      summary: 平台商品复制给商家
+      operationId: copyProductToMerchants
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ProductId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CopyProductRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/CopyProductResult'
   /assistant/quotes:
     post:
       tags: [assistant]
@@ -251,6 +332,142 @@ paths:
                         $ref: '#/components/schemas/FunderAssignmentResult'
         '409':
           $ref: '#/components/responses/BusinessRuleBlocked'
+  /orders/{order_id}/contracts:
+    post:
+      tags: [contract]
+      summary: 发起合同或补充合同
+      operationId: createOrderContract
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/OrderId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateContractRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ContractResult'
+  /orders/{order_id}/notary-cases:
+    post:
+      tags: [contract]
+      summary: 发起公证
+      operationId: createNotaryCase
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/OrderId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNotaryRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/NotaryResult'
+  /orders/{order_id}/shipments:
+    post:
+      tags: [fulfillment]
+      summary: 创建发货或交付任务
+      operationId: createShipment
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/OrderId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateShipmentRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ShipmentResult'
+  /orders/{order_id}/devices/{device_id}/bind:
+    post:
+      tags: [fulfillment]
+      summary: 订单绑定唯一设备
+      operationId: bindOrderDevice
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/OrderId'
+        - $ref: '#/components/parameters/DeviceId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BindDeviceRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DeviceBindingResult'
+  /orders/{order_id}/return-inspections:
+    post:
+      tags: [fulfillment]
+      summary: 归还验收
+      operationId: inspectReturnedDevice
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/OrderId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReturnInspectionRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ReturnInspectionResult'
   /wallets/{wallet_id}/withdrawals:
     post:
       tags: [finance]
@@ -282,6 +499,184 @@ paths:
                     properties:
                       data:
                         $ref: '#/components/schemas/WithdrawalResult'
+  /orders/{order_id}/refunds:
+    post:
+      tags: [finance]
+      summary: 发起退款
+      operationId: createRefund
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/OrderId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRefundRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/RefundResult'
+  /finance/reversals:
+    post:
+      tags: [finance]
+      summary: 发起财务冲正
+      operationId: createReversal
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReversalRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ReversalResult'
+  /finance/reconciliation-batches:
+    post:
+      tags: [finance]
+      summary: 创建对账批次
+      operationId: createReconciliationBatch
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReconciliationBatchRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ReconciliationBatchResult'
+  /channels:
+    post:
+      tags: [channel]
+      summary: 新增渠道
+      operationId: createChannel
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateChannelRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ChannelResult'
+  /channels/{channel_id}/invite-codes:
+    post:
+      tags: [channel]
+      summary: 生成渠道推广码
+      operationId: createChannelInviteCode
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ChannelId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/InviteCodeResult'
+  /post-rent/cases:
+    post:
+      tags: [post-rent]
+      summary: 创建租后案件
+      operationId: createPostRentCase
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePostRentCaseRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/PostRentCaseResult'
+  /complaints:
+    post:
+      tags: [complaint]
+      summary: 创建或同步客诉
+      operationId: createComplaint
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateComplaintRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ComplaintResult'
   /callbacks/{channel}/{event_type}:
     post:
       tags: [callback]
@@ -351,8 +746,26 @@ components:
       required: true
       schema:
         type: string
+    ProductId:
+      name: product_id
+      in: path
+      required: true
+      schema:
+        type: string
     OrderId:
       name: order_id
+      in: path
+      required: true
+      schema:
+        type: string
+    DeviceId:
+      name: device_id
+      in: path
+      required: true
+      schema:
+        type: string
+    ChannelId:
+      name: channel_id
       in: path
       required: true
       schema:
@@ -475,6 +888,81 @@ components:
         wallet_id:
           type: string
         default_config_version:
+          type: string
+    CreateProductRequest:
+      type: object
+      required: [name, owner_type, category, skus]
+      properties:
+        name:
+          type: string
+        owner_type:
+          type: string
+          enum: [platform, merchant]
+        owner_id:
+          type: string
+        category:
+          type: string
+        rent_modes:
+          type: array
+          items:
+            type: string
+            enum: [long, short]
+        skus:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductSkuInput'
+        service_ids:
+          type: array
+          items:
+            type: string
+    ProductSkuInput:
+      type: object
+      required: [sku_type, guide_price]
+      properties:
+        sku_type:
+          type: string
+          enum: [new, used]
+        condition_label:
+          type: string
+        attributes:
+          type: object
+          additionalProperties: true
+        guide_price:
+          type: integer
+        sync_to_assistant:
+          type: boolean
+    ProductResult:
+      type: object
+      properties:
+        product_id:
+          type: string
+        review_status:
+          type: string
+        sync_status:
+          type: string
+    CopyProductRequest:
+      type: object
+      required: [merchant_ids, copy_scope]
+      properties:
+        merchant_ids:
+          type: array
+          items:
+            type: string
+        copy_scope:
+          type: array
+          items:
+            type: string
+            enum: [base, images, skus, prices, services]
+        force_sync:
+          type: boolean
+    CopyProductResult:
+      type: object
+      properties:
+        copied_count:
+          type: integer
+        skipped_count:
+          type: integer
+        task_id:
           type: string
     CreateQuoteRequest:
       type: object
@@ -703,6 +1191,113 @@ components:
           type: integer
         allocation_snapshot_id:
           type: string
+    CreateContractRequest:
+      type: object
+      required: [contract_type, template_id]
+      properties:
+        contract_type:
+          type: string
+          enum: [main, supplement]
+        template_id:
+          type: string
+        signer_ids:
+          type: array
+          items:
+            type: string
+        price_snapshot_id:
+          type: string
+    ContractResult:
+      type: object
+      properties:
+        contract_id:
+          type: string
+        contract_status:
+          type: string
+        customer_task_id:
+          type: string
+    CreateNotaryRequest:
+      type: object
+      properties:
+        notary_type:
+          type: string
+        related_contract_id:
+          type: string
+        customer_task_required:
+          type: boolean
+    NotaryResult:
+      type: object
+      properties:
+        notary_case_id:
+          type: string
+        notary_status:
+          type: string
+        customer_task_id:
+          type: string
+    CreateShipmentRequest:
+      type: object
+      required: [ship_mode]
+      properties:
+        ship_mode:
+          type: string
+          enum: [store_delivery, logistics, platform_delivery, funder_delivery]
+        logistics_channel:
+          type: string
+        address_snapshot:
+          type: object
+          additionalProperties: true
+        attachment_ids:
+          type: array
+          items:
+            type: string
+    ShipmentResult:
+      type: object
+      properties:
+        shipment_id:
+          type: string
+        ship_status:
+          type: string
+        device_required:
+          type: boolean
+    BindDeviceRequest:
+      type: object
+      properties:
+        bind_reason:
+          type: string
+        attachment_ids:
+          type: array
+          items:
+            type: string
+    DeviceBindingResult:
+      type: object
+      properties:
+        binding_id:
+          type: string
+        device_status:
+          type: string
+        order_ship_status:
+          type: string
+    ReturnInspectionRequest:
+      type: object
+      required: [inspection_result]
+      properties:
+        inspection_result:
+          type: string
+          enum: [passed, repair_required, dispute, retired]
+        attachment_ids:
+          type: array
+          items:
+            type: string
+        note:
+          type: string
+    ReturnInspectionResult:
+      type: object
+      properties:
+        inspection_id:
+          type: string
+        device_status:
+          type: string
+        order_status:
+          type: string
     CreateWithdrawalRequest:
       type: object
       required: [amount, receive_account_id, owner_type, owner_id]
@@ -727,6 +1322,153 @@ components:
           type: integer
         wallet_balance:
           type: integer
+    CreateRefundRequest:
+      type: object
+      required: [refund_amount, refund_reason, confirm_token]
+      properties:
+        bill_id:
+          type: string
+        payment_id:
+          type: string
+        refund_amount:
+          type: integer
+        refund_reason:
+          type: string
+        confirm_token:
+          type: string
+    RefundResult:
+      type: object
+      properties:
+        refund_id:
+          type: string
+        refund_status:
+          type: string
+        affected_bills:
+          type: array
+          items:
+            type: string
+        affected_allocations:
+          type: array
+          items:
+            type: string
+    CreateReversalRequest:
+      type: object
+      required: [source_type, source_id, amount, reason, confirm_token]
+      properties:
+        source_type:
+          type: string
+          enum: [allocation, wallet_entry, withdraw, manual_adjustment]
+        source_id:
+          type: string
+        amount:
+          type: integer
+        reason:
+          type: string
+        confirm_token:
+          type: string
+    ReversalResult:
+      type: object
+      properties:
+        reversal_id:
+          type: string
+        reversal_status:
+          type: string
+        wallet_entry_ids:
+          type: array
+          items:
+            type: string
+    CreateReconciliationBatchRequest:
+      type: object
+      required: [scope_type, period_start, period_end]
+      properties:
+        scope_type:
+          type: string
+          enum: [payment, refund, allocation, wallet, withdraw]
+        period_start:
+          type: string
+          format: date-time
+        period_end:
+          type: string
+          format: date-time
+        channel:
+          type: string
+    ReconciliationBatchResult:
+      type: object
+      properties:
+        batch_id:
+          type: string
+        batch_status:
+          type: string
+        task_id:
+          type: string
+    CreateChannelRequest:
+      type: object
+      required: [channel_name, commission_rule]
+      properties:
+        channel_name:
+          type: string
+        parent_channel_id:
+          type: string
+        commission_rule:
+          type: object
+          additionalProperties: true
+    ChannelResult:
+      type: object
+      properties:
+        channel_id:
+          type: string
+        channel_status:
+          type: string
+    InviteCodeResult:
+      type: object
+      properties:
+        invite_code:
+          type: string
+        landing_url:
+          type: string
+        qrcode_image_url:
+          type: string
+    CreatePostRentCaseRequest:
+      type: object
+      required: [order_id, case_type]
+      properties:
+        order_id:
+          type: string
+        case_type:
+          type: string
+          enum: [overdue, due_soon, return_overdue, dispute]
+        source:
+          type: string
+          enum: [system, operator, external]
+    PostRentCaseResult:
+      type: object
+      properties:
+        case_id:
+          type: string
+        case_status:
+          type: string
+    CreateComplaintRequest:
+      type: object
+      required: [source, complaint_type]
+      properties:
+        source:
+          type: string
+          enum: [alipay, platform, merchant, customer]
+        order_id:
+          type: string
+        complaint_type:
+          type: string
+        content:
+          type: string
+        external_complaint_id:
+          type: string
+    ComplaintResult:
+      type: object
+      properties:
+        complaint_id:
+          type: string
+        complaint_status:
+          type: string
     CallbackAccepted:
       type: object
       properties:

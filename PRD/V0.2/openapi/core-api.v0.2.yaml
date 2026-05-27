@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
   title: Mandian Rental Core API
-  version: 0.2.0
-  description: 满点租赁系统 V0.2 核心接口草案，覆盖入驻、办单、下单、审核、资方、财务和回调主链路。
+  version: 0.2.1
+  description: 满点租赁系统 V0.2.1 核心接口草案，覆盖入驻、办单、下单、审核、内部资金来源、财务和回调主链路。
 servers:
   - url: https://api.example.com
     description: placeholder only
@@ -498,6 +498,40 @@ paths:
                     properties:
                       data:
                         $ref: '#/components/schemas/WithdrawalResult'
+        '400':
+          description: 提现金额不符合 V0.2.1 单笔规则
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                below_minimum:
+                  value:
+                    code: WITHDRAW_AMOUNT_BELOW_MIN
+                    message: 单笔提现金额不能低于 500 元
+                    request_id: req_xxx
+                above_maximum:
+                  value:
+                    code: WITHDRAW_AMOUNT_ABOVE_MAX
+                    message: 单笔提现金额不能超过 20000 元
+                    request_id: req_xxx
+        '409':
+          description: 提现业务规则拦截
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                daily_limit_exceeded:
+                  value:
+                    code: WITHDRAW_DAILY_LIMIT_EXCEEDED
+                    message: 今日提现次数已达 3 次,请明日再试或联系平台
+                    request_id: req_xxx
+                account_review_required:
+                  value:
+                    code: WITHDRAW_MANUAL_REVIEW_REQUIRED
+                    message: 当前提现需进入人工审核
+                    request_id: req_xxx
   /orders/{order_id}/refunds:
     post:
       tags: [finance]
@@ -1093,8 +1127,10 @@ components:
           type: string
         order_no:
           type: string
-        order_type:
-          $ref: '#/components/schemas/OrderType'
+        product_line:
+          type: string
+          description: C 端只返回业务入口,不返回内部审核或资金配置字段。
+          enum: [long_rent, experience_rent]
         main_status:
           type: string
         pending_tasks:
@@ -1248,6 +1284,17 @@ components:
           type: array
           items:
             type: string
+        receipt_confirmation:
+          $ref: '#/components/schemas/ReceiptConfirmationConfig'
+      example:
+        ship_mode: logistics
+        logistics_channel: sf_express
+        attachment_ids: [att_human_vehicle_photo, att_device_photo]
+        receipt_confirmation:
+          method: electronic_receipt
+          electronic_template_id: tpl_receipt_default
+          fallback_method: ai_qa
+          ai_question_set_id: qs_receipt_default
     ShipmentResult:
       type: object
       properties:
@@ -1257,6 +1304,57 @@ components:
           type: string
         device_required:
           type: boolean
+        customer_receipt_task:
+          $ref: '#/components/schemas/CustomerReceiptTask'
+    ReceiptConfirmationConfig:
+      type: object
+      description: V0.2.1 签收确认配置。默认电子确认单；可按后台配置调起 AI 问答确认。
+      required: [method]
+      properties:
+        method:
+          type: string
+          enum: [electronic_receipt, ai_qa]
+        electronic_template_id:
+          type: string
+          description: 电子确认单模板 ID,method=electronic_receipt 时必填。
+        ai_question_set_id:
+          type: string
+          description: AI 问答题组 ID,method=ai_qa 或 fallback_method=ai_qa 时使用。
+        fallback_method:
+          type: string
+          enum: [none, electronic_receipt, ai_qa]
+        ai_questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AcceptanceQuestion'
+    AcceptanceQuestion:
+      type: object
+      properties:
+        question_no:
+          type: integer
+        question_text:
+          type: string
+          example: 请确认是否本人办理本订单
+        expected_answer_type:
+          type: string
+          enum: [yes_no, clear_unclear, free_text]
+        abnormal_answer_action:
+          type: string
+          enum: [manual_review, stop_flow, mark_exception]
+    CustomerReceiptTask:
+      type: object
+      properties:
+        task_id:
+          type: string
+        method:
+          type: string
+          enum: [electronic_receipt, ai_qa]
+        task_status:
+          type: string
+          enum: [pending_customer, completed, abnormal, expired]
+        customer_action_url:
+          type: string
+          description: 客户端待办跳转地址。
     RecordDeviceIdentifierRequest:
       type: object
       required: [device_identifier]
@@ -1309,6 +1407,9 @@ components:
       properties:
         amount:
           type: integer
+          minimum: 50000
+          maximum: 2000000
+          description: amount in cents; V0.2.1 普通提现单笔 500-20000 元,每日最多 3 次,超限进入人工审核或拦截。
         receive_account_id:
           type: string
         owner_type:

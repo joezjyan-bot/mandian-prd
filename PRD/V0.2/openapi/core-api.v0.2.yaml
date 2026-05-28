@@ -1,8 +1,14 @@
 openapi: 3.0.3
 info:
   title: Mandian Rental Core API
-  version: 0.2.1
-  description: 满点租赁系统 V0.2.1 核心接口草案，覆盖入驻、办单、下单、审核、内部资金来源、财务和回调主链路。
+  version: 0.2.2
+  description: 满点租赁系统 V0.2.2 核心接口契约草案，覆盖入驻、办单、下单、审核、内部资金来源、财务和回调主链路。C 端、商家端、客服话术和合同正文不得暴露资方、资金来源、合作模式、风控结论、内部审核备注、服务费拆分、商家结算价、平台利润、返点规则、内部标签、黑名单或灰名单结论。
+x-v0-2-2-contract-status:
+  scope: PRD 接口契约草案
+  blocking_notes:
+    - 研发开工前必须补齐所有 P0/P1 接口的 request/response DTO、错误码、权限、幂等键、审计字段和状态流转。
+    - 技术内部字段可保留 legacy 命名,但展示层统一使用商家订单 / 联营订单 / 平台订单。
+    - 内部资金来源相关字段仅运营端、财务端、风控端可见,禁止进入 C 端、商家端、合同、客服话术。
 servers:
   - url: https://api.example.com
     description: placeholder only
@@ -19,6 +25,9 @@ tags:
   - name: post-rent
   - name: complaint
   - name: callback
+  - name: short-rent
+  - name: im
+  - name: legal
 security:
   - bearerAuth: []
 paths:
@@ -306,7 +315,8 @@ paths:
   /orders/{order_id}/funder-assignment:
     post:
       tags: [review]
-      summary: 分配资方
+      summary: 分配内部资金来源
+      description: 仅运营端、财务端、风控端内部使用。历史字段名保留 funder_* 兼容,但接口语义为内部资金来源分配;C 端、商家端、合同和客服话术不得展示资方身份、资金来源或合作模式。
       operationId: assignFunder
       parameters:
         - $ref: '#/components/parameters/RequestId'
@@ -710,6 +720,253 @@ paths:
                     properties:
                       data:
                         $ref: '#/components/schemas/ComplaintResult'
+  /orders/{order_id}/settlement-check:
+    post:
+      tags: [finance]
+      summary: 校验长租结算三条件
+      description: 结算前必须校验客户签收确认、监管锁已上锁、激活锁已激活。无监管锁品类走替代验收条件。
+      operationId: checkOrderSettlementPrerequisites
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/OrderId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettlementCheckRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SettlementCheckResult'
+        '409':
+          $ref: '#/components/responses/BusinessRuleBlocked'
+  /experience-rent/orders:
+    post:
+      tags: [short-rent]
+      summary: 创建体验租短租订单
+      operationId: createShortRentOrder
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ClientType'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateShortRentOrderRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ShortRentOrderResult'
+        '409':
+          $ref: '#/components/responses/BusinessRuleBlocked'
+  /experience-rent/orders/{short_order_id}/acceptance:
+    post:
+      tags: [short-rent]
+      summary: 商家接单或拒单
+      operationId: acceptShortRentOrder
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ShortOrderId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShortRentAcceptanceRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ShortRentOrderResult'
+  /experience-rent/orders/{short_order_id}/pickup:
+    post:
+      tags: [short-rent]
+      summary: 取车核销并绑定车辆
+      operationId: verifyShortRentPickup
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ShortOrderId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShortRentPickupRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ShortRentOrderResult'
+  /experience-rent/orders/{short_order_id}/return-inspection:
+    post:
+      tags: [short-rent]
+      summary: 体验租还车验收
+      operationId: inspectShortRentReturn
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ShortOrderId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShortRentReturnInspectionRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ShortRentOrderResult'
+  /experience-rent/orders/{short_order_id}/exceptions:
+    post:
+      tags: [short-rent]
+      summary: 创建体验租异常工单
+      operationId: createShortRentException
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ShortOrderId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShortRentExceptionRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ShortRentExceptionResult'
+  /im/sessions:
+    post:
+      tags: [im]
+      summary: 创建或打开客服会话
+      operationId: createImSession
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ClientType'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateImSessionRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ImSessionResult'
+  /im/sessions/{session_id}/messages:
+    post:
+      tags: [im]
+      summary: 发送客服消息
+      operationId: sendImMessage
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendImMessageRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SendImMessageResult'
+  /legal/evidence-packages:
+    post:
+      tags: [legal]
+      summary: 生成法诉证据包
+      operationId: createLegalEvidencePackage
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLegalEvidencePackageRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/LegalEvidencePackageResult'
   /callbacks/{channel}/{event_type}:
     post:
       tags: [callback]
@@ -799,6 +1056,18 @@ components:
         type: string
     ChannelId:
       name: channel_id
+      in: path
+      required: true
+      schema:
+        type: string
+    ShortOrderId:
+      name: short_order_id
+      in: path
+      required: true
+      schema:
+        type: string
+    SessionId:
+      name: session_id
       in: path
       required: true
       schema:
@@ -910,7 +1179,9 @@ components:
           type: array
           items:
             type: string
-            enum: [store_order, dividend_order, platform_order]
+            enum: [merchant_order, joint_order, platform_order]
+            x-legacy-enum: [store_order, dividend_order, platform_order]
+            description: 展示层统一为商家订单 / 联营订单 / 平台订单;legacy 枚举仅用于历史兼容。
     ReviewMerchantApplicationResult:
       type: object
       properties:
@@ -1074,15 +1345,20 @@ components:
           type: string
     FundingPreview:
       type: object
+      description: 仅办单助手、运营端和财务端内部预览使用;C 端禁止返回该对象。
       properties:
         funding_ratio:
           type: integer
+          description: 内部资金来源占比,不得在 C 端展示。
         store_ratio:
           type: integer
+          description: 商家侧投入占比,不得在 C 端展示。
         funder_amount:
           type: integer
+          description: 内部资金来源金额,字段名兼容保留,不得在 C 端展示。
         store_amount:
           type: integer
+          description: 商家侧金额,不得在 C 端展示为结算价或利润。
     CreateQrcodeRequest:
       type: object
       required: [quote_snapshot_id, valid_minutes]
@@ -1206,24 +1482,30 @@ components:
           type: string
     AssignFunderRequest:
       type: object
+      description: 内部资金来源分配请求。历史 schema 名保留 AssignFunderRequest 以兼容旧引用,业务展示不得使用“资方”。
       required: [funder_id, funding_amount, funding_ratio]
       properties:
         funder_id:
           type: string
+          description: 内部资金来源 ID,字段名兼容保留,禁止在 C 端、商家端、合同和客服话术展示。
         funding_amount:
           type: integer
+          description: 内部资金来源金额,单位分。
         funding_ratio:
           type: integer
+          description: 内部资金来源占比。
         allocation_rule:
           type: object
           additionalProperties: true
     FunderAssignmentResult:
       type: object
+      description: 内部资金来源分配结果。历史 schema 名保留 FunderAssignmentResult 以兼容旧引用,仅内部端可见。
       properties:
         assignment_id:
           type: string
         funder_available_credit:
           type: integer
+          description: 内部资金来源可用额度,禁止在 C 端、商家端、合同和客服话术展示。
         allocation_snapshot_id:
           type: string
     CreateContractRequest:
@@ -1274,7 +1556,9 @@ components:
       properties:
         ship_mode:
           type: string
-          enum: [store_delivery, logistics, platform_delivery, funder_delivery]
+          enum: [merchant_self_pickup, merchant_delivery, logistics, platform_delivery]
+          x-legacy-enum: [store_delivery, funder_delivery]
+          description: V0.2.2 展示口径不出现资方交付;legacy 枚举仅用于历史兼容。
         logistics_channel:
           type: string
         address_snapshot:
@@ -1409,12 +1693,14 @@ components:
           type: integer
           minimum: 50000
           maximum: 2000000
-          description: amount in cents; V0.2.1 普通提现单笔 500-20000 元,每日最多 3 次,超限进入人工审核或拦截。
+          description: amount in cents; V0.2.2 普通提现单笔 500-20000 元,每日最多 3 次,超限进入人工审核或拦截。
         receive_account_id:
           type: string
         owner_type:
           type: string
-          enum: [merchant, funder, channel]
+          enum: [merchant, internal_funding_source, channel]
+          x-legacy-enum: [merchant, funder, channel]
+          description: 钱包归属类型。internal_funding_source 仅内部财务核对使用,不得对 C 端或商家端展示为资方账户。
         owner_id:
           type: string
     WithdrawalResult:
@@ -1575,6 +1861,258 @@ components:
           type: string
         complaint_status:
           type: string
+    SettlementCheckRequest:
+      type: object
+      required: [check_scene]
+      properties:
+        check_scene:
+          type: string
+          enum: [pre_settlement, manual_review, retry_after_callback]
+        manual_review_note:
+          type: string
+        proof_attachment_ids:
+          type: array
+          items:
+            type: string
+    SettlementCheckResult:
+      type: object
+      required: [order_id, check_result, blockers]
+      properties:
+        order_id:
+          type: string
+        check_result:
+          type: string
+          enum: [passed, blocked, manual_review_required]
+        receipt_status:
+          type: string
+          enum: [passed, pending, failed, waived_by_alternative_rule]
+        lock_status:
+          type: string
+          enum: [locked, pending, failed, not_applicable]
+        activation_lock_status:
+          type: string
+          enum: [activated, pending, failed, not_applicable]
+        blockers:
+          type: array
+          items:
+            type: string
+            enum: [receipt_not_passed, lock_not_locked, activation_not_activated, alternative_rule_missing, evidence_incomplete]
+        settlement_button_enabled:
+          type: boolean
+    CreateShortRentOrderRequest:
+      type: object
+      required: [store_id, short_rent_product_id, price_plan_id, pickup_time, return_time, rider_id, agree_terms]
+      properties:
+        store_id:
+          type: string
+        short_rent_product_id:
+          type: string
+        price_plan_id:
+          type: string
+        pickup_time:
+          type: string
+          format: date-time
+        return_time:
+          type: string
+          format: date-time
+        rider_id:
+          type: string
+        deposit_method:
+          type: string
+          enum: [paid_full, credit_free, preauth]
+        agree_terms:
+          type: boolean
+    ShortRentOrderResult:
+      type: object
+      description: C 端体验租订单结果。不得返回商家结算价、平台利润、内部审核备注和内部资金字段。
+      required: [short_order_id, order_no, status, status_label]
+      properties:
+        short_order_id:
+          type: string
+        order_no:
+          type: string
+        status:
+          type: string
+        status_label:
+          type: string
+        store_name:
+          type: string
+        vehicle_display_name:
+          type: string
+        pickup_time:
+          type: string
+          format: date-time
+        return_time:
+          type: string
+          format: date-time
+        amount_payable:
+          type: integer
+          description: amount in cents
+        deposit_status:
+          type: string
+        next_actions:
+          type: array
+          items:
+            type: string
+    ShortRentAcceptanceRequest:
+      type: object
+      required: [action, confirm_token]
+      properties:
+        action:
+          type: string
+          enum: [accept, reject]
+        reject_reason:
+          type: string
+        confirm_token:
+          type: string
+    ShortRentPickupRequest:
+      type: object
+      required: [pickup_code, vehicle_id, vehicle_identifier, attachment_ids, confirm_token]
+      properties:
+        pickup_code:
+          type: string
+        vehicle_id:
+          type: string
+        vehicle_identifier:
+          type: string
+        attachment_ids:
+          type: array
+          items:
+            type: string
+        confirm_token:
+          type: string
+    ShortRentReturnInspectionRequest:
+      type: object
+      required: [inspection_result, attachment_ids, confirm_token]
+      properties:
+        inspection_result:
+          type: string
+          enum: [normal, overtime, damage, violation_pending, accident, lost, dispute]
+        extra_fee_amount:
+          type: integer
+          description: amount in cents
+        attachment_ids:
+          type: array
+          items:
+            type: string
+        note:
+          type: string
+        confirm_token:
+          type: string
+    ShortRentExceptionRequest:
+      type: object
+      required: [exception_type, description, attachment_ids]
+      properties:
+        exception_type:
+          type: string
+          enum: [accident, traffic_violation, damage, lost_vehicle, overtime, control_failed, pickup_failed, return_dispute, other]
+        description:
+          type: string
+        responsible_party:
+          type: string
+          enum: [customer, merchant, platform, third_party, pending]
+        attachment_ids:
+          type: array
+          items:
+            type: string
+    ShortRentExceptionResult:
+      type: object
+      properties:
+        ticket_id:
+          type: string
+        ticket_status:
+          type: string
+        deposit_frozen:
+          type: boolean
+        customer_notification_id:
+          type: string
+    CreateImSessionRequest:
+      type: object
+      required: [source_client, business_line]
+      properties:
+        source_client:
+          type: string
+          enum: [alipay, wechat, h5, app, merchant_pc, store_mobile, ops]
+        business_line:
+          type: string
+          enum: [long_rent, experience_rent, merchant_service, finance, complaint]
+        order_id:
+          type: string
+        short_order_id:
+          type: string
+        trigger_page:
+          type: string
+        trigger_reason:
+          type: string
+    ImSessionResult:
+      type: object
+      properties:
+        session_id:
+          type: string
+        session_status:
+          type: string
+        assigned_queue:
+          type: string
+        context_card:
+          type: object
+          additionalProperties: true
+        forbidden_actions:
+          type: array
+          items:
+            type: string
+            enum: [refund, close_order, change_price, deduct_deposit, control_vehicle, edit_settlement_account, change_permission]
+    SendImMessageRequest:
+      type: object
+      required: [message_type]
+      properties:
+        message_type:
+          type: string
+          enum: [text, image, video, file, order_card, system]
+        content:
+          type: string
+        attachment_id:
+          type: string
+        client_message_id:
+          type: string
+    SendImMessageResult:
+      type: object
+      properties:
+        message_id:
+          type: string
+        compliance_status:
+          type: string
+          enum: [passed, warning, blocked]
+        compliance_hits:
+          type: array
+          items:
+            type: string
+    CreateLegalEvidencePackageRequest:
+      type: object
+      required: [order_id, export_reason, confirm_token]
+      properties:
+        order_id:
+          type: string
+        include_sections:
+          type: array
+          items:
+            type: string
+            enum: [order, customer, contract, receipt, ai_video, delivery, device_value, lock, bill, payment, overdue, collection, im, refund, operation_log, audit_log]
+        export_reason:
+          type: string
+        confirm_token:
+          type: string
+    LegalEvidencePackageResult:
+      type: object
+      properties:
+        package_id:
+          type: string
+        package_status:
+          type: string
+          enum: [generating, ready, failed]
+        file_url:
+          type: string
+        audit_log_id:
+          type: string
     CallbackAccepted:
       type: object
       properties:
@@ -1586,4 +2124,6 @@ components:
           type: string
     OrderType:
       type: string
-      enum: [store, dividend, platform]
+      enum: [merchant, joint, platform]
+      x-legacy-enum: [store, dividend, platform]
+      description: 内部订单类型枚举。展示层必须渲染为商家订单 / 联营订单 / 平台订单;不得展示旧称门店订单、分红订单、受让订单。

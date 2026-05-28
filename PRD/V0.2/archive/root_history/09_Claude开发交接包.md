@@ -1,6 +1,6 @@
 # Claude 开发交接包
 
-> [历史归档] 本文档为早期交接包,当前开发入口请阅读 `README.md`、`00_V0.2.1_开发冻结版总PRD.md` 和 `CODEX_V0.2.1_FREEZE_FIXUP_REPORT.md`。
+> [历史归档 / V0.2.2 口径覆盖] 本文档为早期交接包,当前开发入口请阅读 `README.md`、`00_V0.2.2_开发冻结版总PRD.md`、`docs/V0.2.2_100_FINAL_ACCEPTANCE.md` 和 `docs/V0.2.2_FINAL_SELF_CHECK.md`。本文旧订单命名、旧资金口径、旧开发顺序不得作为当前执行依据。
 
 > 目标：给 Claude 或开发团队接手时的统一入口。先按本文件阅读，不要跳过业务边界直接写代码或画 UI。
 

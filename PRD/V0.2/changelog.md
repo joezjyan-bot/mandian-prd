@@ -25,7 +25,7 @@
 - 生成 `docs/V0.2.2_FINAL_DOC_MAP.md`,形成最终文档地图和跨角色阅读清单。
 - 生成 `docs/V0.2.2_FINAL_LOGIC_CHECK_REPORT.md`,完成长租、短租、财务、权限、法诉证据链逻辑检查。
 - 生成 `docs/V0.2.2_DOC_CLEANUP_REPORT.md`,记录保留、修正、归档和未删除清单。
-- 生成 `docs/V0.2.2_FINAL_BOSS_CONFIRM_LIST.md`,固定最终老板确认事项。
+- 将最终确认事项并入总 PRD、最终文档地图和各模块主文档,不再单独保留确认清单。
 - 生成 `docs/V0.2.2_FINAL_DELIVERY_REPORT.md`,给出是否可进入研发任务拆分的最终结论。
 - 将早期根目录总览、Claude/CodeX 任务报告、重复编号旧模块文档移入 `PRD/V0.2/archive/`。
 

@@ -223,6 +223,136 @@ paths:
                     properties:
                       data:
                         $ref: '#/components/schemas/QrcodeResult'
+  /assistant/quotes/{quote_snapshot_id}:
+    get:
+      tags: [assistant]
+      summary: 读取办单助手报价快照
+      operationId: getQuoteSnapshot
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/ClientType'
+        - name: quote_snapshot_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/QuoteSnapshot'
+        '410':
+          description: Quote expired or disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /assistant/quotes/{quote_snapshot_id}/revision:
+    post:
+      tags: [assistant]
+      summary: 基于报价快照生成新版本
+      description: 报价快照不可原地改写;改快照必须生成新 `quote_snapshot_id`,旧快照保留审计轨迹。
+      operationId: reviseQuoteSnapshot
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - name: quote_snapshot_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviseQuoteSnapshotRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/QuoteSnapshot'
+        '409':
+          $ref: '#/components/responses/BusinessRuleBlocked'
+  /assistant/quotes/{quote_snapshot_id}/void:
+    post:
+      tags: [assistant]
+      summary: 作废未下单报价快照
+      operationId: voidQuoteSnapshot
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - name: quote_snapshot_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoidQuoteSnapshotRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/QuoteSnapshotMutationResult'
+        '409':
+          $ref: '#/components/responses/BusinessRuleBlocked'
+  /customer/quote-snapshots/{quote_snapshot_id}:
+    get:
+      tags: [customer-order]
+      summary: C 端读取扫码报价快照
+      description: 只返回客户下单所需白名单字段;禁止返回内部资金来源、商家结算价、平台利润、返点规则和内部审核字段。
+      operationId: getCustomerQuoteSnapshot
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/ClientType'
+        - name: quote_snapshot_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/CustomerQuoteSnapshot'
+        '410':
+          description: Quote expired or disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /customer/orders:
     post:
       tags: [customer-order]
@@ -1298,6 +1428,16 @@ components:
           type: array
           items:
             type: string
+        config_version_id:
+          type: string
+          description: 办单助手配置版本;为空时按当前生效版本计算。
+        rate_base:
+          type: string
+          enum: [unpaid_x_rate, price_x_rate, remaining_multiplier]
+          description: 费率口径,与报价配置版本一致。
+        nominal_retain_fee_cent:
+          type: integer
+          description: 名义留购费,单位分;展示层按业务话术处理。
         funding_ratio:
           type: integer
           minimum: 20
@@ -1307,6 +1447,21 @@ components:
       properties:
         quote_snapshot_id:
           type: string
+        quote_snapshot_no:
+          type: string
+          description: 报价快照编号,用于后台检索和二维码追踪。
+        config_version_id:
+          type: string
+        rate_base:
+          type: string
+          enum: [unpaid_x_rate, price_x_rate, remaining_multiplier]
+        nominal_retain_fee_cent:
+          type: integer
+          description: 名义留购费,单位分。
+        value_added_services:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValueAddedServiceSnapshot'
         price_items:
           type: array
           items:
@@ -1317,11 +1472,30 @@ components:
             $ref: '#/components/schemas/BillPreviewItem'
         funding_preview:
           $ref: '#/components/schemas/FundingPreview'
-        config_version_id:
-          type: string
         expires_at:
           type: string
           format: date-time
+    ValueAddedServiceSnapshot:
+      type: object
+      required: [service_id, charge_in, in_buyout_total, force_checked, default_checked]
+      properties:
+        service_id:
+          type: string
+        service_name:
+          type: string
+        amount:
+          type: integer
+          description: amount in cents
+        charge_in:
+          type: string
+          enum: [upfront, bill, retain, waived]
+          description: 收费归属;不得在 C 端展示内部成本或利润。
+        in_buyout_total:
+          type: boolean
+        force_checked:
+          type: boolean
+        default_checked:
+          type: boolean
     PriceItem:
       type: object
       properties:
@@ -1380,6 +1554,72 @@ components:
           type: string
         qrcode_image_url:
           type: string
+        expires_at:
+          type: string
+          format: date-time
+    ReviseQuoteSnapshotRequest:
+      type: object
+      required: [change_reason, confirm_token]
+      properties:
+        change_reason:
+          type: string
+        confirm_token:
+          type: string
+        term:
+          type: integer
+          minimum: 1
+        down_payment:
+          type: integer
+          description: amount in cents
+        selected_service_ids:
+          type: array
+          items:
+            type: string
+        nominal_retain_fee_cent:
+          type: integer
+          description: 名义留购费,单位分。
+    VoidQuoteSnapshotRequest:
+      type: object
+      required: [void_reason, confirm_token]
+      properties:
+        void_reason:
+          type: string
+        confirm_token:
+          type: string
+    QuoteSnapshotMutationResult:
+      type: object
+      properties:
+        quote_snapshot_id:
+          type: string
+        mutation_status:
+          type: string
+          enum: [voided, rejected]
+        old_snapshot_status:
+          type: string
+        audit_log_id:
+          type: string
+    CustomerQuoteSnapshot:
+      type: object
+      description: C 端扫码下单报价白名单 DTO,不得包含 `funding_preview`、内部资金来源、商家结算价、平台利润和返点规则。
+      properties:
+        quote_snapshot_id:
+          type: string
+        quote_snapshot_no:
+          type: string
+        order_type_display:
+          type: string
+          enum: [商家订单, 联营订单, 平台订单]
+        product_summary:
+          type: object
+          additionalProperties: true
+        customer_price_items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PriceItem'
+        bill_plan_preview:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillPreviewItem'
         expires_at:
           type: string
           format: date-time

@@ -1099,6 +1099,86 @@ paths:
                     properties:
                       data:
                         $ref: '#/components/schemas/SendImMessageResult'
+  /im/agents/me/duty-status:
+    post:
+      tags: [im]
+      summary: 客服上班/下班/小休
+      operationId: updateMyImDutyStatus
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAgentDutyStatusRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/AgentDutyStatusResult'
+  /im/sessions/{session_id}/accept:
+    post:
+      tags: [im]
+      summary: 客服接单
+      operationId: acceptImSession
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcceptImSessionRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ImSessionResult'
+  /im/sessions/{session_id}/transfer:
+    post:
+      tags: [im]
+      summary: 转接或主管强制改派
+      operationId: transferImSession
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/SessionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferImSessionRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ImSessionResult'
   /legal/evidence-packages:
     post:
       tags: [legal]
@@ -2385,8 +2465,17 @@ components:
           type: string
         session_status:
           type: string
+          enum: [queued, assigned, active, waiting_customer, waiting_internal, ticketed, closed]
         assigned_queue:
           type: string
+        assigned_agent_id:
+          type: string
+        assign_status:
+          type: string
+          enum: [queued, assigned, active, timeout_reassigned, supervisor_reassigned, closed]
+        assign_deadline:
+          type: string
+          format: date-time
         context_card:
           type: object
           additionalProperties: true
@@ -2420,6 +2509,58 @@ components:
           type: array
           items:
             type: string
+    UpdateAgentDutyStatusRequest:
+      type: object
+      required: [duty_status]
+      properties:
+        duty_status:
+          type: string
+          enum: [on_duty_idle, on_break, off_duty_manual]
+        reason:
+          type: string
+        handover_strategy:
+          type: string
+          enum: [keep_active_sessions, return_unaccepted_to_queue, supervisor_reassign]
+    AgentDutyStatusResult:
+      type: object
+      properties:
+        agent_id:
+          type: string
+        duty_status:
+          type: string
+          enum: [off_duty, on_duty_idle, on_duty_busy, on_break, off_duty_manual]
+        max_concurrent:
+          type: integer
+        current_load:
+          type: integer
+        on_duty_at:
+          type: string
+          format: date-time
+        off_duty_at:
+          type: string
+          format: date-time
+    AcceptImSessionRequest:
+      type: object
+      required: [assigned_agent_id, assign_deadline]
+      properties:
+        assigned_agent_id:
+          type: string
+          description: 当前被派客服 ID;服务端校验必须等于登录客服。
+        assign_deadline:
+          type: string
+          format: date-time
+          description: 客户端看到的接单截止时间,服务端以数据库值为准。
+    TransferImSessionRequest:
+      type: object
+      required: [target_agent_id, transfer_reason]
+      properties:
+        target_agent_id:
+          type: string
+        transfer_reason:
+          type: string
+        transfer_type:
+          type: string
+          enum: [agent_transfer, supervisor_reassign, timeout_reassign]
     CreateLegalEvidencePackageRequest:
       type: object
       required: [order_id, export_reason, confirm_token]

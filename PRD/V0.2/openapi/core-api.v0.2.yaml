@@ -553,6 +553,34 @@ paths:
                     properties:
                       data:
                         $ref: '#/components/schemas/ShipmentResult'
+  /orders/{order_id}/delivery-evidence/face-match:
+    post:
+      tags: [fulfillment]
+      summary: 交付合照 AI 辅助核验
+      description: 后台能力,用于人机/人车合照与实名认证影像的一次性比对。只返回辅助结果和流水号;不得建立可检索人脸库,C 端不得暴露人脸比对或风控字眼。
+      operationId: createDeliveryEvidenceFaceMatch
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/OrderId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDeliveryFaceMatchRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DeliveryFaceMatchResult'
   /orders/{order_id}/device-identifier:
     post:
       tags: [fulfillment]
@@ -1830,6 +1858,46 @@ components:
           type: boolean
         customer_receipt_task:
           $ref: '#/components/schemas/CustomerReceiptTask'
+    CreateDeliveryFaceMatchRequest:
+      type: object
+      required: [attachment_id, evidence_type]
+      properties:
+        attachment_id:
+          type: string
+          description: 人机合照 / 人车合照附件 ID。
+        evidence_type:
+          type: string
+          enum: [human_device_photo, human_vehicle_photo]
+        reference_identity_trace_no:
+          type: string
+          description: 实名认证环节流水号;仅用于本次交付核验追溯。
+        manual_review_required:
+          type: boolean
+          default: true
+          description: AI 只做辅助建议,最终仍需人工核验。
+    DeliveryFaceMatchResult:
+      type: object
+      description: 交付合照 AI 辅助核验结果。只存结果、评分、供应商和流水号,不返回可检索人脸特征。
+      properties:
+        face_match_score:
+          type: number
+          format: float
+        face_match_result:
+          type: string
+          enum: [high_match, suspect_mismatch, undetermined]
+        face_match_provider:
+          type: string
+        face_match_trace_no:
+          type: string
+        face_match_checked_at:
+          type: string
+          format: date-time
+        manual_verify_result:
+          type: string
+          enum: [pending, passed, rejected, need_reupload]
+        next_action:
+          type: string
+          enum: [manual_confirm, manual_focus_review, request_reupload]
     ReceiptConfirmationConfig:
       type: object
       description: V0.2.1 签收确认配置。默认电子确认单；可按后台配置调起 AI 问答确认。

@@ -93,6 +93,61 @@ paths:
           $ref: '#/components/responses/PermissionDenied'
         '409':
           $ref: '#/components/responses/StatusConflict'
+  /merchants/{merchant_id}/risk-metrics:
+    get:
+      tags: [onboarding]
+      summary: 读取门店风险指标
+      description: 运营端 / 审核页只读参考。C 端和商家端不得返回该接口数据。
+      operationId: getMerchantRiskMetrics
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/MerchantId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/MerchantRiskMetricsResult'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+  /merchants/{merchant_id}/order-control:
+    post:
+      tags: [onboarding]
+      summary: 更新门店订单能力管控
+      description: V1 仅支持运营主管人工停单 / 关闭低首付 / 恢复,不做自动停单。
+      operationId: updateMerchantOrderControl
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/MerchantId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMerchantOrderControlRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/MerchantOrderControlResult'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '409':
+          $ref: '#/components/responses/IdempotencyConflict'
   /products:
     post:
       tags: [product]
@@ -1274,6 +1329,18 @@ components:
       required: true
       schema:
         type: string
+    MerchantId:
+      name: merchant_id
+      in: path
+      required: true
+      schema:
+        type: string
+    StoreId:
+      name: store_id
+      in: path
+      required: true
+      schema:
+        type: string
     ProductId:
       name: product_id
       in: path
@@ -1431,6 +1498,88 @@ components:
           type: string
         default_config_version:
           type: string
+    MerchantRiskMetricsResult:
+      type: object
+      properties:
+        merchant_id:
+          type: string
+        store_id:
+          type: string
+        silent_rate:
+          type: number
+          format: double
+          nullable: true
+          description: 静默率;数据不足时为空。
+        overdue_rate:
+          type: number
+          format: double
+          nullable: true
+          description: 逾期率;数据不足时为空。
+        locked_active_count:
+          type: integer
+          description: 已上锁且履约中设备数。
+        silent_count:
+          type: integer
+        overdue_count:
+          type: integer
+        effective_order_count:
+          type: integer
+        metric_status:
+          type: string
+          enum: [normal, data_insufficient, calculating, failed]
+        metric_source:
+          type: string
+          enum: [lock_heartbeat, order_bill, mixed]
+        computed_at:
+          type: string
+          format: date-time
+        config_version_id:
+          type: string
+          description: 指标口径配置版本;阈值和频率由运营确认后配置。
+    UpdateMerchantOrderControlRequest:
+      type: object
+      required: [control_action, reason, confirm_token]
+      properties:
+        control_action:
+          type: string
+          enum: [suspend_orders, disable_low_downpay, restore_orders, restore_low_downpay]
+        disabled_downpay_ratios:
+          type: array
+          description: 被关闭的首付成数;低首付定义由运营配置。
+          items:
+            type: number
+            format: double
+        reason:
+          type: string
+        metric_snapshot:
+          $ref: '#/components/schemas/MerchantRiskMetricsResult'
+        confirm_token:
+          type: string
+          description: 高危操作二次确认令牌。
+    MerchantOrderControlResult:
+      type: object
+      properties:
+        merchant_id:
+          type: string
+        store_id:
+          type: string
+        order_suspended:
+          type: boolean
+        low_downpay_disabled:
+          type: boolean
+        disabled_downpay_ratios:
+          type: array
+          items:
+            type: number
+            format: double
+        control_status:
+          type: string
+          enum: [active, restored]
+        operated_by:
+          type: string
+        operated_at:
+          type: string
+          format: date-time
     CreateProductRequest:
       type: object
       required: [name, owner_type, category, skus]

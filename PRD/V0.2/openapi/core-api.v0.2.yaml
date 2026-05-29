@@ -20,6 +20,7 @@ tags:
   - name: review
   - name: contract
   - name: fulfillment
+  - name: asset
   - name: finance
   - name: channel
   - name: post-rent
@@ -663,6 +664,175 @@ paths:
                     properties:
                       data:
                         $ref: '#/components/schemas/RecordDeviceIdentifierResult'
+  /device-assets:
+    post:
+      tags: [asset]
+      summary: 创建订单设备资产记录
+      description: 安心用长租订单生成后创建资产记录;C 端不得返回来源类型、内部权属、内部资金来源等字段。
+      operationId: createDeviceAsset
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ClientType'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDeviceAssetRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DeviceAssetResult'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '409':
+          $ref: '#/components/responses/IdempotencyConflict'
+  /device-assets/{asset_id}:
+    get:
+      tags: [asset]
+      summary: 读取设备资产详情
+      description: 运营端内部资产详情;C 端视图必须走白名单,不得返回来源类型、内部权属、内部资金来源等字段。
+      operationId: getDeviceAsset
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/AssetId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DeviceAssetResult'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+  /device-assets/{asset_id}/bind-identifier:
+    post:
+      tags: [asset]
+      summary: 交付时绑定设备识别码
+      description: 回填 IMEI/SN/VIN 并联动设备价值确认一致性校验。
+      operationId: bindDeviceAssetIdentifier
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/AssetId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BindDeviceAssetIdentifierRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DeviceAssetResult'
+        '409':
+          $ref: '#/components/responses/BusinessRuleBlocked'
+  /device-assets/{asset_id}/status:
+    post:
+      tags: [asset]
+      summary: 更新设备资产状态
+      description: 资产出租、归还、购买、处置等状态流转;处置类动作需要 2FA 和审计。
+      operationId: updateDeviceAssetStatus
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/AssetId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDeviceAssetStatusRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DeviceAssetResult'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+        '409':
+          $ref: '#/components/responses/StatusConflict'
+  /orders/{order_id}/device-value-confirmation:
+    get:
+      tags: [asset]
+      summary: 读取订单设备价值确认
+      description: 客户只读视图仅返回型号、成色、设备价值、确认状态;内部估值、内部权属、资金相关字段禁返。
+      operationId: getOrderDeviceValueConfirmation
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/OrderId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DeviceValueConfirmation'
+        '403':
+          $ref: '#/components/responses/PermissionDenied'
+    post:
+      tags: [asset]
+      summary: 客户确认订单设备价值
+      description: 写入设备价值确认记录和页面快照;设备价值等于该订单设备价格。
+      operationId: confirmOrderDeviceValue
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/OrderId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmDeviceValueRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ConfirmDeviceValueResult'
+        '409':
+          $ref: '#/components/responses/IdempotencyConflict'
   /orders/{order_id}/return-inspections:
     post:
       tags: [fulfillment]
@@ -1355,6 +1525,12 @@ components:
         type: string
     DeviceId:
       name: device_id
+      in: path
+      required: true
+      schema:
+        type: string
+    AssetId:
+      name: asset_id
       in: path
       required: true
       schema:
@@ -2200,6 +2376,190 @@ components:
           type: string
         order_ship_status:
           type: string
+    CreateDeviceAssetRequest:
+      type: object
+      required: [order_id, merchant_id, store_id, product_id, sku_id, brand_model, condition_label, device_value_cent]
+      properties:
+        order_id:
+          type: string
+        merchant_id:
+          type: string
+        store_id:
+          type: string
+        product_id:
+          type: string
+        sku_id:
+          type: string
+        brand_model:
+          type: string
+        condition_label:
+          type: string
+        device_value_cent:
+          type: integer
+          description: 设备价值,等于该订单设备价格。
+        source_type:
+          type: string
+          enum: [merchant_self, platform_supply, other]
+          description: 内部字段,C 端禁返。
+        ownership_status:
+          type: string
+          enum: [platform, merchant, customer, funder_internal]
+          description: 内部字段,C 端禁返。
+    BindDeviceAssetIdentifierRequest:
+      type: object
+      required: [device_identifier, identifier_type]
+      properties:
+        device_identifier:
+          type: string
+        identifier_type:
+          type: string
+          enum: [IMEI, SN, VIN, OTHER]
+        delivery_evidence_ids:
+          type: array
+          items:
+            type: string
+        consistency_check:
+          type: object
+          properties:
+            brand_model:
+              type: string
+            condition_label:
+              type: string
+    UpdateDeviceAssetStatusRequest:
+      type: object
+      required: [asset_status, reason]
+      properties:
+        asset_status:
+          type: string
+          enum: [PENDING_ASSETIZED, DELIVERED, IN_LEASE, RETURNED, PURCHASED, DISPOSED]
+        reason:
+          type: string
+        proof_attachment_ids:
+          type: array
+          items:
+            type: string
+        two_factor_token:
+          type: string
+          description: 资产处置等高危动作必填。
+    DeviceAssetResult:
+      type: object
+      description: 设备资产内部视图。C 端白名单视图不得返回 source_type、ownership_status、内部资金来源等字段。
+      properties:
+        asset_id:
+          type: string
+        order_id:
+          type: string
+        merchant_id:
+          type: string
+        store_id:
+          type: string
+        product_id:
+          type: string
+        sku_id:
+          type: string
+        brand_model:
+          type: string
+        condition_label:
+          type: string
+        device_value_cent:
+          type: integer
+        source_type:
+          type: string
+          enum: [merchant_self, platform_supply, other]
+          description: 内部字段,C 端禁返。
+        device_identifier:
+          type: string
+          nullable: true
+        identifier_type:
+          type: string
+          enum: [IMEI, SN, VIN, OTHER]
+          nullable: true
+        ownership_status:
+          type: string
+          enum: [platform, merchant, customer, funder_internal]
+          description: 内部字段,C 端禁返。
+        delivery_evidence_ids:
+          type: array
+          items:
+            type: string
+        asset_status:
+          type: string
+          enum: [PENDING_ASSETIZED, DELIVERED, IN_LEASE, RETURNED, PURCHASED, DISPOSED]
+        consistency_status:
+          type: string
+          enum: [consistent, reconfirm_required]
+        updated_at:
+          type: string
+          format: date-time
+    DeviceValueConfirmation:
+      type: object
+      description: 设备价值确认记录。客户视图只返回型号、成色、设备价值、确认状态和快照标识。
+      properties:
+        confirmation_id:
+          type: string
+        order_id:
+          type: string
+        asset_id:
+          type: string
+          nullable: true
+        brand_model:
+          type: string
+        spec:
+          type: string
+        condition_label:
+          type: string
+        device_identifier:
+          type: string
+          nullable: true
+        store_price_cent:
+          type: integer
+          description: 设备价值,等于该订单设备价格。
+        confirmed_value_cent:
+          type: integer
+        customer_confirmed:
+          type: boolean
+        confirmed_at:
+          type: string
+          format: date-time
+        page_version:
+          type: string
+        snapshot_id:
+          type: string
+        snapshot_hash:
+          type: string
+        consistency_status:
+          type: string
+          enum: [consistent, reconfirm_required]
+    ConfirmDeviceValueRequest:
+      type: object
+      required: [customer_confirmed, page_version, snapshot_hash]
+      properties:
+        customer_confirmed:
+          type: boolean
+          description: 客户独立必勾项,必须为 true。
+        page_version:
+          type: string
+        snapshot_id:
+          type: string
+        snapshot_hash:
+          type: string
+        confirm_device_info:
+          type: string
+    ConfirmDeviceValueResult:
+      type: object
+      properties:
+        confirmation_id:
+          type: string
+        order_id:
+          type: string
+        customer_confirmed:
+          type: boolean
+        confirmed_at:
+          type: string
+          format: date-time
+        next_action:
+          type: string
+          enum: [continue_to_contract, reconfirm_required]
     ReturnInspectionRequest:
       type: object
       required: [inspection_result]

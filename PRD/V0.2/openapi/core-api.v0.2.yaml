@@ -724,7 +724,7 @@ paths:
     post:
       tags: [finance]
       summary: 校验长租结算三条件
-      description: 结算前必须校验客户签收确认、监管锁已上锁、激活锁已激活。无监管锁品类必须走“签收确认 + 设备识别码归档 + 交付证据完整 + 高价值补强”的替代验收条件;缺少替代规则时返回 alternative_rule_missing。
+      description: 结算前必须校验客户签收确认、监管锁已上锁、激活锁已激活。仅 requires_regulatory_lock_callback=true 的品类/商品要求监管锁回调;当前默认苹果手机等品类走有锁三条件。无监管锁品类走“签收确认 + 设备识别码归档 + 交付证据完整 + 前置检测完成”的验收条件,不得因没有监管锁本身阻断结算。
       operationId: checkOrderSettlementPrerequisites
       parameters:
         - $ref: '#/components/parameters/RequestId'
@@ -1877,25 +1877,24 @@ components:
         has_regulatory_lock:
           type: boolean
           description: 是否适用监管锁三条件;服务端应以商品/类目配置为准,请求值仅用于复核。
+        requires_regulatory_lock_callback:
+          type: boolean
+          description: 是否要求监管锁回调后结算;当前默认苹果手机等品类为 true,其它无锁品类为 false。
         alternative_acceptance_rule_id:
           type: string
-          description: 无监管锁品类使用的替代验收规则版本;缺失时触发 alternative_rule_missing。
-        order_device_value_amount:
-          type: integer
-          format: int64
-          description: 设备价值/指导价,单位分;用于高价值阈值判断。
+          description: 无监管锁品类使用的平台默认验收规则版本;正常情况下由平台兜底规则填充。
         device_identifier_archived:
           type: boolean
           description: IMEI/SN/VIN/车辆识别码等是否已归档。
         delivery_evidence_complete:
           type: boolean
           description: 交付照片、交付时间、交付人、客户确认记录是否齐全。
-        ai_video_confirmed:
+        pre_delivery_check_passed:
           type: boolean
-          description: AI 视频确认是否通过;高价值无锁品类可作为补强条件。
+          description: 审核人员已完成该品类要求的前置检测、资料核验或人工监管动作。
         manual_review_passed:
           type: boolean
-          description: 人工复核是否通过;高价值无锁品类可作为补强条件。
+          description: 人工复核是否通过;仅在规则配置要求人工复核时使用。
     SettlementCheckResult:
       type: object
       required: [order_id, check_result, blockers]
@@ -1916,14 +1915,14 @@ components:
           enum: [activated, pending, failed, not_applicable]
         alternative_acceptance_result:
           type: string
-          enum: [not_applicable, passed, missing_rule, evidence_incomplete, high_value_review_required]
+          enum: [not_applicable, passed, missing_rule, evidence_incomplete, manual_review_required]
           description: 无监管锁品类替代验收结果;有监管锁品类返回 not_applicable。
         blockers:
           type: array
-          description: 结算阻断原因。`alternative_rule_missing` 在无监管锁品类未配置替代验收规则、未配置高价值阈值或规则版本缺失时触发。
+          description: 结算阻断原因。无监管锁品类不得因没有监管锁本身返回 blocker;仅在平台默认验收规则被禁用或规则版本不可用时返回 `alternative_rule_missing`。
           items:
             type: string
-            enum: [receipt_not_passed, lock_not_locked, activation_not_activated, alternative_rule_missing, evidence_incomplete]
+            enum: [receipt_not_passed, lock_not_locked, activation_not_activated, alternative_rule_missing, evidence_incomplete, pre_delivery_check_missing]
         settlement_button_enabled:
           type: boolean
     CreateShortRentOrderRequest:

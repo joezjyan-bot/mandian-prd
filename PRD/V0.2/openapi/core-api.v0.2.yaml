@@ -722,7 +722,7 @@ paths:
                       data:
                         $ref: '#/components/schemas/WithdrawalResult'
         '400':
-          description: 提现金额不符合 V0.2.1 单笔规则
+          description: 提现金额不符合 V0.2.2 单笔规则
           content:
             application/json:
               schema:

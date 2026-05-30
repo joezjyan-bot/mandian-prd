@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\PriceSnapshot;
 use App\Services\Order\OrderService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -24,6 +25,8 @@ class OrderController extends Controller
             'deposit_cents' => 'nullable|integer|min:0',
             'periods' => 'required|integer|min:1',
             'period_rent_cents' => 'required|integer|min:0',
+            'total_amount_cents' => 'nullable|integer|min:0',
+            'price_snapshot_id' => 'nullable|integer',
         ]);
 
         $order = $this->orderService->create($data);
@@ -38,9 +41,30 @@ class OrderController extends Controller
         return response()->json(['order' => $order]);
     }
 
-    public function pay(Order $order): JsonResponse
+    /**
+     * 首期支付。
+     * 首期实付金额(§8)取自订单冻结的报价快照 first_pay_cents;
+     * 若订单未挂快照,允许请求显式传 first_pay_cents 兜底;两者都无则报错(不擅自猜金额)。
+     */
+    public function pay(Order $order, Request $request): JsonResponse
     {
-        $result = $this->orderService->payFirstBill($order);
+        $firstPayCents = null;
+
+        if ($order->price_snapshot_id) {
+            $snapshot = PriceSnapshot::find($order->price_snapshot_id);
+            if ($snapshot) {
+                $firstPayCents = (int) $snapshot->first_pay_cents;
+            }
+        }
+
+        if ($firstPayCents === null) {
+            $validated = $request->validate([
+                'first_pay_cents' => 'required|integer|min:0',
+            ]);
+            $firstPayCents = (int) $validated['first_pay_cents'];
+        }
+
+        $result = $this->orderService->payFirstBill($order, $firstPayCents);
         return response()->json($result);
     }
 

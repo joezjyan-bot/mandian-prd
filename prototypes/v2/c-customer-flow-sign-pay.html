@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>满点租赁 · C端流程线框:签约→首期支付(演示原型)</title>
+<style>
+:root{
+  --blue:#1E3A8A;--blue-light:#3B82F6;--blue-bg:#EFF6FF;
+  --cta:#F97316;--cta-light:#FB923C;--cta-bg:#FFF7ED;
+  --red:#DC2626;--red-bg:#FEF2F2;--green:#16A34A;--green-bg:#F0FDF4;--yellow:#EAB308;--yellow-bg:#FEFCE8;
+  --ink:#0F172A;--ink2:#475569;--ink3:#94A3B8;--card:#FFFFFF;--page:#F8FAFC;--line:#E2E8F0;--disabled:#CBD5E1;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:#eef0f4;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;color:var(--ink);padding:24px 0 60px;display:flex;flex-direction:column;align-items:center;gap:8px;line-height:1.5;}
+.mono{font-variant-numeric:tabular-nums;}
+.demo-note{font-size:12.5px;color:var(--ink2);background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 16px;margin-bottom:4px;text-align:center;max-width:760px;}
+.flow-strip{font-size:12px;color:var(--ink3);margin-bottom:10px;}
+.flow-strip b{color:var(--blue);}
+.stage{display:flex;gap:28px;flex-wrap:wrap;justify-content:center;align-items:flex-start;max-width:1900px;}
+.phone-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;}
+.phone-label{font-size:13px;color:var(--ink2);font-weight:500;max-width:320px;text-align:center;}
+.phone{width:330px;height:710px;background:var(--page);border-radius:38px;border:10px solid #11193a;box-shadow:0 20px 50px rgba(20,30,50,.22);overflow:hidden;position:relative;display:flex;flex-direction:column;}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:148px;height:26px;background:#11193a;border-radius:0 0 16px 16px;z-index:30;}
+.statusbar{height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 22px 0 26px;font-size:12px;font-weight:600;flex-shrink:0;background:#fff;}
+.screen{flex:1;overflow-y:auto;overflow-x:hidden;position:relative;background:var(--page);}
+.screen::-webkit-scrollbar{width:0;}
+.topnav{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;}
+.topnav .back{font-size:22px;color:var(--ink);}
+.topnav .center-title{font-size:16px;font-weight:600;}
+.topnav .pill-native{display:flex;gap:2px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:3px 8px;color:var(--ink2);font-size:13px;}
+/* 步骤条 */
+.steps{display:flex;align-items:center;padding:14px 16px 6px;gap:0;background:#fff;}
+.step{display:flex;flex-direction:column;align-items:center;gap:4px;flex:0 0 auto;}
+.step .dot{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:600;background:var(--line);color:var(--ink3);}
+.step.done .dot{background:var(--green);color:#fff;}
+.step.cur .dot{background:var(--blue);color:#fff;}
+.step .t{font-size:10px;color:var(--ink3);}
+.step.cur .t{color:var(--blue);font-weight:600;}
+.step.done .t{color:var(--green);}
+.step-line{flex:1;height:2px;background:var(--line);margin:0 2px;position:relative;top:-9px;}
+.step-line.done{background:var(--green);}
+/* 卡片 */
+.card{background:#fff;border-radius:14px;padding:16px;margin:12px 14px;box-shadow:0 1px 2px rgba(15,23,42,.04);}
+.card-t{font-size:15px;font-weight:600;margin-bottom:4px;}
+.card-sub{font-size:12px;color:var(--ink3);margin-bottom:10px;}
+/* 授权书 / 合同 文本框 */
+.doc-box{border:1px solid var(--line);border-radius:10px;background:var(--page);padding:12px;height:230px;overflow-y:auto;font-size:12px;color:var(--ink2);line-height:1.8;}
+.doc-box::-webkit-scrollbar{width:3px;}
+.doc-box::-webkit-scrollbar-thumb{background:var(--disabled);border-radius:3px;}
+.doc-box h5{font-size:13px;color:var(--ink);text-align:center;margin-bottom:8px;}
+.doc-box p{margin-bottom:8px;}
+.doc-box .party{color:var(--blue);font-weight:600;}
+.scroll-hint{font-size:11px;color:var(--cta);text-align:center;padding:8px 0 0;}
+/* 必读勾选 */
+.agree{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;font-size:12.5px;color:var(--ink2);}
+.agree .box{width:18px;height:18px;border-radius:5px;background:var(--blue);color:#fff;display:grid;place-items:center;font-size:11px;flex-shrink:0;margin-top:1px;}
+.agree .box.off{background:#fff;border:1.5px solid var(--disabled);}
+.agree a{color:var(--blue);}
+/* 三方 / PDF 抬头 */
+.parties{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
+.party-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:9px 12px;border-radius:8px;background:var(--blue-bg);}
+.party-row .role{color:var(--ink3);font-size:12px;}
+.party-row .name{font-weight:600;color:var(--ink);}
+.party-row .st{font-size:11.5px;font-weight:500;}
+.st.signed{color:var(--green);}
+.st.waiting{color:var(--yellow);}
+.st.auto{color:var(--ink3);}
+/* 验签提示 */
+.verify-row{display:flex;align-items:center;gap:10px;padding:11px 14px;margin:0 14px 10px;background:var(--blue-bg);border-radius:10px;font-size:12.5px;color:var(--blue);}
+.verify-row svg{flex-shrink:0;}
+/* 费用汇总 */
+.fee-row{display:flex;justify-content:space-between;padding:11px 0;font-size:14px;border-bottom:1px solid var(--line);}
+.fee-row:last-of-type{border-bottom:none;}
+.fee-row .lbl{color:var(--ink2);}
+.fee-row .val{color:var(--ink);font-weight:500;}
+.pay-total{display:flex;justify-content:space-between;align-items:baseline;background:var(--cta-bg);border-radius:12px;padding:14px;margin-top:10px;}
+.pay-total .l{font-size:13px;color:var(--cta);font-weight:600;}
+.pay-total .v{font-size:26px;font-weight:700;color:var(--cta);}
+/* 支付通道 */
+.pay-ch{display:flex;align-items:center;gap:12px;padding:13px 14px;border:1px solid var(--line);border-radius:12px;margin:0 14px 10px;font-size:14px;}
+.pay-ch .ic{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:14px;font-weight:700;flex-shrink:0;}
+.pay-ch .ic.wx{background:#07C160;}
+.pay-ch .ic.ali{background:#1677FF;}
+.pay-ch .ic.bank{background:var(--ink2);}
+.pay-ch .nm{flex:1;}
+.pay-ch .radio{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--disabled);}
+.pay-ch.on{border-color:var(--blue);}
+.pay-ch.on .radio{border:5px solid var(--blue);}
+/* 提示条 */
+.tip{font-size:11.5px;color:var(--ink3);padding:2px 18px 12px;line-height:1.6;}
+.tip.warn{color:#854d0e;}
+/* 底部按钮 */
+.footbar{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:12px;}
+.footbar .pb-info{flex:0 0 auto;}
+.footbar .pb-label{font-size:11px;color:var(--ink3);}
+.footbar .pb-amt{font-size:20px;font-weight:700;color:var(--red);}
+.btn-cta{flex:1;height:50px;background:var(--cta);color:#fff;border:0;border-radius:26px;font-size:16px;font-weight:600;cursor:pointer;}
+.btn-cta:disabled{background:var(--disabled);}
+.btn-ghost{height:46px;padding:0 18px;border-radius:24px;border:1px solid var(--line);background:#fff;color:var(--ink2);font-size:14px;}
+/* 成功页 */
+.success{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:50px 24px;height:100%;}
+.success .ico{width:78px;height:78px;border-radius:50%;background:var(--green-bg);display:grid;place-items:center;margin-bottom:18px;}
+.success h2{font-size:20px;font-weight:700;}
+.success p{font-size:13px;color:var(--ink2);margin-top:8px;line-height:1.7;}
+.success .next{margin-top:24px;width:100%;background:var(--blue-bg);border-radius:12px;padding:14px;font-size:13px;color:var(--blue);text-align:left;}
+</style>
+</head>
+<body>
+<div class="demo-note">C 端核心流程线框 · <b>签约 → 首期支付</b> · 演示原型(中保真,数据为示例) · 视觉规范方案1(深蓝#1E3A8A + 橙CTA) · 守 C 端红线</div>
+<div class="flow-strip">主链路位置:下单确认 → <b>信用授权 → 合同签署 → 公证(可选) → 保证金/首期支付</b> → 待发货 · 依据 C端 文档 05/06/07/08</div>
+<div class="stage">
+
+  <!-- ① 信用/信息授权(文档05) -->
+  <div class="phone-wrap">
+    <div class="phone-label">① 信用 / 信息授权签署(文档05)<br>阅读授权书全文 + 必读勾选 → 简易签署</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="topnav"><span class="back">‹</span><span class="center-title">信息授权</span><span class="pill-native">··· ⊙</span></div>
+        <div class="steps">
+          <div class="step cur"><div class="dot">1</div><div class="t">授权</div></div>
+          <div class="step-line"></div>
+          <div class="step"><div class="dot">2</div><div class="t">签合同</div></div>
+          <div class="step-line"></div>
+          <div class="step"><div class="dot">3</div><div class="t">公证</div></div>
+          <div class="step-line"></div>
+          <div class="step"><div class="dot">4</div><div class="t">支付</div></div>
+        </div>
+        <div class="card">
+          <div class="card-t">信用评估查询授权书</div>
+          <div class="card-sub">为完成本次租赁办理,需您授权查询信用信息</div>
+          <div class="doc-box">
+            <h5>信用评估查询授权书</h5>
+            <p>授权人(客户):张** &nbsp; 被授权方:满点租赁平台</p>
+            <p>为办理本次设备租赁业务,本人同意并授权平台及其合作信用评估机构,在本次业务办理至业务结束期间,查询本人以下信息:</p>
+            <p>1. 芝麻信用评估信息;<br>2. 央行征信(白名单范围内);<br>3. 多头借贷查询记录;<br>4. 失信被执行人记录等公开信息。</p>
+            <p>本授权仅用于本次订单的信用评估与风险审核,平台将依法保护您的个人信息安全……</p>
+            <p>(请滚动阅读至全文结束)</p>
+          </div>
+          <div class="scroll-hint">▾ 请滑动阅读至底部后可签署</div>
+        </div>
+        <div class="agree"><span class="box">✓</span><span>我已阅读并同意《信用评估查询授权书》,授权平台查询上述信息用于本次订单审核</span></div>
+        <div class="tip">签署方式:电子签简易签署(指纹 / 人脸 / 短信验证码任一)。授权范围与期限以授权书为准。</div>
+      </div>
+      <div class="footbar"><button class="btn-cta">同意并签署</button></div>
+    </div>
+  </div>
+
+  <!-- ② 合同签署(文档06) -->
+  <div class="phone-wrap">
+    <div class="phone-label">② 合同签署(文档06)· 三方制<br>展示合同PDF + 滚动到底 → 人脸+验证码</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="topnav"><span class="back">‹</span><span class="center-title">签署租赁合同</span><span class="pill-native">··· ⊙</span></div>
+        <div class="steps">
+          <div class="step done"><div class="dot">✓</div><div class="t">授权</div></div>
+          <div class="step-line done"></div>
+          <div class="step cur"><div class="dot">2</div><div class="t">签合同</div></div>
+          <div class="step-line"></div>
+          <div class="step"><div class="dot">3</div><div class="t">公证</div></div>
+          <div class="step-line"></div>
+          <div class="step"><div class="dot">4</div><div class="t">支付</div></div>
+        </div>
+        <div class="card">
+          <div class="card-t">租赁服务协议</div>
+          <div class="card-sub">请完整阅读合同,滑动到底部后签署</div>
+          <div class="doc-box">
+            <h5>设备租赁服务协议</h5>
+            <p><span class="party">甲方(出租方 / 门店):</span>惠讯租 · 西丽店</p>
+            <p><span class="party">乙方(承租方 / 客户):</span>张**</p>
+            <p><span class="party">丙方(平台 / 居间技术服务):</span>满点租赁平台</p>
+            <p>第一条 租赁标的:iPhone 15 128G 蓝色,设备价值 ¥6,000.00。</p>
+            <p>第二条 租期与费用:租期 12 期;保证金 ¥800.00;首期应付 ¥800.00;每期应付 ¥800.00……</p>
+            <p>第三条 到期处理:租期届满后,乙方可选择归还、继续租用或申请留购……</p>
+            <p>(请滚动阅读至全文结束)</p>
+          </div>
+          <div class="scroll-hint">▾ 请滑动阅读至底部后可签署</div>
+          <div class="parties">
+            <div class="party-row"><div><div class="role">甲方 · 出租门店</div><div class="name">惠讯租 · 西丽店</div></div><div class="st waiting">待签</div></div>
+            <div class="party-row"><div><div class="role">乙方 · 承租客户(您)</div><div class="name">张**</div></div><div class="st waiting">待您签署</div></div>
+            <div class="party-row"><div><div class="role">丙方 · 平台</div><div class="name">满点租赁平台</div></div><div class="st auto">自动签署</div></div>
+          </div>
+        </div>
+        <div class="verify-row">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg>
+          签署需本人核验:人脸识别 + 短信验证码
+        </div>
+        <div class="tip">合同三方为门店、客户、平台;签署后等待门店签、平台自动签,全部完成进入下一步。</div>
+      </div>
+      <div class="footbar"><button class="btn-cta">本人核验并签署</button></div>
+    </div>
+  </div>
+
+  <!-- ③ 公证(可选,文档07) -->
+  <div class="phone-wrap">
+    <div class="phone-label">③ 公证签署(文档07 · 可选)<br>不强制,拒签订单仍可继续</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="topnav"><span class="back">‹</span><span class="center-title">公证签署(可选)</span><span class="pill-native">··· ⊙</span></div>
+        <div class="steps">
+          <div class="step done"><div class="dot">✓</div><div class="t">授权</div></div>
+          <div class="step-line done"></div>
+          <div class="step done"><div class="dot">✓</div><div class="t">签合同</div></div>
+          <div class="step-line done"></div>
+          <div class="step cur"><div class="dot">3</div><div class="t">公证</div></div>
+          <div class="step-line"></div>
+          <div class="step"><div class="dot">4</div><div class="t">支付</div></div>
+        </div>
+        <div class="card">
+          <div class="card-t">是否进行合同公证?</div>
+          <div class="card-sub">公证为可选环节,可加强法律保障;不公证不影响合同生效</div>
+          <div class="doc-box" style="height:180px">
+            <h5>赋强公证文书(节选)</h5>
+            <p>就甲乙双方签署的《设备租赁服务协议》,经双方申请,由公证机构对该协议的真实性、合法性予以公证……</p>
+            <p>公证完成后,公证书将随合同副本一并存档。</p>
+            <p>(请滚动阅读至全文结束)</p>
+          </div>
+          <div class="scroll-hint">▾ 公证需本人核验:人脸识别 + 验证码</div>
+        </div>
+        <div class="tip">如您选择暂不公证,订单仍可继续办理,合同依然有效。</div>
+      </div>
+      <div class="footbar">
+        <button class="btn-ghost">暂不公证</button>
+        <button class="btn-cta">本人核验并公证</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ④ 保证金/首期支付(文档08) -->
+  <div class="phone-wrap">
+    <div class="phone-label">④ 保证金 / 首期支付(文档08)<br>支付汇总 + 选通道 → 本人支付(不可代付)</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="topnav"><span class="back">‹</span><span class="center-title">支付保证金 / 首期</span><span class="pill-native">··· ⊙</span></div>
+        <div class="steps">
+          <div class="step done"><div class="dot">✓</div><div class="t">授权</div></div>
+          <div class="step-line done"></div>
+          <div class="step done"><div class="dot">✓</div><div class="t">签合同</div></div>
+          <div class="step-line done"></div>
+          <div class="step done"><div class="dot">✓</div><div class="t">公证</div></div>
+          <div class="step-line done"></div>
+          <div class="step cur"><div class="dot">4</div><div class="t">支付</div></div>
+        </div>
+        <div class="card">
+          <div class="card-t">支付汇总</div>
+          <div class="card-sub">支付完成后订单生效,进入待发货</div>
+          <div class="fee-row"><span class="lbl">保证金</span><span class="val mono">¥800.00</span></div>
+          <div class="fee-row"><span class="lbl">首期应付</span><span class="val mono">¥800.00</span></div>
+          <div class="pay-total"><span class="l">合计应付</span><span class="v mono">¥1,600.00</span></div>
+        </div>
+        <div style="font-size:13px;font-weight:600;padding:4px 16px 8px;color:var(--ink2)">选择支付方式</div>
+        <div class="pay-ch on"><div class="ic wx">微</div><span class="nm">微信支付</span><span class="radio"></span></div>
+        <div class="pay-ch"><div class="ic ali">支</div><span class="nm">支付宝</span><span class="radio"></span></div>
+        <div class="pay-ch"><div class="ic bank">卡</div><span class="nm">银行卡支付(H5)</span><span class="radio"></span></div>
+        <div class="tip warn">⚠ 须使用您本人账户支付,不可由门店或他人代付。</div>
+      </div>
+      <div class="footbar">
+        <div class="pb-info"><div class="pb-label">合计应付</div><div class="pb-amt mono">¥1,600</div></div>
+        <button class="btn-cta">立即支付</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑤ 支付成功 → 待发货 -->
+  <div class="phone-wrap">
+    <div class="phone-label">⑤ 支付成功 → 订单生效(待发货)<br>合同/支付完成,进入履约链路</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="success">
+          <div class="ico">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          </div>
+          <h2>支付成功</h2>
+          <p>订单已生效,商家将尽快为您安排交付。<br>您可在「我的订单」查看进度。</p>
+          <div class="next">
+            <div style="font-weight:600;margin-bottom:6px">接下来</div>
+            <div style="line-height:1.9">· 商家备货并交付设备<br>· 您当面验机后确认收货<br>· 进入履约中,按期还款</div>
+          </div>
+          <div style="margin-top:22px;width:100%;display:flex;gap:12px">
+            <button class="btn-ghost" style="flex:1">查看订单</button>
+            <button class="btn-cta" style="flex:1;border-radius:24px">返回首页</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -18,6 +18,7 @@ class Order extends Model
         'product_name', 'device_code', 'need_lock', 'device_value_cents', 'deposit_cents',
         'periods', 'period_rent_cents', 'total_amount_cents', 'price_snapshot_id',
         'status', 'esign_id', 'signed_at', 'delivered_at', 'received_at', 'settled_at',
+        'purchase_applied_at',
     ];
 
     protected $casts = [
@@ -26,6 +27,7 @@ class Order extends Model
         'delivered_at' => 'datetime',
         'received_at' => 'datetime',
         'settled_at' => 'datetime',
+        'purchase_applied_at' => 'datetime',
     ];
 
     public function bills()

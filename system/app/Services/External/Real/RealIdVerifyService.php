@@ -2,17 +2,17 @@
 
 namespace App\Services\External\Real;
 
-use App\Services\External\Contracts\IdVerifyServiceInterface;
+use App\Contracts\IdVerifyContract;
+use RuntimeException;
 
 /**
- * 真实实名认证对接。注意:人脸只存比对结果/评分,不建可检索人脸库。
- * TODO[团队]: 对接实名/人脸认证厂商。
+ * 【生产模式·空壳】真实实名认证对接。
+ * TODO[团队]：接入真实实名/人脸通道。人机比对只存结果和评分，不建人脸库。
  */
-class RealIdVerifyService implements IdVerifyServiceInterface
+class RealIdVerifyService implements IdVerifyContract
 {
     public function verify(array $payload): array
     {
-        // TODO[团队]: 调用实名认证接口,返回 verified / score / trace_no。
-        throw new \RuntimeException('RealIdVerifyService::verify 待团队对接');
+        throw new RuntimeException('RealIdVerifyService未实现：TODO[团队]接入真实实名通道。演示阶段请用 EXTERNAL_MODE=mock。');
     }
 }

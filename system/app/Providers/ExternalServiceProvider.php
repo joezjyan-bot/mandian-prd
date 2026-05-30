@@ -3,47 +3,35 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use App\Services\External\Contracts\EsignServiceInterface;
-use App\Services\External\Contracts\PaymentServiceInterface;
-use App\Services\External\Contracts\DeviceLockServiceInterface;
-use App\Services\External\Contracts\IdVerifyServiceInterface;
-use App\Services\External\Mock;
-use App\Services\External\Real;
+use App\Contracts\EsignContract;
+use App\Contracts\PaymentContract;
+use App\Contracts\DeviceLockContract;
+use App\Contracts\IdVerifyContract;
+use App\Services\External\Mock\MockEsignService;
+use App\Services\External\Mock\MockPaymentService;
+use App\Services\External\Mock\MockDeviceLockService;
+use App\Services\External\Mock\MockIdVerifyService;
+use App\Services\External\Real\RealEsignService;
+use App\Services\External\Real\RealPaymentService;
+use App\Services\External\Real\RealDeviceLockService;
+use App\Services\External\Real\RealIdVerifyService;
 
 /**
- * 把外部对接接口绑定到 Mock\* 或 Real\* 实现。
- * 由 config('external.mode') 决定。这是"一键切换模拟/真实对接"的核心。
+ * 根据 config('external.mode') 绑定 Mock* 或 Real* 到接口。
+ * 这是“模拟模式一键切换”的唯一绑定点。
+ * 业务代码 type-hint 接口即可，不感知具体实现。
  *
- * TODO[团队]: 在 bootstrap/providers.php 注册本 Provider。
+ * 注：记得在 config/app.php 的 providers 数组里注册本 Provider。
  */
 class ExternalServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $mode = config('external.mode', 'mock');
+        $isReal = config('external.mode') === 'real';
 
-        $map = [
-            EsignServiceInterface::class => [
-                'mock' => Mock\MockEsignService::class,
-                'real' => Real\RealEsignService::class,
-            ],
-            PaymentServiceInterface::class => [
-                'mock' => Mock\MockPaymentService::class,
-                'real' => Real\RealPaymentService::class,
-            ],
-            DeviceLockServiceInterface::class => [
-                'mock' => Mock\MockDeviceLockService::class,
-                'real' => Real\RealDeviceLockService::class,
-            ],
-            IdVerifyServiceInterface::class => [
-                'mock' => Mock\MockIdVerifyService::class,
-                'real' => Real\RealIdVerifyService::class,
-            ],
-        ];
-
-        foreach ($map as $contract => $impls) {
-            $impl = $impls[$mode] ?? $impls['mock'];
-            $this->app->bind($contract, $impl);
-        }
+        $this->app->bind(EsignContract::class, fn () => $isReal ? new RealEsignService() : new MockEsignService());
+        $this->app->bind(PaymentContract::class, fn () => $isReal ? new RealPaymentService() : new MockPaymentService());
+        $this->app->bind(DeviceLockContract::class, fn () => $isReal ? new RealDeviceLockService() : new MockDeviceLockService());
+        $this->app->bind(IdVerifyContract::class, fn () => $isReal ? new RealIdVerifyService() : new MockIdVerifyService());
     }
 }

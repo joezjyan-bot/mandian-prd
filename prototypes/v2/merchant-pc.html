@@ -8,7 +8,9 @@
 :root{
   --brand:#2B5CE6;--brand-hover:#1E4FD4;--brand-light:#EEF3FE;
   --g50:#FAFBFC;--g100:#F4F5F7;--g200:#E5E7EB;--g300:#D1D5DB;--g400:#9CA3AF;--g500:#6B7280;--g700:#374151;--g900:#111827;
-  --success:#10B981;--success-l:#ECFDF5;--warning:#F59E0B;--warning-l:#FFFBEB;--danger:#EF4444;--danger-l:#FEF2F2;--merch:#8a5a1f;--merch-l:#F6EEDE;
+  --success:#10B981;--success-l:#ECFDF5;--warning:#F59E0B;--warning-l:#FFFBEB;--danger:#EF4444;--danger-l:#FEF2F2;
+  /* 原褐色主题(merch)统一并入中台蓝(brand)体系,配色规范返工 */
+  --merch:#2B5CE6;--merch-l:#EEF3FE;
   --sh-sm:0 1px 2px 0 rgba(0,0,0,.04);--sh-md:0 2px 4px 0 rgba(0,0,0,.04),0 1px 2px 0 rgba(0,0,0,.06);
   --r-md:6px;--r-lg:8px;--r-xl:12px;
 }
@@ -18,7 +20,7 @@ body{background:var(--g50);color:var(--g900);font-family:Inter,-apple-system,Bli
 .shell{min-height:100vh;display:grid;grid-template-columns:230px minmax(0,1fr);}
 .sidebar{background:#1f2533;color:#cbd2e0;min-height:100vh;position:sticky;top:0;height:100vh;overflow:auto;}
 .brand{height:64px;display:flex;align-items:center;gap:12px;padding:0 20px;border-bottom:1px solid rgba(255,255,255,.08);}
-.brand-mark{width:32px;height:32px;display:grid;place-items:center;border-radius:8px;background:var(--merch);color:#fff;font-weight:700;}
+.brand-mark{width:32px;height:32px;display:grid;place-items:center;border-radius:8px;background:var(--brand);color:#fff;font-weight:700;}
 .brand-title{font-size:15px;font-weight:600;color:#fff;}
 .brand-sub{font-size:11px;color:#7a8499;}
 .menu{padding:14px 12px;}
@@ -30,12 +32,12 @@ body{background:var(--g50);color:var(--g900);font-family:Inter,-apple-system,Bli
 .main{min-width:0;}
 .topbar{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:#fff;border-bottom:1px solid var(--g200);position:sticky;top:0;z-index:20;}
 .store-switch{display:flex;align-items:center;gap:8px;font-weight:500;cursor:pointer;}
-.store-switch .badge{font-size:11px;background:var(--merch-l);color:var(--merch);padding:2px 8px;border-radius:4px;}
+.store-switch .badge{font-size:11px;background:var(--brand-light);color:var(--brand);padding:2px 8px;border-radius:4px;}
 .top-actions{display:flex;align-items:center;gap:16px;}
 .icon-btn{width:38px;height:38px;border:1px solid var(--g200);border-radius:6px;background:#fff;color:var(--g500);display:grid;place-items:center;cursor:pointer;position:relative;}
 .dot{position:absolute;top:8px;right:9px;width:7px;height:7px;background:var(--danger);border-radius:50%;border:1.5px solid #fff;}
 .user{display:flex;align-items:center;gap:10px;}
-.avatar{width:34px;height:34px;border-radius:50%;background:var(--merch-l);color:var(--merch);display:grid;place-items:center;font-weight:600;}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--brand-light);color:var(--brand);display:grid;place-items:center;font-weight:600;}
 .page-head{max-width:1320px;margin:0 auto;padding:24px 24px 4px;}
 .crumb{color:var(--g400);font-size:12px;margin-bottom:6px;}
 .page-title{font-size:20px;font-weight:600;}
@@ -52,7 +54,7 @@ body{background:var(--g50);color:var(--g900);font-family:Inter,-apple-system,Bli
 .stat-ic{width:36px;height:36px;display:grid;place-items:center;border-radius:8px;background:var(--brand-light);color:var(--brand);font-size:17px;}
 .stat-ic.green{background:var(--success-l);color:var(--success);}
 .stat-ic.amber{background:var(--warning-l);color:var(--warning);}
-.stat-ic.gold{background:var(--merch-l);color:var(--merch);}
+.stat-ic.gold{background:var(--brand-light);color:var(--brand);}
 .stat-label{color:var(--g500);font-size:13px;}
 .stat-value{font-size:27px;font-weight:600;margin-top:14px;}
 .stat-foot{color:var(--g400);font-size:12px;margin-top:8px;}
@@ -77,7 +79,7 @@ tbody tr:hover{background:var(--g100);}
 .btn:active{transform:scale(.97);}
 .btn-primary{background:var(--brand);color:#fff;}.btn-primary:hover{background:var(--brand-hover);}
 .btn-sec{background:#fff;border-color:var(--g200);color:var(--g700);}.btn-sec:hover{background:var(--g50);}
-.btn-gold{background:var(--merch);color:#fff;}
+.btn-gold{background:var(--brand);color:#fff;}
 /* wallet */
 .wallet-hero{background:linear-gradient(120deg,#2B5CE6,#5B7FF0);border-radius:12px;padding:28px;color:#fff;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
 .wallet-bal{font-size:34px;font-weight:700;margin-top:8px;}
@@ -90,14 +92,14 @@ tbody tr:hover{background:var(--g100);}
 .perm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
 .emp-card{background:#fff;border:1px solid var(--g200);border-radius:8px;padding:18px;}
 .emp-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
-.emp-av{width:44px;height:44px;border-radius:50%;background:var(--merch-l);color:var(--merch);display:grid;place-items:center;font-weight:600;font-size:16px;}
+.emp-av{width:44px;height:44px;border-radius:50%;background:var(--brand-light);color:var(--brand);display:grid;place-items:center;font-weight:600;font-size:16px;}
 .emp-name{font-weight:600;}
 .emp-role{font-size:12px;color:var(--g400);}
 .perm-tag{display:inline-block;font-size:11.5px;padding:3px 8px;border-radius:4px;background:var(--g100);color:var(--g500);margin:2px 3px 2px 0;}
 .perm-tag.on{background:var(--brand-light);color:var(--brand);}
 .tag-mode{display:inline-flex;height:22px;padding:0 8px;border-radius:4px;font-size:12px;align-items:center;}
-.tag-mode.self{background:var(--merch-l);color:var(--merch);}
-.demo-banner{background:linear-gradient(90deg,var(--merch),#b8823a);color:#fff;text-align:center;font-size:12.5px;padding:7px;}
+.tag-mode.self{background:var(--brand-light);color:var(--brand);}
+.demo-banner{background:linear-gradient(90deg,var(--brand),#6E8EF0);color:#fff;text-align:center;font-size:12.5px;padding:7px;}
 .filter-row{display:flex;gap:12px;align-items:center;margin-bottom:16px;}
 .field{height:38px;border:1px solid var(--g200);border-radius:6px;background:#fff;padding:0 12px;display:flex;align-items:center;color:var(--g500);font-size:13px;}
 .field select{border:0;outline:0;background:transparent;font:inherit;color:var(--g700);}
@@ -135,7 +137,7 @@ tbody tr:hover{background:var(--g100);}
         <div class="stat-grid">
           <div class="card stat-card"><div class="stat-accent"></div><div class="stat-top"><div class="stat-ic">▤</div><div class="stat-label">在租订单</div></div><div class="stat-value mono">248</div><div class="stat-foot"><span class="trend up">↑ 12</span> 本月新增</div></div>
           <div class="card stat-card"><div class="stat-accent" style="background:var(--success)"></div><div class="stat-top"><div class="stat-ic green">¥</div><div class="stat-label">本月分账收入</div></div><div class="stat-value mono">¥86,400</div><div class="stat-foot">已扣平台服务费</div></div>
-          <div class="card stat-card"><div class="stat-accent" style="background:var(--merch)"></div><div class="stat-top"><div class="stat-ic gold">◈</div><div class="stat-label">钱包可提现</div></div><div class="stat-value mono">¥52,180</div><div class="stat-foot">可随时提现</div></div>
+          <div class="card stat-card"><div class="stat-accent" style="background:var(--brand)"></div><div class="stat-top"><div class="stat-ic gold">◈</div><div class="stat-label">钱包可提现</div></div><div class="stat-value mono">¥52,180</div><div class="stat-foot">可随时提现</div></div>
           <div class="card stat-card"><div class="stat-accent" style="background:var(--warning)"></div><div class="stat-top"><div class="stat-ic amber">◷</div><div class="stat-label">待办</div></div><div class="stat-value mono">5</div><div class="stat-foot">待交付/待还车</div></div>
         </div>
         <div class="card">

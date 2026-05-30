@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>满点租赁 · C端小程序(演示原型 · 视觉规范方案1)</title>
+<style>
+:root{
+  --blue:#1E3A8A;--blue-light:#3B82F6;--blue-bg:#EFF6FF;
+  --cta:#F97316;--cta-light:#FB923C;--cta-bg:#FFF7ED;
+  --red:#DC2626;--red-bg:#FEF2F2;--green:#16A34A;--green-bg:#F0FDF4;--yellow:#EAB308;--yellow-bg:#FEFCE8;
+  --ink:#0F172A;--ink2:#475569;--ink3:#94A3B8;--card:#FFFFFF;--page:#F8FAFC;--line:#E2E8F0;--disabled:#CBD5E1;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:#eef0f4;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;color:var(--ink);padding:24px 0 60px;display:flex;flex-direction:column;align-items:center;gap:8px;line-height:1.5;}
+.mono{font-variant-numeric:tabular-nums;}
+.demo-note{font-size:12.5px;color:var(--ink2);background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 16px;margin-bottom:8px;}
+.stage{display:flex;gap:28px;flex-wrap:wrap;justify-content:center;align-items:flex-start;max-width:1400px;}
+.phone-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;}
+.phone-label{font-size:13px;color:var(--ink2);font-weight:500;}
+.phone{width:340px;height:724px;background:var(--page);border-radius:38px;border:10px solid #11193a;box-shadow:0 20px 50px rgba(20,30,50,.22);overflow:hidden;position:relative;display:flex;flex-direction:column;}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:150px;height:26px;background:#11193a;border-radius:0 0 16px 16px;z-index:30;}
+.statusbar{height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 22px 0 26px;font-size:12px;font-weight:600;flex-shrink:0;background:#fff;}
+.screen{flex:1;overflow-y:auto;overflow-x:hidden;position:relative;background:var(--page);}
+.screen::-webkit-scrollbar{width:0;}
+.topnav{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;}
+.topnav .city{font-size:15px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:3px;}
+.topnav .center-title{font-size:17px;font-weight:600;}
+.topnav .back{font-size:22px;color:var(--ink);}
+.topnav .pill-native{display:flex;gap:2px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:3px 8px;color:var(--ink2);font-size:13px;}
+.banner{margin:14px;height:130px;border-radius:14px;background:linear-gradient(120deg,#1E3A8A,#3B82F6);position:relative;overflow:hidden;color:#fff;padding:18px;}
+.banner h2{font-size:20px;font-weight:700;}
+.banner p{font-size:12.5px;opacity:.92;margin-top:6px;max-width:180px;}
+.banner .deco{position:absolute;right:-20px;bottom:-20px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.08);}
+.banner .deco2{position:absolute;right:30px;top:20px;width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.06);}
+.searchbar{margin:0 14px;height:40px;background:#fff;border:1px solid var(--line);border-radius:999px;display:flex;align-items:center;padding:0 14px;gap:8px;color:var(--ink3);font-size:13px;}
+.cats{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:16px 14px 6px;}
+.cat{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.cat .cic{width:46px;height:46px;border-radius:12px;background:var(--blue-bg);display:grid;place-items:center;color:var(--blue);}
+.cat .ct{font-size:11.5px;color:var(--ink2);}
+.sec-title{font-size:17px;font-weight:600;padding:14px 16px 8px;display:flex;justify-content:space-between;align-items:baseline;}
+.sec-title .more{font-size:12px;color:var(--ink3);font-weight:400;}
+.prod{background:#fff;border-radius:14px;padding:12px;display:flex;gap:12px;margin:0 14px 12px;box-shadow:0 1px 2px rgba(15,23,42,.04);}
+.prod .img{width:90px;height:90px;border-radius:12px;background:linear-gradient(135deg,#eef1f6,#dde3ee);flex-shrink:0;display:grid;place-items:center;color:var(--ink3);font-size:11px;}
+.prod .info{flex:1;min-width:0;display:flex;flex-direction:column;}
+.biz-tag{display:inline-block;font-size:10.5px;color:var(--blue);background:var(--blue-bg);padding:2px 7px;border-radius:6px;align-self:flex-start;margin-bottom:5px;}
+.prod .p-name{font-weight:600;font-size:15px;}
+.prod .p-spec{font-size:12px;color:var(--ink3);margin-top:3px;}
+.prod .p-price{margin-top:auto;display:flex;align-items:baseline;gap:5px;}
+.p-cur{font-size:14px;color:var(--red);}
+.p-big{color:var(--red);font-weight:700;font-size:20px;}
+.p-unit{font-size:13px;color:var(--ink3);}
+.anti-fraud{margin:4px 14px 14px;background:var(--yellow-bg);border:1px solid #FDE68A;border-radius:10px;padding:10px 12px;font-size:12px;color:#854d0e;display:flex;gap:8px;align-items:flex-start;}
+.tabbar{height:60px;background:#fff;border-top:.5px solid var(--line);display:flex;flex-shrink:0;padding-bottom:4px;}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--ink3);font-size:11px;cursor:pointer;}
+.tab svg{width:22px;height:22px;}
+.tab.on{color:var(--blue);font-weight:500;}
+.cfg-card{background:#fff;border-radius:14px;padding:16px;margin:12px 14px;box-shadow:0 1px 2px rgba(15,23,42,.04);}
+.cfg-prod{display:flex;gap:12px;}
+.cfg-prod .img{width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,#eef1f6,#dde3ee);flex-shrink:0;display:grid;place-items:center;color:var(--ink3);font-size:10px;}
+.cfg-name{font-weight:600;font-size:15px;}
+.cfg-meta{font-size:12px;color:var(--ink2);margin-top:4px;}
+.cfg-meta.blue{color:var(--blue);}
+.value-confirm{margin-top:14px;background:var(--blue-bg);border-radius:12px;padding:12px;}
+.value-confirm .vc-t{font-size:13.5px;color:var(--blue);font-weight:600;display:flex;align-items:center;gap:6px;}
+.value-confirm .vc-d{font-size:12px;color:var(--ink2);margin-top:4px;}
+.fee-row{display:flex;justify-content:space-between;padding:10px 0;font-size:14px;border-bottom:1px solid var(--line);}
+.fee-row:last-of-type{border-bottom:none;}
+.fee-row .lbl{color:var(--ink2);}
+.fee-row .val{color:var(--ink);font-weight:500;}
+.pay-highlight{background:var(--cta-bg);border-radius:12px;padding:14px;margin-top:8px;display:flex;justify-content:space-between;align-items:center;}
+.pay-highlight .ph-l{font-size:13px;color:var(--cta);font-weight:600;}
+.pay-highlight .ph-big{font-size:28px;font-weight:700;color:var(--cta);}
+.pay-highlight .ph-sub{font-size:11px;color:var(--ink3);text-align:right;margin-top:2px;}
+.term-box{background:var(--blue-bg);border-radius:12px;padding:12px;margin:12px 14px;}
+.term-box .tb-t{font-size:14px;font-weight:600;color:var(--blue);}
+.term-box .tb-d{font-size:12px;color:var(--ink2);margin-top:5px;line-height:1.7;}
+.checks{margin:4px 14px;}
+.check{display:flex;align-items:flex-start;gap:10px;padding:9px 0;font-size:13px;color:var(--ink2);}
+.check .box{width:16px;height:16px;border-radius:4px;background:var(--blue);color:#fff;display:grid;place-items:center;font-size:10px;flex-shrink:0;margin-top:2px;}
+.check a{color:var(--blue);text-decoration:underline;}
+.paybar{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:14px;}
+.paybar .pb-info{flex:0 0 auto;}
+.paybar .pb-label{font-size:11px;color:var(--ink3);}
+.paybar .pb-amt{font-size:22px;font-weight:700;color:var(--red);}
+.btn-cta{flex:1;height:52px;background:var(--cta);color:#fff;border:0;border-radius:28px;font-size:16px;font-weight:600;cursor:pointer;}
+.btn-cta:active{background:var(--cta-light);}
+.biz-filter{display:flex;gap:8px;padding:12px 14px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:48px;z-index:19;}
+.bf{padding:6px 14px;border-radius:8px;font-size:13px;color:var(--ink2);background:var(--page);cursor:pointer;}
+.bf.on{background:var(--blue-bg);color:var(--blue);font-weight:600;}
+.ord-card{background:#fff;border-radius:14px;padding:14px;margin:12px 14px;box-shadow:0 1px 2px rgba(15,23,42,.04);}
+.ord-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:1px solid var(--line);}
+.ord-store{font-size:13px;color:var(--ink2);font-weight:500;display:flex;align-items:center;gap:6px;}
+.biz-chip{font-size:10.5px;padding:2px 7px;border-radius:6px;background:var(--blue-bg);color:var(--blue);}
+.st-pill{font-size:12px;font-weight:500;padding:3px 9px;border-radius:6px;}
+.st-pill.active{background:var(--green-bg);color:var(--green);}
+.st-pill.due{background:var(--yellow-bg);color:#a16207;}
+.st-pill.done{background:#F1F5F9;color:#64748B;}
+.ord-body{display:flex;gap:12px;padding:12px 0;}
+.ord-body .img{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,#eef1f6,#dde3ee);flex-shrink:0;}
+.ord-info{flex:1;}
+.ord-pname{font-weight:600;font-size:14px;}
+.ord-prog{font-size:12px;color:var(--ink2);margin-top:4px;}
+.ord-pay{font-size:12px;color:var(--ink2);margin-top:2px;}
+.ord-pay b{color:var(--ink);}
+.ord-foot{display:flex;justify-content:flex-end;gap:8px;padding-top:10px;border-top:1px solid var(--line);}
+.btn-line{height:44px;padding:0 18px;border-radius:24px;font-size:14px;font-weight:500;cursor:pointer;border:1px solid var(--blue);background:#fff;color:var(--blue);}
+.btn-fill-cta{height:44px;padding:0 18px;border-radius:24px;font-size:14px;font-weight:600;cursor:pointer;border:0;background:var(--cta);color:#fff;}
+.eot-intro{padding:16px 16px 4px;}
+.eot-intro h3{font-size:17px;font-weight:600;}
+.eot-intro p{font-size:13px;color:var(--ink2);margin-top:6px;line-height:1.7;}
+.eot-opt{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin:0 14px 12px;cursor:pointer;}
+.eot-opt .eo-head{display:flex;align-items:center;gap:12px;}
+.eot-opt .eo-ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--blue-bg);color:var(--blue);}
+.eot-opt.buy .eo-ic{background:var(--cta-bg);color:var(--cta);}
+.eot-opt .eo-t{font-weight:600;font-size:15px;}
+.eot-opt .eo-arrow{margin-left:auto;color:var(--disabled);font-size:20px;}
+.eot-opt .eo-d{font-size:12.5px;color:var(--ink2);margin-top:10px;line-height:1.7;}
+.eot-tip{padding:4px 18px 16px;font-size:11.5px;color:var(--ink3);line-height:1.6;}
+.page{display:none;flex-direction:column;height:100%;}
+.page.on{display:flex;}
+</style>
+</head>
+<body>
+<div class="demo-note">C 端小程序 · 演示原型 · 按《C端视觉规范·方案1》:深蓝#1E3A8A + 橙色CTA · 底部4Tab线性图标 · 守C端红线</div>
+<div class="stage">
+
+  <div class="phone-wrap">
+    <div class="phone-label">① 安心用首页(默认进入)· 底部4 Tab</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="topnav">
+          <span class="city">深圳 · 南山 ▾</span>
+          <span style="color:var(--blue)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span>
+        </div>
+        <div class="searchbar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg> 搜索商品、品牌、型号</div>
+        <div class="banner"><div class="deco"></div><div class="deco2"></div><h2>安心用</h2><p>好物轻松租 · 月付灵活 · 到期可还可续可买</p></div>
+        <div class="cats">
+          <div class="cat"><div class="cic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 18h2"/></svg></div><div class="ct">手机</div></div>
+          <div class="cat"><div class="cic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="5.5" cy="17" r="3"/><circle cx="18.5" cy="17" r="3"/><path d="M5.5 17h7l4-7h3M9 17l4-10h3"/></svg></div><div class="ct">电动车</div></div>
+          <div class="cat"><div class="cic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M2 20h20"/></svg></div><div class="ct">电脑</div></div>
+          <div class="cat"><div class="cic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 7h6"/></svg></div><div class="ct">平板</div></div>
+          <div class="cat"><div class="cic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="6" y="7" width="12" height="10" rx="3"/><path d="M9 7V5h6v2M9 17v2h6v-2"/></svg></div><div class="ct">智能穿戴</div></div>
+        </div>
+        <div class="sec-title">为你推荐 <span class="more">查看全部 ›</span></div>
+        <div class="prod">
+          <div class="img">设备图</div>
+          <div class="info"><span class="biz-tag">安心用 · 长租</span><div class="p-name">iPhone 15 128G 蓝色</div><div class="p-spec">全新 · 正品保障 · 合同保障</div><div class="p-price"><span class="p-cur">¥</span><span class="p-big mono">800</span><span class="p-unit">/期 起</span></div></div>
+        </div>
+        <div class="prod">
+          <div class="img">设备图</div>
+          <div class="info"><span class="biz-tag">安心用 · 长租</span><div class="p-name">华为 Mate 60 256G</div><div class="p-spec">全新 · 正品保障</div><div class="p-price"><span class="p-cur">¥</span><span class="p-big mono">880</span><span class="p-unit">/期 起</span></div></div>
+        </div>
+        <div class="anti-fraud"><span>⚠</span><span>反诈提醒:不向非平台账户转账,不轻信非官方回收/退款电话。</span></div>
+      </div>
+      <div class="tabbar">
+        <div class="tab on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 4 6v6c0 5 3.5 7.5 8 9 4.5-1.5 8-4 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg>安心用</div>
+        <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/></svg>体验租</div>
+        <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="2" y="13" width="4" height="7" rx="2"/><rect x="18" y="13" width="4" height="7" rx="2"/></svg>客服</div>
+        <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg>我的</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phone-wrap">
+    <div class="phone-label">② 下单确认页(扫码 / 点商品进入)</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="topnav"><span class="back">‹</span><span class="center-title">确认订单</span><span class="pill-native">··· ⊙</span></div>
+        <div class="cfg-card">
+          <div class="cfg-prod">
+            <div class="img">设备图</div>
+            <div><div class="cfg-name">iPhone 15 128G 蓝色</div><div class="cfg-meta">成色:全新　惠讯租 · 西丽店</div><div class="cfg-meta blue">正品保障 · 合同保障 · 客服协助</div></div>
+          </div>
+          <div class="value-confirm">
+            <div class="vc-t"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg> 设备价值确认</div>
+            <div class="vc-d">型号 / 成色 / 价值 ¥6,000.00 · 请确认无误(只读)</div>
+          </div>
+        </div>
+        <div class="cfg-card">
+          <div style="font-weight:600;font-size:15px;margin-bottom:4px">费用方案</div>
+          <div class="fee-row"><span class="lbl">保证金</span><span class="val mono">¥800.00</span></div>
+          <div class="fee-row"><span class="lbl">首期应付</span><span class="val mono">¥800.00</span></div>
+          <div class="fee-row"><span class="lbl">每期应付 × 12 期</span><span class="val mono">¥800.00</span></div>
+          <div class="pay-highlight">
+            <div><div class="ph-l">实际您要付</div></div>
+            <div style="text-align:right"><div class="ph-big mono">¥1,600</div><div class="ph-sub">总额¥1,680 − 保证金抵¥80</div></div>
+          </div>
+        </div>
+        <div class="term-box">
+          <div class="tb-t">最低服务期:3 个月起</div>
+          <div class="tb-d">· 3个月内提前归还,需结清已发生费用<br>· 到期可:归还 / 继续使用 / 申请购买</div>
+        </div>
+        <div class="checks">
+          <div class="check"><span class="box">✓</span><span>我已阅读并同意<a>《租赁服务协议》</a><a>《隐私政策》</a>等</span></div>
+          <div class="check"><span class="box">✓</span><span>我已确认设备型号、成色及价值无误</span></div>
+          <div class="check"><span class="box">✓</span><span>我已知悉最低服务期 3 个月起及其规则</span></div>
+        </div>
+        <div style="height:6px"></div>
+        <div class="paybar">
+          <div class="pb-info"><div class="pb-label">实际您要付</div><div class="pb-amt mono">¥1,600</div></div>
+          <button class="btn-cta">立即下单</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phone-wrap">
+    <div class="phone-label">③ 订单(业务线筛选)→ 到期三选一</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="page on" id="orders">
+          <div class="topnav"><span class="center-title">订单</span></div>
+          <div class="biz-filter"><span class="bf on">全部</span><span class="bf">安心用</span><span class="bf">体验租</span></div>
+          <div class="ord-card">
+            <div class="ord-head"><span class="ord-store">惠讯租 · 西丽店 <span class="biz-chip">安心用</span></span><span class="st-pill active">履约中</span></div>
+            <div class="ord-body"><div class="img"></div><div class="ord-info"><div class="ord-pname">iPhone 15 128G 蓝色</div><div class="ord-prog">已还 3 / 12 期 · 下期 6月1日</div><div class="ord-pay">每期应付 <b class="mono">¥800.00</b></div></div></div>
+            <div class="ord-foot"><button class="btn-line">提前归还</button><button class="btn-fill-cta">去还款</button></div>
+          </div>
+          <div class="ord-card">
+            <div class="ord-head"><span class="ord-store">鼎租 · 车公庙店 <span class="biz-chip">安心用</span></span><span class="st-pill due">即将到期</span></div>
+            <div class="ord-body"><div class="img"></div><div class="ord-info"><div class="ord-pname">小米电动车 M5 Pro</div><div class="ord-prog">已还 6 / 6 期 · 6月3日到期</div><div class="ord-pay">租期即将结束,请选择处理方式</div></div></div>
+            <div class="ord-foot"><button class="btn-fill-cta" onclick="showEOT()">到期处理 ›</button></div>
+          </div>
+          <div class="ord-card">
+            <div class="ord-head"><span class="ord-store">鼎租 · 车公庙店 <span class="biz-chip">安心用</span></span><span class="st-pill done">已完成</span></div>
+            <div class="ord-body"><div class="img"></div><div class="ord-info"><div class="ord-pname">iPhone 14</div><div class="ord-prog">已购买 · 所有权已转移</div><div class="ord-pay">订单已结束</div></div></div>
+          </div>
+        </div>
+        <div class="page" id="eot">
+          <div class="topnav"><span class="back" onclick="hideEOT()">‹</span><span class="center-title">到期处理</span><span class="pill-native">··· ⊙</span></div>
+          <div class="eot-intro"><h3>租期即将结束</h3><p>小米电动车 M5 Pro · 6月3日到期。以下三个选项由您自主选择:</p></div>
+          <div class="eot-opt">
+            <div class="eo-head"><div class="eo-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 5 5v1"/></svg></div><div class="eo-t">归还设备</div><div class="eo-arrow">›</div></div>
+            <div class="eo-d">到店或寄回 → 检测验收 → 退还保证金,订单结束。</div>
+          </div>
+          <div class="eot-opt">
+            <div class="eo-head"><div class="eo-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 8"/><path d="M21 3v5h-5M21 12a9 9 0 0 1-9 9 9 9 0 0 1-6-2.3L3 16"/><path d="M3 21v-5h5"/></svg></div><div class="eo-t">继续使用(续租)</div><div class="eo-arrow">›</div></div>
+            <div class="eo-d">按续租方案继续按月付,无需再付保证金。</div>
+          </div>
+          <div class="eot-opt buy">
+            <div class="eo-head"><div class="eo-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/><path d="M2 3h3l2.5 13h11L21 7H6"/></svg></div><div class="eo-t">申请购买</div><div class="eo-arrow">›</div></div>
+            <div class="eo-d">查看购买价(保证金可抵扣)→ 独立确认页 → 支付,付清后所有权转移。</div>
+          </div>
+          <div class="eot-tip">温馨提示:若您暂不选择,我们会按到期提醒继续联系您,不会自动为您购买。</div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 4 6v6c0 5 3.5 7.5 8 9 4.5-1.5 8-4 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg>安心用</div>
+        <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/></svg>体验租</div>
+        <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="2" y="13" width="4" height="7" rx="2"/><rect x="18" y="13" width="4" height="7" rx="2"/></svg>客服</div>
+        <div class="tab on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg>我的</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script>
+function showEOT(){document.getElementById('orders').classList.remove('on');document.getElementById('eot').classList.add('on');}
+function hideEOT(){document.getElementById('eot').classList.remove('on');document.getElementById('orders').classList.add('on');}
+</script>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>满点租赁 · 商家端(演示原型)</title>
+<style>
+:root{
+  --brand:#2B5CE6;--brand-hover:#1E4FD4;--brand-light:#EEF3FE;
+  --g50:#FAFBFC;--g100:#F4F5F7;--g200:#E5E7EB;--g300:#D1D5DB;--g400:#9CA3AF;--g500:#6B7280;--g700:#374151;--g900:#111827;
+  --success:#10B981;--success-l:#ECFDF5;--warning:#F59E0B;--warning-l:#FFFBEB;--danger:#EF4444;--danger-l:#FEF2F2;--merch:#8a5a1f;--merch-l:#F6EEDE;
+  --sh-sm:0 1px 2px 0 rgba(0,0,0,.04);--sh-md:0 2px 4px 0 rgba(0,0,0,.04),0 1px 2px 0 rgba(0,0,0,.06);
+  --r-md:6px;--r-lg:8px;--r-xl:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--g50);color:var(--g900);font-family:Inter,-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;font-size:14px;line-height:20px;-webkit-font-smoothing:antialiased;}
+.mono{font-family:"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;font-feature-settings:"tnum";}
+.shell{min-height:100vh;display:grid;grid-template-columns:230px minmax(0,1fr);}
+.sidebar{background:#1f2533;color:#cbd2e0;min-height:100vh;position:sticky;top:0;height:100vh;overflow:auto;}
+.brand{height:64px;display:flex;align-items:center;gap:12px;padding:0 20px;border-bottom:1px solid rgba(255,255,255,.08);}
+.brand-mark{width:32px;height:32px;display:grid;place-items:center;border-radius:8px;background:var(--merch);color:#fff;font-weight:700;}
+.brand-title{font-size:15px;font-weight:600;color:#fff;}
+.brand-sub{font-size:11px;color:#7a8499;}
+.menu{padding:14px 12px;}
+.menu-group-title{padding:12px 12px 6px;color:#6b7488;font-size:11px;font-weight:600;letter-spacing:.04em;}
+.menu-item{height:40px;display:flex;align-items:center;gap:11px;padding:0 12px;margin-bottom:3px;border-radius:6px;color:#cbd2e0;cursor:pointer;transition:all .15s;font-size:13.5px;}
+.menu-item .ic{width:18px;text-align:center;font-size:15px;}
+.menu-item:hover{background:rgba(255,255,255,.06);color:#fff;}
+.menu-item.active{background:var(--brand);color:#fff;font-weight:500;}
+.main{min-width:0;}
+.topbar{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:#fff;border-bottom:1px solid var(--g200);position:sticky;top:0;z-index:20;}
+.store-switch{display:flex;align-items:center;gap:8px;font-weight:500;cursor:pointer;}
+.store-switch .badge{font-size:11px;background:var(--merch-l);color:var(--merch);padding:2px 8px;border-radius:4px;}
+.top-actions{display:flex;align-items:center;gap:16px;}
+.icon-btn{width:38px;height:38px;border:1px solid var(--g200);border-radius:6px;background:#fff;color:var(--g500);display:grid;place-items:center;cursor:pointer;position:relative;}
+.dot{position:absolute;top:8px;right:9px;width:7px;height:7px;background:var(--danger);border-radius:50%;border:1.5px solid #fff;}
+.user{display:flex;align-items:center;gap:10px;}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--merch-l);color:var(--merch);display:grid;place-items:center;font-weight:600;}
+.page-head{max-width:1320px;margin:0 auto;padding:24px 24px 4px;}
+.crumb{color:var(--g400);font-size:12px;margin-bottom:6px;}
+.page-title{font-size:20px;font-weight:600;}
+.page-sub{color:var(--g500);font-size:13px;margin-top:4px;}
+.content{max-width:1320px;margin:0 auto;padding:16px 24px 40px;}
+.view{display:none;animation:fade .25s;}
+.view.active{display:block;}
+@keyframes fade{from{opacity:.4;transform:translateY(4px);}to{opacity:1;transform:none;}}
+.stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:16px;}
+.card{background:#fff;border:1px solid var(--g200);border-radius:8px;box-shadow:var(--sh-sm);padding:24px;}
+.stat-card{position:relative;padding:20px;}
+.stat-accent{position:absolute;left:0;top:20px;width:3px;height:40px;border-radius:0 999px 999px 0;background:var(--brand);}
+.stat-top{display:flex;align-items:center;gap:12px;}
+.stat-ic{width:36px;height:36px;display:grid;place-items:center;border-radius:8px;background:var(--brand-light);color:var(--brand);font-size:17px;}
+.stat-ic.green{background:var(--success-l);color:var(--success);}
+.stat-ic.amber{background:var(--warning-l);color:var(--warning);}
+.stat-ic.gold{background:var(--merch-l);color:var(--merch);}
+.stat-label{color:var(--g500);font-size:13px;}
+.stat-value{font-size:27px;font-weight:600;margin-top:14px;}
+.stat-foot{color:var(--g400);font-size:12px;margin-top:8px;}
+.trend{font-size:12px;font-weight:500;}.trend.up{color:var(--success);}
+.card-title{font-size:16px;font-weight:600;}
+.card-sub{color:var(--g500);font-size:13px;margin-top:4px;}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:16px;}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;min-width:820px;}
+th{height:44px;padding:0 16px;background:#F9FAFB;color:var(--g500);font-size:12px;font-weight:500;text-align:left;border-bottom:1px solid var(--g200);}
+td{height:56px;padding:0 16px;color:var(--g700);border-bottom:1px solid var(--g200);vertical-align:middle;}
+tbody tr:hover{background:var(--g100);}
+.cell-primary{color:var(--g900);font-weight:500;}
+.cell-sub{color:var(--g400);font-size:12px;}
+.amount{font-family:"SF Mono",Menlo,monospace;font-feature-settings:"tnum";font-weight:600;color:var(--g900);text-align:right;}
+.pill{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:500;}
+.pill.gray{background:var(--g100);color:var(--g500);}.pill.blue{background:var(--brand-light);color:var(--brand);}
+.pill.green{background:var(--success-l);color:var(--success);}.pill.amber{background:var(--warning-l);color:var(--warning);}.pill.red{background:var(--danger-l);color:var(--danger);}
+.pulse{width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse 1.2s infinite;}
+@keyframes pulse{0%,100%{opacity:.35;transform:scale(.8);}50%{opacity:1;transform:scale(1);}}
+.btn{height:38px;display:inline-flex;align-items:center;gap:8px;border-radius:6px;padding:0 16px;border:1px solid transparent;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:var(--brand);color:#fff;}.btn-primary:hover{background:var(--brand-hover);}
+.btn-sec{background:#fff;border-color:var(--g200);color:var(--g700);}.btn-sec:hover{background:var(--g50);}
+.btn-gold{background:var(--merch);color:#fff;}
+/* wallet */
+.wallet-hero{background:linear-gradient(120deg,#2B5CE6,#5B7FF0);border-radius:12px;padding:28px;color:#fff;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.wallet-bal{font-size:34px;font-weight:700;margin-top:8px;}
+.wallet-sub{font-size:13px;opacity:.9;}
+.wallet-stats{display:flex;gap:36px;margin-top:4px;}
+.wallet-stats .ws-v{font-size:18px;font-weight:600;}
+.wallet-stats .ws-l{font-size:12px;opacity:.85;}
+.withdraw-note{background:var(--warning-l);border:1px solid #FDE68A;border-radius:8px;padding:12px 14px;color:#92400E;font-size:12.5px;margin-bottom:16px;line-height:1.6;}
+/* perm */
+.perm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+.emp-card{background:#fff;border:1px solid var(--g200);border-radius:8px;padding:18px;}
+.emp-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.emp-av{width:44px;height:44px;border-radius:50%;background:var(--merch-l);color:var(--merch);display:grid;place-items:center;font-weight:600;font-size:16px;}
+.emp-name{font-weight:600;}
+.emp-role{font-size:12px;color:var(--g400);}
+.perm-tag{display:inline-block;font-size:11.5px;padding:3px 8px;border-radius:4px;background:var(--g100);color:var(--g500);margin:2px 3px 2px 0;}
+.perm-tag.on{background:var(--brand-light);color:var(--brand);}
+.tag-mode{display:inline-flex;height:22px;padding:0 8px;border-radius:4px;font-size:12px;align-items:center;}
+.tag-mode.self{background:var(--merch-l);color:var(--merch);}
+.demo-banner{background:linear-gradient(90deg,var(--merch),#b8823a);color:#fff;text-align:center;font-size:12.5px;padding:7px;}
+.filter-row{display:flex;gap:12px;align-items:center;margin-bottom:16px;}
+.field{height:38px;border:1px solid var(--g200);border-radius:6px;background:#fff;padding:0 12px;display:flex;align-items:center;color:var(--g500);font-size:13px;}
+.field select{border:0;outline:0;background:transparent;font:inherit;color:var(--g700);}
+</style>
+</head>
+<body>
+<div class="demo-banner">商家端 · 演示原型 · 模拟数据 · 商家仅可见自己门店数据,不可见平台利润 / 服务费拆分 / 其他商家</div>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-mark">惠</div><div><div class="brand-title">惠讯租</div><div class="brand-sub">商家管理端</div></div></div>
+    <nav class="menu">
+      <div class="menu-group-title">经营</div>
+      <div class="menu-item active" onclick="nav('dash',this)"><span class="ic">▦</span>经营工作台</div>
+      <div class="menu-item" onclick="nav('orders',this)"><span class="ic">▤</span>我的订单</div>
+      <div class="menu-item" onclick="nav('blank',this)"><span class="ic">▢</span>车辆/设备</div>
+      <div class="menu-item" onclick="nav('blank',this)"><span class="ic">◌</span>办单方案配置</div>
+      <div class="menu-group-title">资金</div>
+      <div class="menu-item" onclick="nav('wallet',this)"><span class="ic">◈</span>我的钱包</div>
+      <div class="menu-item" onclick="nav('blank',this)"><span class="ic">¥</span>收益流水</div>
+      <div class="menu-group-title">管理</div>
+      <div class="menu-item" onclick="nav('perm',this)"><span class="ic">👥</span>员工与权限</div>
+      <div class="menu-item" onclick="nav('blank',this)"><span class="ic">⌂</span>门店管理</div>
+    </nav>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="store-switch">惠讯租 · 西丽店 <span class="badge">联营合作</span> ▾</div>
+      <div class="top-actions"><div class="icon-btn">✉<span class="dot"></span></div><div class="icon-btn">⊙</div><div class="user"><div class="avatar">王</div><div><div style="font-weight:500;font-size:13px">王老板</div><div style="color:var(--g400);font-size:12px">商家老板</div></div></div></div>
+    </div>
+
+    <!-- DASH -->
+    <div class="view active" id="dash">
+      <div class="page-head"><div class="crumb">经营 / 经营工作台</div><div class="page-title">经营工作台</div><div class="page-sub">惠讯租 · 西丽店 · 仅展示本店经营数据</div></div>
+      <div class="content">
+        <div class="stat-grid">
+          <div class="card stat-card"><div class="stat-accent"></div><div class="stat-top"><div class="stat-ic">▤</div><div class="stat-label">在租订单</div></div><div class="stat-value mono">248</div><div class="stat-foot"><span class="trend up">↑ 12</span> 本月新增</div></div>
+          <div class="card stat-card"><div class="stat-accent" style="background:var(--success)"></div><div class="stat-top"><div class="stat-ic green">¥</div><div class="stat-label">本月分账收入</div></div><div class="stat-value mono">¥86,400</div><div class="stat-foot">已扣平台服务费</div></div>
+          <div class="card stat-card"><div class="stat-accent" style="background:var(--merch)"></div><div class="stat-top"><div class="stat-ic gold">◈</div><div class="stat-label">钱包可提现</div></div><div class="stat-value mono">¥52,180</div><div class="stat-foot">可随时提现</div></div>
+          <div class="card stat-card"><div class="stat-accent" style="background:var(--warning)"></div><div class="stat-top"><div class="stat-ic amber">◷</div><div class="stat-label">待办</div></div><div class="stat-value mono">5</div><div class="stat-foot">待交付/待还车</div></div>
+        </div>
+        <div class="card">
+          <div class="toolbar"><div><div class="card-title">今日待办</div><div class="card-sub">需要门店处理的事项</div></div></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>事项</th><th>订单/客户</th><th>设备</th><th style="text-align:right">操作</th></tr></thead>
+            <tbody>
+              <tr><td><span class="pill blue">待交付</span></td><td><div class="cell-primary">YZZ…3092</div><div class="cell-sub">张先生</div></td><td>iPhone 15 128G</td><td style="text-align:right"><span class="btn btn-primary" style="height:30px;padding:0 12px">去交付</span></td></tr>
+              <tr><td><span class="pill amber">待还车验收</span></td><td><div class="cell-primary">YZZ…3066</div><div class="cell-sub">陈先生</div></td><td>华为 Mate 60</td><td style="text-align:right"><span class="btn btn-sec" style="height:30px;padding:0 12px">验收</span></td></tr>
+              <tr><td><span class="pill gray">待审核</span></td><td><div class="cell-primary">YZZ…3090</div><div class="cell-sub">王先生</div></td><td>iPhone 15 Pro</td><td style="text-align:right"><span class="cell-sub">运营主控</span></td></tr>
+            </tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="view" id="orders">
+      <div class="page-head"><div class="crumb">经营 / 我的订单</div><div class="page-title">我的订单</div><div class="page-sub">仅本店订单 · 联营/平台订单只显示履约视图,资金主控在平台</div></div>
+      <div class="content">
+        <div class="filter-row">
+          <div class="field"><select><option>全部状态</option><option>履约中</option><option>待交付</option><option>已完成</option></select></div>
+          <div class="field"><select><option>全部类型</option><option>商家订单</option><option>联营订单</option></select></div>
+          <div style="flex:1"></div><button class="btn btn-primary">+ 新建办单</button>
+        </div>
+        <div class="card" style="padding:0">
+          <div class="table-wrap"><table>
+            <thead><tr><th>订单/客户</th><th>设备</th><th>类型</th><th>期数</th><th style="text-align:right">每期</th><th>状态</th></tr></thead>
+            <tbody>
+              <tr><td><div class="cell-primary">YZZ…3092</div><div class="cell-sub">张先生 138****6677</div></td><td>iPhone 15 128G</td><td><span class="tag-mode self">联营</span></td><td class="mono">12期</td><td class="amount">¥800</td><td><span class="pill blue"><span class="pulse"></span>履约中</span></td></tr>
+              <tr><td><div class="cell-primary">YZZ…3066</div><div class="cell-sub">陈先生 133****5520</div></td><td>华为 Mate 60</td><td><span class="tag-mode self">联营</span></td><td class="mono">12期</td><td class="amount">¥880</td><td><span class="pill amber">待还车</span></td></tr>
+              <tr><td><div class="cell-primary">YZZ…3081</div><div class="cell-sub">刘女士 135****1102</div></td><td>iPhone 14</td><td><span class="tag-mode self">联营</span></td><td class="mono">6期</td><td class="amount">¥620</td><td><span class="pill green">已完成</span></td></tr>
+            </tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WALLET -->
+    <div class="view" id="wallet">
+      <div class="page-head"><div class="crumb">资金 / 我的钱包</div><div class="page-title">我的钱包</div><div class="page-sub">客户回款扣除平台服务费后进入钱包 · 可自助提现</div></div>
+      <div class="content">
+        <div class="wallet-hero">
+          <div><div class="wallet-sub">可提现余额</div><div class="wallet-bal mono">¥52,180.00</div>
+            <div class="wallet-stats"><div><div class="ws-v mono">¥8,420</div><div class="ws-l">冻结中</div></div><div><div class="ws-v mono">¥15,000</div><div class="ws-l">提现中</div></div><div><div class="ws-v mono">¥286,500</div><div class="ws-l">累计收入</div></div></div>
+          </div>
+          <button class="btn" style="background:#fff;color:var(--brand);height:44px;padding:0 28px;font-weight:600">申请提现</button>
+        </div>
+        <div class="withdraw-note">⚠ 提现规则:单笔 500–20,000 元,每日最多 3 次,手续费 0.2%+0.5 元。超 20,000 元需人工审核。提现需二次确认 + 短信验证。结算账户修改仅限老板操作。</div>
+        <div class="card" style="padding:0">
+          <div class="table-wrap"><table>
+            <thead><tr><th>流水号</th><th>类型</th><th>时间</th><th style="text-align:right">金额</th><th>状态</th></tr></thead>
+            <tbody>
+              <tr><td class="mono cell-sub">WD…0455</td><td><span class="pill amber">提现</span></td><td class="cell-sub">今天 09:12</td><td class="amount">-¥15,000.00</td><td><span class="pill amber"><span class="pulse"></span>审核中</span></td></tr>
+              <tr><td class="mono cell-sub">IN…8821</td><td><span class="pill blue">租金分账</span></td><td class="cell-sub">今天 08:30</td><td class="amount" style="color:var(--success)">+¥784.00</td><td><span class="pill green">已入账</span></td></tr>
+              <tr><td class="mono cell-sub">IN…8810</td><td><span class="pill blue">首期分账</span></td><td class="cell-sub">昨天 16:20</td><td class="amount" style="color:var(--success)">+¥1,568.00</td><td><span class="pill green">已入账</span></td></tr>
+              <tr><td class="mono cell-sub">WD…0451</td><td><span class="pill amber">提现</span></td><td class="cell-sub">5月28日</td><td class="amount">-¥8,000.00</td><td><span class="pill green">已到账</span></td></tr>
+            </tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERM -->
+    <div class="view" id="perm">
+      <div class="page-head"><div class="crumb">管理 / 员工与权限</div><div class="page-title">员工与权限</div><div class="page-sub">按员工分配权限 · 财务人员可提现但不可改结算账户</div></div>
+      <div class="content">
+        <div class="toolbar"><div></div><button class="btn btn-primary">+ 添加员工</button></div>
+        <div class="perm-grid">
+          <div class="emp-card"><div class="emp-head"><div class="emp-av">王</div><div><div class="emp-name">王老板</div><div class="emp-role">商家老板 · 全部权限</div></div></div><div><span class="perm-tag on">钱包</span><span class="perm-tag on">提现</span><span class="perm-tag on">改结算账户</span><span class="perm-tag on">员工管理</span><span class="perm-tag on">办单</span></div></div>
+          <div class="emp-card"><div class="emp-head"><div class="emp-av">李</div><div><div class="emp-name">李会计</div><div class="emp-role">财务人员</div></div></div><div><span class="perm-tag on">钱包查看</span><span class="perm-tag on">提现</span><span class="perm-tag">改结算账户</span><span class="perm-tag">员工管理</span></div><div style="font-size:11.5px;color:var(--g400);margin-top:8px">财务人员不可改结算账户/收款账户/员工权限</div></div>
+          <div class="emp-card"><div class="emp-head"><div class="emp-av">赵</div><div><div class="emp-name">赵店长</div><div class="emp-role">店长</div></div></div><div><span class="perm-tag on">办单</span><span class="perm-tag on">交付</span><span class="perm-tag on">还车验收</span><span class="perm-tag">钱包</span><span class="perm-tag">提现</span></div></div>
+          <div class="emp-card"><div class="emp-head"><div class="emp-av">孙</div><div><div class="emp-name">孙店员</div><div class="emp-role">普通员工</div></div></div><div><span class="perm-tag on">办单</span><span class="perm-tag on">交付</span><span class="perm-tag">钱包</span><span class="perm-tag">提现</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="blank">
+      <div class="page-head"><div class="crumb">模块</div><div class="page-title">该模块演示页建设中</div><div class="page-sub">其余模块结构已在产品文档与脚手架中定义</div></div>
+      <div class="content"><div class="card" style="min-height:280px;display:grid;place-items:center;text-align:center;color:var(--g400)"><div><div style="font-size:42px;margin-bottom:12px">◳</div><div style="color:var(--g700);font-weight:500;font-size:16px">模块占位</div><div style="margin-top:6px">可按同一风格继续铺。</div></div></div></div>
+    </div>
+  </div>
+</div>
+<script>
+function nav(id,el){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active'));
+  el.classList.add('active');window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>

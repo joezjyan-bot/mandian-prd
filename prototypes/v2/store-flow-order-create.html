@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>满点租赁 · 门店端流程线框:办单助手全流程(演示原型)</title>
+<style>
+:root{
+  --brand:#2B5CE6;--brand-hover:#1E4FD4;--brand-light:#EEF3FE;
+  --g50:#FAFBFC;--g100:#F4F5F7;--g200:#E5E7EB;--g300:#D1D5DB;--g400:#9CA3AF;--g500:#6B7280;--g700:#374151;--g900:#111827;
+  --success:#10B981;--success-l:#ECFDF5;--warning:#F59E0B;--warning-l:#FFFBEB;--danger:#EF4444;--danger-l:#FEF2F2;
+  --r-md:8px;--r-lg:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:#eef0f4;font-family:Inter,-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--g900);padding:24px 0 60px;display:flex;flex-direction:column;align-items:center;gap:8px;line-height:1.5;}
+.mono{font-variant-numeric:tabular-nums;}
+.demo-note{font-size:12.5px;color:var(--g500);background:#fff;border:1px solid var(--g200);border-radius:999px;padding:6px 16px;margin-bottom:4px;text-align:center;max-width:820px;}
+.flow-strip{font-size:12px;color:var(--g400);margin-bottom:10px;}
+.flow-strip b{color:var(--brand);}
+.stage{display:flex;gap:28px;flex-wrap:wrap;justify-content:center;align-items:flex-start;max-width:1900px;}
+.phone-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;}
+.phone-label{font-size:13px;color:var(--g500);font-weight:500;max-width:320px;text-align:center;}
+.phone{width:330px;height:710px;background:#fff;border-radius:38px;border:10px solid #1a1f2b;box-shadow:0 20px 50px rgba(20,30,50,.22);overflow:hidden;position:relative;display:flex;flex-direction:column;}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:148px;height:26px;background:#1a1f2b;border-radius:0 0 16px 16px;z-index:30;}
+.statusbar{height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 22px 0 26px;font-size:12px;font-weight:600;flex-shrink:0;}
+.screen{flex:1;overflow-y:auto;overflow-x:hidden;background:var(--g50);}
+.screen::-webkit-scrollbar{width:0;}
+.appbar{height:48px;display:flex;align-items:center;justify-content:center;background:var(--brand);color:#fff;position:sticky;top:0;z-index:20;}
+.appbar .title{font-size:16px;font-weight:600;}
+.appbar .back{position:absolute;left:14px;font-size:20px;cursor:pointer;}
+.store-bar{background:var(--brand-light);padding:9px 16px;font-size:12.5px;color:var(--brand);display:flex;justify-content:space-between;align-items:center;}
+/* 三入口 */
+.entry{margin:14px;background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(30,50,90,.05);border:1px solid var(--g200);}
+.entry .et{font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px;}
+.entry .badge{font-size:11px;padding:2px 8px;border-radius:6px;background:var(--brand-light);color:var(--brand);}
+.entry .badge.joint{background:var(--warning-l);color:var(--warning);}
+.entry .badge.platform{background:var(--success-l);color:var(--success);}
+.entry .ed{font-size:12.5px;color:var(--g500);margin-top:8px;line-height:1.6;}
+.entry .meta{font-size:11.5px;color:var(--g400);margin-top:8px;display:flex;gap:14px;}
+.entry .arrow{float:right;color:var(--g300);font-size:20px;margin-top:-22px;}
+/* 步骤条 */
+.steps{display:flex;align-items:center;padding:12px 14px;background:#fff;overflow-x:auto;}
+.step{display:flex;flex-direction:column;align-items:center;gap:4px;flex:0 0 auto;}
+.step .dot{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:600;background:var(--g200);color:var(--g400);}
+.step.done .dot{background:var(--success);color:#fff;}
+.step.cur .dot{background:var(--brand);color:#fff;}
+.step .t{font-size:9.5px;color:var(--g400);white-space:nowrap;}
+.step.cur .t{color:var(--brand);font-weight:600;}
+.step.done .t{color:var(--success);}
+.step-line{width:14px;height:2px;background:var(--g200);position:relative;top:-9px;}
+.step-line.done{background:var(--success);}
+.sec{background:#fff;border-radius:14px;margin:12px 14px;padding:14px;box-shadow:0 2px 8px rgba(30,50,90,.05);}
+.sec h4{font-size:13px;color:var(--g500);font-weight:600;margin-bottom:12px;}
+.field{margin-bottom:14px;}
+.field:last-child{margin-bottom:0;}
+.field .lbl{font-size:12.5px;color:var(--g500);margin-bottom:6px;}
+.field .inp{height:42px;border:1px solid var(--g200);border-radius:8px;display:flex;align-items:center;padding:0 12px;font-size:14px;background:var(--g50);}
+.field .inp .suffix{margin-left:auto;color:var(--g400);}
+.chips{display:flex;gap:8px;flex-wrap:wrap;}
+.chip{padding:8px 14px;border:1px solid var(--g200);border-radius:8px;font-size:13px;color:var(--g700);}
+.chip.on{background:var(--brand-light);border-color:var(--brand);color:var(--brand);font-weight:600;}
+.svc-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--g100);}
+.svc-row:last-child{border-bottom:none;}
+.svc-box{width:20px;height:20px;border-radius:5px;border:1.5px solid var(--g300);display:grid;place-items:center;font-size:12px;color:#fff;}
+.svc-box.on{background:var(--brand);border-color:var(--brand);}
+.svc-box.forced{background:var(--g400);border-color:var(--g400);}
+.svc-name{flex:1;font-size:13.5px;}
+.svc-tag{font-size:10.5px;color:var(--g400);}
+.svc-fee{font-size:13px;font-weight:500;}
+/* 配资(联营,内部可见) */
+.internal-box{background:var(--warning-l);border:1px solid #FDE68A;border-radius:12px;margin:12px 14px;padding:14px;}
+.internal-box .ih{font-size:13px;font-weight:600;color:#854d0e;display:flex;align-items:center;gap:6px;}
+.internal-box .lock{font-size:10.5px;background:#854d0e;color:#fff;padding:1px 7px;border-radius:5px;}
+.internal-box .ir{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;color:#92400E;}
+.internal-box .ir .v{font-weight:600;}
+.internal-note{font-size:11px;color:#92400E;margin-top:6px;line-height:1.5;}
+/* 账单预览 */
+.result-box{background:var(--brand-light);border-radius:12px;margin:12px 14px;padding:16px;}
+.result-row{display:flex;justify-content:space-between;font-size:13.5px;padding:6px 0;}
+.result-row .v{font-weight:600;}
+.result-big{display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed #C7D6F5;margin-top:8px;padding-top:10px;}
+.result-big .bl{font-size:14px;color:var(--brand);font-weight:600;}
+.result-big .bv{font-size:22px;font-weight:700;color:var(--brand);}
+.bill-table{margin:12px 14px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(30,50,90,.05);}
+.bill-table .br{display:flex;justify-content:space-between;padding:10px 14px;font-size:12.5px;border-bottom:1px solid var(--g100);}
+.bill-table .br:last-child{border-bottom:none;}
+.bill-table .br.head{background:var(--g50);color:var(--g500);font-weight:600;}
+/* 二维码 */
+.qr-area{text-align:center;padding:18px 14px;}
+.qr-box{width:160px;height:160px;margin:0 auto;background:#fff;border:1px solid var(--g200);border-radius:12px;display:grid;place-items:center;}
+.qr-grid{width:124px;height:124px;background-image:repeating-linear-gradient(0deg,#1a1f2b 0 6px,transparent 6px 12px),repeating-linear-gradient(90deg,#1a1f2b 0 6px,transparent 6px 12px);background-size:13px 13px;opacity:.85;border-radius:4px;}
+.qr-tip{font-size:12.5px;color:var(--g500);margin-top:12px;line-height:1.6;}
+.tip{font-size:11.5px;color:var(--g400);padding:2px 18px 14px;line-height:1.6;}
+.footbar{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--g100);padding:10px 16px;display:flex;gap:12px;}
+.btn{flex:1;height:48px;border-radius:24px;font-size:15px;font-weight:600;cursor:pointer;border:0;}
+.btn.primary{background:var(--brand);color:#fff;}
+.btn.line{background:#fff;border:1px solid var(--g200);color:var(--g700);}
+</style>
+</head>
+<body>
+<div class="demo-note">门店端核心流程线框 · <b>办单助手全流程</b> · 演示原型 · 中台蓝 #2B5CE6 · 门店内部端(可见合作模式,但配资/分账不给客户)</div>
+<div class="flow-strip">门店办单:<b>三入口(商家/联营/平台订单)→ 选商品规格租期 → 设备价+增值服务 → 账单留购预览 → 生成二维码</b> · 依据 门店手机端/办单助手/01</div>
+<div class="stage">
+
+  <!-- ① 三入口选择 -->
+  <div class="phone-wrap">
+    <div class="phone-label">① 办单助手三入口(文档01 §3)<br>商家 / 联营 / 平台订单</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="appbar"><span class="back">‹</span><span class="title">办单助手</span></div>
+        <div class="store-bar"><span>📍 惠讯租 · 西丽店</span><span>赵店长 ▾</span></div>
+        <div class="entry">
+          <div class="et">商家订单 <span class="badge">门店自营</span></div>
+          <span class="arrow">›</span>
+          <div class="ed">门店自营,门店/商家自审,使用商家自己的商品、费率与增值服务。</div>
+          <div class="meta"><span>审核:门店自审</span><span>抽佣 默认2%</span></div>
+        </div>
+        <div class="entry">
+          <div class="et">联营订单 <span class="badge joint">出资/出设备</span></div>
+          <span class="arrow">›</span>
+          <div class="ed">门店出设备或部分资金,选择配资比例,提交平台审核,按出资比例分账。</div>
+          <div class="meta"><span>审核:平台</span><span>需选配资比例</span></div>
+        </div>
+        <div class="entry">
+          <div class="et">平台订单 <span class="badge platform">送单给平台</span></div>
+          <span class="arrow">›</span>
+          <div class="ed">门店完全送单给平台,平台审核并匹配内部资金来源,门店不出资。</div>
+          <div class="meta"><span>审核:平台</span><span>门店不出资</span></div>
+        </div>
+        <div class="tip">店员账号仅展示老板分配的入口;未补齐签章/收款账户时可进入但生成二维码前会提示。链路停用的入口隐藏或置灰。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 共用办单:选品+设备价+增值服务(联营订单为例) -->
+  <div class="phone-wrap">
+    <div class="phone-label">② 选商品/规格/租期 + 设备价 + 增值服务<br>(以联营订单为例,文档01 §4/§6)</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="appbar"><span class="back">‹</span><span class="title">联营订单 · 办单</span></div>
+        <div class="steps">
+          <div class="step cur"><div class="dot">1</div><div class="t">选品/参数</div></div>
+          <div class="step-line"></div>
+          <div class="step"><div class="dot">2</div><div class="t">账单预览</div></div>
+          <div class="step-line"></div>
+          <div class="step"><div class="dot">3</div><div class="t">二维码</div></div>
+        </div>
+        <div class="sec">
+          <h4>商品与规格</h4>
+          <div class="field"><div class="lbl">类目 / 商品</div><div class="inp">手机 · iPhone 15 128G <span class="suffix">›</span></div></div>
+          <div class="field"><div class="lbl">规格(成色/容量/颜色)</div><div class="inp">全新 · 128G · 蓝色 <span class="suffix">›</span></div></div>
+          <div class="field" style="margin-bottom:0"><div class="lbl">长租租期</div><div class="chips"><span class="chip">6 期</span><span class="chip on">12 期</span></div></div>
+        </div>
+        <div class="sec">
+          <h4>价格参数</h4>
+          <div class="field"><div class="lbl">设备价(保证金/账单/留购/分账计算基础)</div><div class="inp mono">¥6,000.00</div></div>
+          <div class="field" style="margin-bottom:0"><div class="lbl">首付成数</div><div class="chips"><span class="chip on">0 成</span><span class="chip">1 成</span><span class="chip">2 成</span><span class="chip">3 成</span></div></div>
+        </div>
+        <div class="sec">
+          <h4>增值服务</h4>
+          <div class="svc-row"><div class="svc-box forced">✓</div><div class="svc-name">设备管理费 <span class="svc-tag">(强制)</span></div><div class="svc-fee mono">¥120</div></div>
+          <div class="svc-row"><div class="svc-box on">✓</div><div class="svc-name">公证服务费 <span class="svc-tag">(默认)</span></div><div class="svc-fee mono">¥80</div></div>
+          <div class="svc-row"><div class="svc-box"></div><div class="svc-name">延保服务 <span class="svc-tag">(可选)</span></div><div class="svc-fee mono">¥60</div></div>
+        </div>
+        <!-- 联营专属:配资比例 + 收益预览(仅内部可见) -->
+        <div class="sec">
+          <h4>配资比例(联营订单专属)</h4>
+          <div class="field" style="margin-bottom:0"><div class="lbl">需求配资比例(平台资金出资)</div><div class="chips"><span class="chip">20%</span><span class="chip">50%</span><span class="chip on">80%</span></div></div>
+        </div>
+        <div class="internal-box">
+          <div class="ih"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>分账 / 收益预览 <span class="lock">仅内部可见</span></div>
+          <div class="ir"><span>平台资金出资(80%)</span><span class="v mono">¥4,800</span></div>
+          <div class="ir"><span>门店等效出资(20%)</span><span class="v mono">¥1,200</span></div>
+          <div class="ir"><span>门店分账占比</span><span class="v mono">20%</span></div>
+          <div class="internal-note">⚠ 配资比例、出资额、分账/收益预览仅门店老板 / 商家后台 / 运营后台可见,客户扫码下单页绝不展示。</div>
+        </div>
+        <div class="tip">设备价是三入口共用必填项;联营订单在此基础上选配资比例并生成出资/分账测算。</div>
+      </div>
+      <div class="footbar"><button class="btn primary">下一步 · 生成账单预览</button></div>
+    </div>
+  </div>
+
+  <!-- ③ 账单 + 留购预览 -->
+  <div class="phone-wrap">
+    <div class="phone-label">③ 账单 + 留购预览(文档01 §4/§8)<br>确认价格方案</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="appbar"><span class="back">‹</span><span class="title">价格方案预览</span></div>
+        <div class="steps">
+          <div class="step done"><div class="dot">✓</div><div class="t">选品/参数</div></div>
+          <div class="step-line done"></div>
+          <div class="step cur"><div class="dot">2</div><div class="t">账单预览</div></div>
+          <div class="step-line"></div>
+          <div class="step"><div class="dot">3</div><div class="t">二维码</div></div>
+        </div>
+        <div class="result-box">
+          <div class="result-row"><span>首期实付</span><span class="v mono">¥1,000</span></div>
+          <div class="result-row"><span>保证金</span><span class="v mono">¥800</span></div>
+          <div class="result-row"><span>每期应付 × 12</span><span class="v mono">¥800</span></div>
+          <div class="result-row"><span>当期留购价(到期)</span><span class="v mono">¥800</span></div>
+          <div class="result-big"><span class="bl">报价合计(总额)</span><span class="bv mono">¥9,800</span></div>
+        </div>
+        <div style="font-size:13px;font-weight:600;color:var(--g500);padding:4px 18px 0">账单逐期预览</div>
+        <div class="bill-table">
+          <div class="br head"><span>期次</span><span>类型</span><span>应付</span><span>当期留购价</span></div>
+          <div class="br"><span>首期</span><span>首付+保证金</span><span class="mono">¥1,000</span><span class="mono">—</span></div>
+          <div class="br"><span>第2期</span><span>租金</span><span class="mono">¥800</span><span class="mono">¥9,000</span></div>
+          <div class="br"><span>…</span><span>租金</span><span class="mono">¥800</span><span class="mono">…</span></div>
+          <div class="br"><span>第12期</span><span>租金</span><span class="mono">¥800</span><span class="mono">¥800</span></div>
+        </div>
+        <div class="tip">价格方案确认后生成快照(price_plan),客户扫码按快照锁价;之后改商品/规格不影响已生成二维码。</div>
+      </div>
+      <div class="footbar">
+        <button class="btn line">返回修改</button>
+        <button class="btn primary">确认方案 · 生成二维码</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ④ 生成二维码 -->
+  <div class="phone-wrap">
+    <div class="phone-label">④ 生成下单二维码(文档01 §8)<br>客户扫码按快照锁价下单</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="appbar"><span class="back">‹</span><span class="title">请客户扫码下单</span></div>
+        <div class="steps">
+          <div class="step done"><div class="dot">✓</div><div class="t">选品/参数</div></div>
+          <div class="step-line done"></div>
+          <div class="step done"><div class="dot">✓</div><div class="t">账单预览</div></div>
+          <div class="step-line done"></div>
+          <div class="step cur"><div class="dot">3</div><div class="t">二维码</div></div>
+        </div>
+        <div class="qr-area">
+          <div class="qr-box"><div class="qr-grid"></div></div>
+          <div class="qr-tip">让客户用微信 / 支付宝扫码<br>读取该价格方案快照下单</div>
+        </div>
+        <div class="sec" style="margin-top:0">
+          <div class="result-row"><span style="color:var(--g500)">订单类型</span><span class="v">联营订单</span></div>
+          <div class="result-row"><span style="color:var(--g500)">商品</span><span class="v">iPhone 15 128G · 全新</span></div>
+          <div class="result-row"><span style="color:var(--g500)">方案</span><span class="v">12期 · 0首付</span></div>
+          <div class="result-row"><span style="color:var(--g500)">首期实付</span><span class="v mono">¥1,000</span></div>
+          <div class="result-row"><span style="color:var(--g500)">方案编号</span><span class="v mono" style="font-size:12px">PLAN…A001</span></div>
+          <div class="result-row"><span style="color:var(--g500)">有效期</span><span class="v">24 小时</span></div>
+        </div>
+        <div class="tip">二维码不展示成本价、内部资金规则、配资比例等敏感字段。过期后需重新生成。客户扫码 → 填资料 → 进入运营端待审核。</div>
+      </div>
+      <div class="footbar">
+        <button class="btn line">保存图片</button>
+        <button class="btn primary">完成</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

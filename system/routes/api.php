@@ -14,6 +14,8 @@ use App\Http\Controllers\Api\CalculatorController;
 | API 路由
 |--------------------------------------------------------------------------
 | 这里只是脚手架示范。团队按模块扩充（商家端/运营端/短租等）。
+| 已接通可演示链路：下单 → 签约 → 首期支付 → 交付 → 签收→锁校验→结算 → 到期三选一。
+| 审核/合同/退款等骨架服务(ReviewService 等)待业务团队实现后再接 Controller + 路由。
 */
 
 Route::get('/health', [HealthController::class, 'index']);
@@ -24,9 +26,12 @@ Route::prefix('orders')->group(function () {
     Route::post('/{order}/pay', [OrderController::class, 'pay']);    // 发起首期支付
     Route::get('/{order}', [OrderController::class, 'show']);        // 订单详情（C 端白名单）
 
-    // 交付 / 签收 / 结算
-    Route::post('/{order}/deliver', [DeliveryController::class, 'deliver']);   // 商家交付（录设备码/上锁）
-    Route::post('/{order}/sign-for', [DeliveryController::class, 'signFor']);  // 客户签收 + 平台结算
+    // 交付 / 签收 / 监管锁校验 / 结算（全局/02 §5.1 结算硬前置三阶段）
+    Route::post('/{order}/deliver', [DeliveryController::class, 'deliver']);            // 商家交付（录设备码/上锁）
+    Route::post('/{order}/confirm-receipt', [DeliveryController::class, 'confirmReceipt']); // 客户签收确认
+    Route::post('/{order}/verify-lock', [DeliveryController::class, 'verifyLock']);     // 监管锁校验
+    Route::post('/{order}/settle', [DeliveryController::class, 'settle']);              // 平台结算
+    Route::post('/{order}/sign-for', [DeliveryController::class, 'signFor']);           // 一键签收→锁校验→结算（演示）
 
     // 到期三选一
     Route::post('/{order}/return', [EndOfTermController::class, 'startReturn']); // 归还

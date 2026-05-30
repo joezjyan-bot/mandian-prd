@@ -5,6 +5,8 @@ use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PaymentCallbackController;
 use App\Http\Controllers\Api\BuyoutController;
+use App\Http\Controllers\Api\DeliveryController;
+use App\Http\Controllers\Api\EndOfTermController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,13 +18,22 @@ use App\Http\Controllers\Api\BuyoutController;
 Route::get('/health', [HealthController::class, 'index']);
 
 Route::prefix('orders')->group(function () {
-    Route::post('/', [OrderController::class, 'store']);          // 下单
-    Route::post('/{order}/sign', [OrderController::class, 'sign']); // 签约（模拟/真实）
-    Route::post('/{order}/pay', [OrderController::class, 'pay']);   // 发起首期支付
-    Route::get('/{order}', [OrderController::class, 'show']);       // 订单详情（C 端白名单）
+    Route::post('/', [OrderController::class, 'store']);            // 下单
+    Route::post('/{order}/sign', [OrderController::class, 'sign']);  // 签约（模拟/真实）
+    Route::post('/{order}/pay', [OrderController::class, 'pay']);    // 发起首期支付
+    Route::get('/{order}', [OrderController::class, 'show']);        // 订单详情（C 端白名单）
+
+    // 交付 / 签收 / 结算
+    Route::post('/{order}/deliver', [DeliveryController::class, 'deliver']);   // 商家交付（录设备码/上锁）
+    Route::post('/{order}/sign-for', [DeliveryController::class, 'signFor']);  // 客户签收 + 平台结算
+
+    // 到期三选一
+    Route::post('/{order}/return', [EndOfTermController::class, 'startReturn']); // 归还
+    Route::post('/{order}/renew', [EndOfTermController::class, 'renew']);        // 续租
+    Route::post('/{order}/buyout/apply', [EndOfTermController::class, 'applyBuyout']); // 申请购买
 });
 
-// 购买价试算 + 申请购买
+// 购买价试算 + 申请购买（独立确认页用）
 Route::post('/orders/{order}/buyout/quote', [BuyoutController::class, 'quote']);
 Route::post('/orders/{order}/buyout', [BuyoutController::class, 'apply']);
 

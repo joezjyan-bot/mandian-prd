@@ -140,6 +140,33 @@ OrderCloseRefundService 关键设计:
 4. 留购 A 口径(剩余租金+保证金),二期折旧余值口径挂起;提前归还**不默认要求结清全部未到期费用**(合规边界,同逾期§9.4)。
 5. 归还检测费用"以实际发生 + 凭证为准",每项费用须挂对应凭证;资方内部清算后台不暴露 C 端。
 
+### 模块 K:改价 / 改套餐 / 补资料
+依据:`运营端/订单管理/06_改价补资料与客服IM` §2 / §3 / §4 / §6 / §8;办单助手02 §9
+
+| 文件 | 状态 | 说明 |
+|---|---|---|
+| `app/Services/Order/OrderAdjustService.php` | **骨架** | 动作:adjustPlan(改套餐改价)/confirmAdjustedPlan(客户确认新方案)/requestSupplementMaterials(发起补资料)/buildImContext(构造客服IM上下文)。 |
+
+OrderAdjustService 关键设计:
+1. 改价**生成新价格快照不覆盖原始**(复用 CalculatorService + makeSnapshot,与账单/合同同源);原快照不可删。
+2. 不绕过审核状态机;金额变化超阈值需主管复核;合同已签改价走补充合同/重审;已支付改价走退款/补款/冲正。
+3. 补资料生成客户/商家待办(不能只写备注),进 PENDING_SUPPLEMENT(与 ReviewService::requireSupplement 二者择一编排)。
+4. **隐私边界(§6)**:IM 上下文脱敏,**不含完整身份证/银行卡/详细风控报告**,不含资方/分账等 C 端红线字段。
+
+### 模块 L:撤单 / 退款工单推进 / 补充合同
+依据:`运营端/订单管理/10_订单撤单与补充合同` §1 / §2 / §3 / §4 / §6;财务管理/07 §6
+
+| 文件 | 状态 | 说明 |
+|---|---|---|
+| `app/Services/Refund/CancelAndSupplementService.php` | **骨架** | 动作:requestCancel(撤单申请)/approveCancel(撤单审核)/advanceRefundWorkflow(退款工单推进)/initiateSupplementContract(发起补充合同)/reviewSupplementContract(审核)/onSupplementSigned(签署回调)。 |
+
+CancelAndSupplementService 关键设计:
+1. **与模块 J 分工**:J 管关闭退款 + 生成退款工单;本服务管撤单受理 + 退款工单逐步推进(确认门店转账→退客户→退资方→完成)+ 补充合同。两者通过 refund_workflow 衔接,不互相内部调用。
+2. 撤单费用(§2.6/§2.7):待签约 1.5%、履约中 30%,**平台收**;退款额 = MAX(0, 已付 − 撤单费用 − 不可退)。
+3. 退款路径(§2.1):未分账原路退;已分账走退款工单(门店线下转账追回→退客户→退资方),不原路退。
+4. **补充合同**:适用设备编码/姓名/规格/资方/门店变更,**严禁改金额/月供/留购价**;与主合同同等效力、一单多份递增、永久保留。
+5. 资方清算属后台,不在 C 端暴露;资方台账/额度还原依赖财务07/资方管理,骨架不实现。
+
 ---
 
 ## 三、明确未做 / 留待对应模块(避免误以为已完成)
@@ -150,8 +177,8 @@ OrderCloseRefundService 关键设计:
 - **归还申请表 / 续租申请表**:EndOfTermService 留 TODO,关联字段 return_request_id / renewal_request_id 未建表。
 - **首期支付单独立实体**(办单助手§8):当前首期支付沿用支付流水,未单独建实体。
 - **门店风控管控**(办单助手§3.3 merchant_order_control)、**联营内部快照**(§7.2)、**§11 默认费率表数据初始化 seeder**:未做,字段结构已留。
-- **运营端办单助手配置界面**(办单助手§3)、**公证服务对接**(合同公证02)、**撤单与补充合同**(运营端10)、**客服IM/改价**(运营端06):未做。
-- **以上 D-J 骨架的落库表**:webhook_event、异常队列、order_penalty(及减免日志、规则配置)、order_store_assign_log、交付证据表(含 AI 核验字段)、refund_application、refund_workflow、early_return_request、return_inspection_report、return_fee_item、purchase_requests 等,均由团队按对应文档建,骨架未擅自建表。
+- **运营端办单助手配置界面**(办单助手§3)、**公证服务对接**(合同公证02)、**财务对账/结算穿透**(财务管理07/08)、**资方管理全套**(资方01/03/04):未做。
+- **各骨架的落库表**:webhook_event、异常队列、order_penalty(及减免日志、规则配置)、order_store_assign_log、交付证据表(含 AI 核验字段)、refund_application、refund_workflow、early_return_request、return_inspection_report、return_fee_item、purchase_requests、order_cancel_request、supplement_contract、价格快照新版本等,均由团队按对应文档建,骨架未擅自建表。
 
 ---
 
@@ -163,6 +190,7 @@ OrderCloseRefundService 关键设计:
 4. 演示模式(EXTERNAL_MODE=mock)用 Mock* 桩;接真实中控台/支付/电子签时实现 Real* 并按 Contract 接口对接。
 5. 本轮所有提交 message 都标注了对应文档章节,可对照 PRD 复核。
 6. 骨架文件填充时,先读对应文档,按方法注释里的"对应章节 + 状态 + 校验 + TODO"逐条实现;合规敏感处(资方/风控/合同三方/逾期赔偿口径/人脸隐私)严格守注释里的边界。
+7. 退款相关有两个服务(OrderCloseRefundService 模块J、CancelAndSupplementService 模块L),分工见模块L关键设计1,通过 refund_workflow 表衔接,不互相内部调用,实现时由 Controller/财务流程编排。
 
 ---
 
@@ -173,4 +201,4 @@ OrderCloseRefundService 关键设计:
 2. **逾期费用计算精度口径**:见模块 G,§4.3 比例算法存在 2 分差异,需与财务对齐"先取整再×天"还是"精确×天再取整"。
 3. **留购价二期残值口径**:当前 A 口径(剩余租金+保证金)已实现;二期残值口径(C端12 §4.2 注)挂起,待法务/合规复核后切换。
 4. **AI 人脸核验阈值**(运营端02 §5.1):high_match / suspect_mismatch 阈值待运营/算法确认。
-5. **退款工单 SLA**(运营端05 §12):门店线下转账 3 天还是 7 天。
+5. **退款工单 SLA**(运营端05 §12 / 运营端10 §2.9):门店线下转账 3 天还是 7 天。

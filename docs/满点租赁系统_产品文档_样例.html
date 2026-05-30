@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>满点租赁系统 · 产品文档(样例 · 长租主流程)</title>
+<style>
+  :root{
+    --ink:#1a1f2b;
+    --ink-soft:#4a5163;
+    --line:#e3e6ec;
+    --line-strong:#c7ccd6;
+    --paper:#ffffff;
+    --paper-warm:#faf9f6;
+    --band:#f4f2ec;
+    --accent:#1f6f5c;
+    --accent-soft:#e6f0ec;
+    --accent-ink:#16513f;
+    --gold:#b08534;
+    --gold-soft:#f6efe0;
+    --warn:#a6492f;
+    --warn-soft:#f7e9e3;
+    --c-cust:#2b6fb0;
+    --c-cust-soft:#e6f0f8;
+    --c-sys:#1f6f5c;
+    --c-sys-soft:#e6f0ec;
+    --c-merch:#8a5a1f;
+    --c-merch-soft:#f6eede;
+    --radius:10px;
+    --maxw:920px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",-apple-system,sans-serif;
+    color:var(--ink);
+    background:var(--paper-warm);
+    line-height:1.75;
+    font-size:16px;
+  }
+  .cover{
+    background:linear-gradient(135deg,#16513f 0%,#1f6f5c 55%,#2a8a6f 100%);
+    color:#fff;padding:64px 32px 56px;text-align:center;position:relative;overflow:hidden;
+  }
+  .cover::after{
+    content:"";position:absolute;inset:0;
+    background-image:radial-gradient(circle at 20% 30%,rgba(255,255,255,.08) 0,transparent 40%),
+                     radial-gradient(circle at 80% 70%,rgba(255,255,255,.06) 0,transparent 45%);
+    pointer-events:none;
+  }
+  .cover .kicker{font-size:13px;letter-spacing:4px;opacity:.85;margin-bottom:18px;}
+  .cover h1{font-size:34px;margin:0 0 14px;font-weight:700;letter-spacing:1px;}
+  .cover .sub{font-size:16px;opacity:.92;max-width:560px;margin:0 auto 24px;font-weight:400;}
+  .cover .meta{display:inline-flex;gap:10px;flex-wrap:wrap;justify-content:center;font-size:13px;}
+  .cover .meta span{background:rgba(255,255,255,.16);padding:6px 14px;border-radius:20px;backdrop-filter:blur(4px);}
+  .howto{max-width:var(--maxw);margin:-28px auto 0;padding:0 24px;position:relative;z-index:2;}
+  .howto-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:22px 26px;box-shadow:0 8px 30px rgba(20,30,40,.08);}
+  .howto-card h3{margin:0 0 14px;font-size:15px;color:var(--accent-ink);display:flex;align-items:center;gap:8px;}
+  .howto-card h3::before{content:"";width:6px;height:18px;background:var(--accent);border-radius:3px;display:inline-block;}
+  .layer-row{display:flex;gap:10px;flex-wrap:wrap;}
+  .layer-chip{flex:1;min-width:180px;border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:var(--paper-warm);}
+  .layer-chip .n{display:inline-block;width:22px;height:22px;line-height:22px;text-align:center;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;margin-right:8px;}
+  .layer-chip .t{font-weight:600;font-size:14px;}
+  .layer-chip .d{font-size:12.5px;color:var(--ink-soft);margin-top:4px;line-height:1.5;}
+  .layer-chip.skip{opacity:.7;}
+  .layer-chip.skip .n{background:var(--line-strong);}
+  main{max-width:var(--maxw);margin:0 auto;padding:40px 24px 80px;}
+  section{margin-bottom:14px;}
+  .chapter{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:30px 30px 8px;margin-bottom:26px;box-shadow:0 2px 10px rgba(20,30,40,.03);}
+  .chapter > h2{font-size:23px;margin:0 0 4px;color:var(--ink);font-weight:700;display:flex;align-items:baseline;gap:12px;}
+  .chapter > h2 .idx{font-size:14px;color:#fff;background:var(--accent);padding:3px 11px;border-radius:6px;font-weight:700;letter-spacing:1px;flex-shrink:0;}
+  .chapter > .lead{color:var(--ink-soft);font-size:15px;margin:8px 0 24px;}
+  .feature{border-top:1px dashed var(--line);padding:26px 0 8px;}
+  .feature:first-of-type{border-top:none;padding-top:8px;}
+  .feature h3{font-size:18px;margin:0 0 4px;color:var(--accent-ink);font-weight:650;}
+  .l-tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.5px;padding:2px 9px;border-radius:4px;margin-bottom:10px;}
+  .l1{background:var(--accent-soft);color:var(--accent-ink);}
+  .l2{background:var(--c-cust-soft);color:var(--c-cust);}
+  .l3{background:var(--gold-soft);color:var(--gold);}
+  .oneliner{background:var(--accent-soft);border-left:4px solid var(--accent);padding:12px 16px;border-radius:0 8px 8px 0;font-size:15px;margin:6px 0 20px;color:var(--accent-ink);}
+  .diagram{background:var(--paper-warm);border:1px solid var(--line);border-radius:10px;padding:24px 16px;margin:18px 0 22px;text-align:center;overflow-x:auto;}
+  .diagram svg{max-width:100%;height:auto;}
+  .diagram .cap{font-size:12.5px;color:var(--ink-soft);margin-top:14px;font-style:italic;}
+  table{width:100%;border-collapse:collapse;margin:14px 0 22px;font-size:14.5px;}
+  th,td{border:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top;}
+  th{background:var(--band);font-weight:600;color:var(--ink);}
+  tr:nth-child(even) td{background:var(--paper-warm);}
+  td .who{font-weight:600;}
+  td .cust{color:var(--c-cust);}
+  td .sys{color:var(--c-sys);}
+  td .merch{color:var(--c-merch);}
+  .rules{margin:10px 0 20px;padding:0;list-style:none;}
+  .rules li{position:relative;padding:7px 0 7px 26px;font-size:14.5px;border-bottom:1px solid var(--line);}
+  .rules li:last-child{border-bottom:none;}
+  .rules li::before{content:"";position:absolute;left:4px;top:14px;width:8px;height:8px;border-radius:2px;background:var(--accent);}
+  .seealso{font-size:13px;color:var(--ink-soft);background:var(--band);padding:9px 14px;border-radius:7px;margin:6px 0 4px;}
+  .seealso b{color:var(--accent-ink);font-weight:600;}
+  .seealso code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;background:#fff;padding:1px 5px;border-radius:4px;border:1px solid var(--line);}
+  .callout{border-radius:9px;padding:14px 18px;margin:16px 0;font-size:14.5px;}
+  .callout .h{font-weight:700;margin-bottom:5px;display:flex;align-items:center;gap:7px;}
+  .callout.warn{background:var(--warn-soft);border:1px solid #e6c4b8;}
+  .callout.warn .h{color:var(--warn);}
+  .callout.gold{background:var(--gold-soft);border:1px solid #e6d3a8;}
+  .callout.gold .h{color:var(--gold);}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;margin-bottom:6px;font-size:13px;}
+  .legend i{display:inline-block;width:14px;height:14px;border-radius:3px;margin-right:6px;vertical-align:-2px;}
+  .sample-banner{max-width:var(--maxw);margin:30px auto 0;padding:0 24px;}
+  .sample-banner .inner{background:var(--gold-soft);border:1px dashed var(--gold);border-radius:10px;padding:18px 22px;font-size:14.5px;color:#6b531f;}
+  .sample-banner .inner b{color:var(--gold);}
+  footer{text-align:center;padding:30px;color:var(--ink-soft);font-size:13px;border-top:1px solid var(--line);background:#fff;}
+  @media print{
+    body{background:#fff;font-size:12pt;}
+    .cover{padding:40px 20px;}
+    .chapter,.howto-card{box-shadow:none;break-inside:avoid;}
+    .feature{break-inside:avoid;}
+    .diagram{break-inside:avoid;}
+    .sample-banner{display:none;}
+  }
+  @media(max-width:600px){
+    .cover h1{font-size:26px;}
+    .chapter{padding:22px 18px 6px;}
+    .layer-chip{min-width:100%;}
+  }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="kicker">满 点 租 赁 系 统 · 产 品 需 求 文 档</div>
+  <h1>满点租赁系统 产品文档</h1>
+  <div class="sub">一份产品经理拿着能给你讲、你能看懂、开发也能照着做的文档。<br>本页是<b>样例</b>:先做长租主流程,确认形式无误后再补全整套。</div>
+  <div class="meta">
+    <span>版本 V0.2.2</span>
+    <span>样例范围:安心用长租主流程</span>
+    <span>更新 2026-05-30</span>
+  </div>
+</div>
+
+<div class="howto">
+  <div class="howto-card">
+    <h3>这份文档怎么看(每个功能都按这四层写,从上到下越来越细)</h3>
+    <div class="layer-row">
+      <div class="layer-chip">
+        <div><span class="n">1</span><span class="t">这块是干嘛的</span></div>
+        <div class="d">一句话说清。老板、各部门看这层就懂。</div>
+      </div>
+      <div class="layer-chip">
+        <div><span class="n">2</span><span class="t">流程图 / 页面示意</span></div>
+        <div class="d">你和开发的"共同语言"。产品经理指着图给你讲。</div>
+      </div>
+      <div class="layer-chip">
+        <div><span class="n">3</span><span class="t">每一步的规则</span></div>
+        <div class="d">谁看到什么、什么条件怎么变。你能懂,开发能做。</div>
+      </div>
+      <div class="layer-chip skip">
+        <div><span class="n">4</span><span class="t">技术细节(详见链接)</span></div>
+        <div class="d">字段、接口在细分文档里。你跳过,开发深挖。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main>
+
+  <section class="chapter">
+    <h2><span class="idx">第 1 章</span>长租主流程总览</h2>
+    <p class="lead">安心用长租,是客户从门店租走一台设备(手机 / 电动车 / 数码),按月付费使用,到期再决定还回去、继续租、还是申请买下来的完整业务。这一章先看全局,后面几章拆开每个关键环节。</p>
+
+    <div class="feature">
+      <span class="l-tag l1">第 1 层 · 这块是干嘛的</span>
+      <h3>一句话</h3>
+      <div class="oneliner">客户扫门店的码 → 确认要租什么、花多少钱 → 实名签合同 → 付首期 → 门店把设备交给客户 → 客户签收 → 按月还款用着 → 到期选择:还 / 续 / 买。</div>
+    </div>
+
+    <div class="feature">
+      <span class="l-tag l2">第 2 层 · 流程图</span>
+      <h3>整条主流程长这样</h3>
+      <div class="diagram">
+        <div class="legend">
+          <span><i style="background:var(--c-cust)"></i>客户做的事</span>
+          <span><i style="background:var(--c-sys)"></i>系统/平台做的事</span>
+          <span><i style="background:var(--c-merch)"></i>商家/门店做的事</span>
+        </div>
+        <svg viewBox="-160 0 1020 560" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif">
+          <defs>
+            <marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+              <path d="M0,0 L9,4.5 L0,9 Z" fill="#9aa1ad"/>
+            </marker>
+          </defs>
+          <g>
+            <rect x="40" y="20" width="200" height="46" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/>
+            <text x="140" y="48" text-anchor="middle" fill="#1f4e7a" font-size="15" font-weight="600">① 扫码 / 选品</text>
+          </g>
+          <line x1="140" y1="66" x2="140" y2="86" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <g>
+            <rect x="40" y="88" width="200" height="46" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/>
+            <text x="140" y="116" text-anchor="middle" fill="#1f4e7a" font-size="15" font-weight="600">② 确认订单</text>
+          </g>
+          <line x1="140" y1="134" x2="140" y2="154" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <g>
+            <rect x="40" y="156" width="200" height="46" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/>
+            <text x="140" y="178" text-anchor="middle" fill="#1f4e7a" font-size="14" font-weight="600">③ 实名 + 信用授权</text>
+            <text x="140" y="194" text-anchor="middle" fill="#5a7fa0" font-size="11">填资料、人脸认证</text>
+          </g>
+          <line x1="140" y1="202" x2="140" y2="222" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <g>
+            <polygon points="140,224 250,266 140,308 30,266" fill="#e6f0ec" stroke="#1f6f5c"/>
+            <text x="140" y="262" text-anchor="middle" fill="#16513f" font-size="14" font-weight="600">④ 审核</text>
+            <text x="140" y="280" text-anchor="middle" fill="#3d7a68" font-size="11">平台/商家</text>
+          </g>
+          <line x1="30" y1="266" x2="-2" y2="266" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <g>
+            <rect x="-150" y="244" width="146" height="44" rx="9" fill="#f7e9e3" stroke="#a6492f"/>
+            <text x="-77" y="264" text-anchor="middle" fill="#a6492f" font-size="12.5" font-weight="600">驳回 / 补资料</text>
+            <text x="-77" y="280" text-anchor="middle" fill="#a6492f" font-size="10.5">告知客户原因</text>
+          </g>
+          <line x1="140" y1="308" x2="140" y2="328" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <text x="152" y="322" fill="#3d7a68" font-size="11">通过</text>
+          <g>
+            <rect x="40" y="330" width="200" height="46" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/>
+            <text x="140" y="358" text-anchor="middle" fill="#1f4e7a" font-size="15" font-weight="600">⑤ 签署合同</text>
+          </g>
+          <line x1="140" y1="376" x2="140" y2="396" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <g>
+            <rect x="40" y="398" width="200" height="46" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/>
+            <text x="140" y="420" text-anchor="middle" fill="#1f4e7a" font-size="14" font-weight="600">⑥ 付首期 + 保证金</text>
+            <text x="140" y="436" text-anchor="middle" fill="#5a7fa0" font-size="11">支付成功才进入交付</text>
+          </g>
+          <line x1="240" y1="421" x2="300" y2="421" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <g>
+            <rect x="302" y="398" width="190" height="46" rx="9" fill="#f6eede" stroke="#8a5a1f"/>
+            <text x="397" y="420" text-anchor="middle" fill="#6b441a" font-size="14" font-weight="600">⑦ 商家交付设备</text>
+            <text x="397" y="436" text-anchor="middle" fill="#8a6533" font-size="11">录设备码、拍照</text>
+          </g>
+          <line x1="397" y1="398" x2="397" y2="360" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <g>
+            <rect x="302" y="314" width="190" height="46" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/>
+            <text x="397" y="336" text-anchor="middle" fill="#1f4e7a" font-size="14" font-weight="600">⑧ 客户签收</text>
+            <text x="397" y="352" text-anchor="middle" fill="#5a7fa0" font-size="11">电子确认单 / AI问答</text>
+          </g>
+          <line x1="397" y1="314" x2="397" y2="276" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <g>
+            <rect x="302" y="230" width="190" height="46" rx="9" fill="#e6f0ec" stroke="#1f6f5c"/>
+            <text x="397" y="252" text-anchor="middle" fill="#16513f" font-size="14" font-weight="600">⑨ 平台结算</text>
+            <text x="397" y="268" text-anchor="middle" fill="#3d7a68" font-size="11">锁校验 / 替代验收</text>
+          </g>
+          <line x1="492" y1="253" x2="560" y2="253" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <g>
+            <rect x="562" y="230" width="190" height="46" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/>
+            <text x="657" y="252" text-anchor="middle" fill="#1f4e7a" font-size="14" font-weight="600">⑩ 按月还款(履约中)</text>
+            <text x="657" y="268" text-anchor="middle" fill="#5a7fa0" font-size="11">逾期则催收/管控</text>
+          </g>
+          <line x1="657" y1="276" x2="657" y2="320" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <g>
+            <polygon points="657,322 770,366 657,410 544,366" fill="#f6efe0" stroke="#b08534"/>
+            <text x="657" y="362" text-anchor="middle" fill="#8a6518" font-size="14" font-weight="700">⑪ 到期</text>
+            <text x="657" y="380" text-anchor="middle" fill="#a07a28" font-size="11">三选一</text>
+          </g>
+          <line x1="600" y1="400" x2="560" y2="450" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <line x1="657" y1="410" x2="657" y2="450" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <line x1="714" y1="400" x2="754" y2="450" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <g>
+            <rect x="480" y="452" width="120" height="44" rx="9" fill="#e6f0ec" stroke="#1f6f5c"/>
+            <text x="540" y="479" text-anchor="middle" fill="#16513f" font-size="13" font-weight="600">归还设备</text>
+          </g>
+          <g>
+            <rect x="600" y="452" width="114" height="44" rx="9" fill="#e6f0ec" stroke="#1f6f5c"/>
+            <text x="657" y="479" text-anchor="middle" fill="#16513f" font-size="13" font-weight="600">继续使用</text>
+          </g>
+          <g>
+            <rect x="714" y="452" width="120" height="44" rx="9" fill="#f6efe0" stroke="#b08534"/>
+            <text x="774" y="479" text-anchor="middle" fill="#8a6518" font-size="13" font-weight="600">申请购买</text>
+          </g>
+          <text x="540" y="510" text-anchor="middle" fill="#7a8089" font-size="11">检测、退保证金</text>
+          <text x="774" y="510" text-anchor="middle" fill="#7a8089" font-size="11">独立确认+支付</text>
+        </svg>
+        <div class="cap">蓝=客户操作　绿=系统/平台　棕=商家/门店。①→⑪是一条完整的长租生命周期。</div>
+      </div>
+    </div>
+
+    <div class="feature">
+      <span class="l-tag l3">第 3 层 · 关键规则</span>
+      <h3>看这条流程时,先记住三件事</h3>
+      <ul class="rules">
+        <li><b>客户全程只跟"门店(甲方)"发生租赁关系</b>,平台是技术通道。客户看到的是"租设备",不是"借钱"或"分期买"。</li>
+        <li><b>每一步都留快照、留证据</b>:看到的价格、签的合同、签收的确认,系统都存档,将来有纠纷能拿出来。</li>
+        <li><b>到期三个选项平等展示,系统不默认帮客户选"购买"</b>,所有权不会因为租满或还清自动转移给客户。</li>
+      </ul>
+      <div class="seealso">详见:<b>长租全生命周期</b> <code>运营端/订单管理/08</code>　·　<b>状态字典</b> <code>全局/02</code></div>
+    </div>
+  </section>
+
+  <section class="chapter">
+    <h2><span class="idx">第 2 章</span>下单与订单确认</h2>
+    <p class="lead">客户扫了门店办单助手生成的二维码后,看到的第一个页面。这一页决定了客户对"我要租什么、花多少钱、有什么规矩"的全部认知,也是合规和证据链最关键的一页。</p>
+
+    <div class="feature">
+      <span class="l-tag l1">第 1 层 · 这块是干嘛的</span>
+      <h3>一句话</h3>
+      <div class="oneliner">把门店给客户定好的方案(哪台设备、多少钱、租几期、什么规矩)清清楚楚摆给客户看,客户逐项确认、勾选同意,然后才能下单。</div>
+    </div>
+
+    <div class="feature">
+      <span class="l-tag l2">第 2 层 · 页面示意</span>
+      <h3>订单确认页大概长这样</h3>
+      <div class="diagram">
+        <svg viewBox="0 0 420 620" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif">
+          <rect x="20" y="14" width="380" height="592" rx="26" fill="#fff" stroke="#c7ccd6" stroke-width="2"/>
+          <rect x="20" y="14" width="380" height="48" rx="26" fill="#16513f"/>
+          <rect x="20" y="40" width="380" height="22" fill="#16513f"/>
+          <text x="210" y="44" text-anchor="middle" fill="#fff" font-size="15" font-weight="600">确认订单</text>
+          <rect x="36" y="76" width="348" height="74" rx="8" fill="#faf9f6" stroke="#e3e6ec"/>
+          <rect x="48" y="88" width="50" height="50" rx="6" fill="#dfe4ea"/>
+          <text x="73" y="117" text-anchor="middle" fill="#9aa1ad" font-size="10">设备图</text>
+          <text x="112" y="100" fill="#1a1f2b" font-size="13.5" font-weight="600">iPhone(示例)128G 蓝</text>
+          <text x="112" y="120" fill="#4a5163" font-size="11.5">成色:全新　设备价值:¥6,000</text>
+          <text x="112" y="138" fill="#2b6fb0" font-size="11">合同保障 · 正品保障 · 客服协助</text>
+          <rect x="36" y="160" width="348" height="48" rx="8" fill="#e6f0ec" stroke="#1f6f5c"/>
+          <text x="50" y="180" fill="#16513f" font-size="12.5" font-weight="600">✓ 设备价值确认</text>
+          <text x="50" y="198" fill="#3d7a68" font-size="11">型号 / 成色 / 价值 ¥6,000,客户只读确认</text>
+          <rect x="36" y="218" width="348" height="120" rx="8" fill="#faf9f6" stroke="#e3e6ec"/>
+          <text x="50" y="240" fill="#1a1f2b" font-size="13" font-weight="600">费用方案</text>
+          <text x="50" y="262" fill="#4a5163" font-size="12">保证金</text><text x="370" y="262" text-anchor="end" fill="#1a1f2b" font-size="12">¥800</text>
+          <text x="50" y="282" fill="#4a5163" font-size="12">首期应付</text><text x="370" y="282" text-anchor="end" fill="#1a1f2b" font-size="12">¥800</text>
+          <text x="50" y="302" fill="#4a5163" font-size="12">每期应付 × 12 期</text><text x="370" y="302" text-anchor="end" fill="#1a1f2b" font-size="12">¥800</text>
+          <line x1="50" y1="312" x2="370" y2="312" stroke="#e3e6ec"/>
+          <text x="50" y="330" fill="#16513f" font-size="13" font-weight="700">实际您要付:¥1,600</text>
+          <text x="370" y="330" text-anchor="end" fill="#9aa1ad" font-size="10.5">总额¥1,680−保证金抵¥80</text>
+          <rect x="36" y="348" width="348" height="70" rx="8" fill="#f6efe0" stroke="#b08534"/>
+          <text x="50" y="368" fill="#8a6518" font-size="12.5" font-weight="700">最低服务期:3 个月起</text>
+          <text x="50" y="386" fill="#a07a28" font-size="11">3个月内提前归还,需结清已发生费用</text>
+          <text x="50" y="404" fill="#a07a28" font-size="11">到期可:归还 / 继续使用 / 申请购买</text>
+          <rect x="36" y="428" width="348" height="92" rx="8" fill="#faf9f6" stroke="#e3e6ec"/>
+          <rect x="50" y="442" width="14" height="14" rx="3" fill="#1f6f5c"/>
+          <text x="72" y="453" fill="#4a5163" font-size="11.5">我已阅读《租赁服务协议》《隐私政策》等</text>
+          <rect x="50" y="466" width="14" height="14" rx="3" fill="#1f6f5c"/>
+          <text x="72" y="477" fill="#4a5163" font-size="11.5">我已确认设备型号、成色及价值无误</text>
+          <rect x="50" y="490" width="14" height="14" rx="3" fill="#1f6f5c"/>
+          <text x="72" y="501" fill="#4a5163" font-size="11.5">我已知悉最低服务期 3 个月起及其规则</text>
+          <rect x="36" y="532" width="348" height="48" rx="24" fill="#1f6f5c"/>
+          <text x="210" y="561" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">立即下单</text>
+        </svg>
+        <div class="cap">这是给设计/前端参考的"中保真示意",不是最终视觉。位置、要素、有哪些勾选项是确定的,配色字体由 UI 团队最终把控。</div>
+      </div>
+    </div>
+
+    <div class="feature">
+      <span class="l-tag l3">第 3 层 · 关键规则</span>
+      <h3>这一页上,每个东西的规矩</h3>
+      <table>
+        <tr><th style="width:30%">页面元素</th><th>规则</th></tr>
+        <tr><td class="who">设备价值确认区</td><td>必须独立成块,客户<b>只读、不可改</b>;型号/成色/价值都来自这一单的设备价。客户必须单独勾"确认无误"才能下单。</td></tr>
+        <tr><td class="who">价格双层显示</td><td>大字显示"<span class="cust">实际您要付 ¥X</span>",小字解释"总额−保证金抵扣"。避免客户误解为分期买断。</td></tr>
+        <tr><td class="who">最低服务期</td><td>显著展示"<b>3 个月起</b>"(安心用统一,不分品类),并说明"3个月内提前归还要结清已发生费用"。必须单独勾选确认。</td></tr>
+        <tr><td class="who">到期三选一说明</td><td>这一页就要告诉客户"到期可以:归还/继续用/申请购买",三个平等列出,不暗示一定要买。</td></tr>
+        <tr><td class="who">下单按钮</td><td>所有必勾项没勾完,点击就提示"请先阅读并同意相关协议",不放行。</td></tr>
+      </table>
+      <div class="callout gold">
+        <div class="h">⚑ 这一页为什么这么重要(给老板和法务看)</div>
+        客户在这页看到、确认、勾选的一切,系统都会拍成"快照"存档(看了什么价、什么时间、什么设备、IP是多少)。将来万一打官司,这页快照就是证明"客户当初清楚自己在租设备、知道规矩"的核心证据。所以这页必须干净、清楚、留痕。
+      </div>
+      <div class="seealso">详见:<b>订单确认页</b> <code>C端/02</code>　·　<b>设备价值确认单</b> <code>运营端/资产管理/02</code></div>
+    </div>
+  </section>
+
+  <section class="chapter">
+    <h2><span class="idx">第 3 章</span>到期三选一 与 申请购买</h2>
+    <p class="lead">租期快到时,客户要做一个选择。这一章是整个业务里"合规"最敏感的地方——处理得好是干净的租赁,处理不好就会被认为是"变相分期买断"。</p>
+
+    <div class="feature">
+      <span class="l-tag l1">第 1 层 · 这块是干嘛的</span>
+      <h3>一句话</h3>
+      <div class="oneliner">到期前,系统平等地给客户三个选择——把设备还回去、再续租一段、或者申请把这台设备买下来。客户主动选,系统绝不替客户默认勾"购买"。</div>
+    </div>
+
+    <div class="feature">
+      <span class="l-tag l2">第 2 层 · 流程图</span>
+      <h3>客户选择后,各自怎么走</h3>
+      <div class="diagram">
+        <svg viewBox="0 0 820 420" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif">
+          <defs>
+            <marker id="arr2" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+              <path d="M0,0 L9,4.5 L0,9 Z" fill="#9aa1ad"/>
+            </marker>
+          </defs>
+          <rect x="320" y="20" width="180" height="50" rx="10" fill="#f6efe0" stroke="#b08534"/>
+          <text x="410" y="42" text-anchor="middle" fill="#8a6518" font-size="14" font-weight="700">到期前 · 三个选项</text>
+          <text x="410" y="60" text-anchor="middle" fill="#a07a28" font-size="11">同等展示,不默认勾选</text>
+          <line x1="410" y1="70" x2="160" y2="110" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <line x1="410" y1="70" x2="410" y2="110" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <line x1="410" y1="70" x2="660" y2="110" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <rect x="60" y="112" width="200" height="46" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/>
+          <text x="160" y="140" text-anchor="middle" fill="#1f4e7a" font-size="14" font-weight="600">归还设备</text>
+          <line x1="160" y1="158" x2="160" y2="186" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <rect x="60" y="188" width="200" height="64" rx="9" fill="#e6f0ec" stroke="#1f6f5c"/>
+          <text x="160" y="212" text-anchor="middle" fill="#16513f" font-size="12.5">寄回/到店 → 检测验收</text>
+          <text x="160" y="232" text-anchor="middle" fill="#16513f" font-size="12.5">退还保证金、订单结束</text>
+          <rect x="310" y="112" width="200" height="46" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/>
+          <text x="410" y="140" text-anchor="middle" fill="#1f4e7a" font-size="14" font-weight="600">继续使用(续租)</text>
+          <line x1="410" y1="158" x2="410" y2="186" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <rect x="310" y="188" width="200" height="64" rx="9" fill="#e6f0ec" stroke="#1f6f5c"/>
+          <text x="410" y="212" text-anchor="middle" fill="#16513f" font-size="12.5">按系统续租方案</text>
+          <text x="410" y="232" text-anchor="middle" fill="#16513f" font-size="12.5">继续按月付,无需再付保证金</text>
+          <rect x="560" y="112" width="200" height="46" rx="9" fill="#f6efe0" stroke="#b08534"/>
+          <text x="660" y="140" text-anchor="middle" fill="#8a6518" font-size="14" font-weight="600">申请购买</text>
+          <line x1="660" y1="158" x2="660" y2="186" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <rect x="560" y="188" width="200" height="80" rx="9" fill="#f6efe0" stroke="#b08534"/>
+          <text x="660" y="210" text-anchor="middle" fill="#8a6518" font-size="12" font-weight="600">独立确认页</text>
+          <text x="660" y="228" text-anchor="middle" fill="#a07a28" font-size="11">显示购买价、保证金抵扣</text>
+          <text x="660" y="246" text-anchor="middle" fill="#a07a28" font-size="11">客户确认 → 支付</text>
+          <text x="660" y="262" text-anchor="middle" fill="#a07a28" font-size="11">付清后所有权才转移</text>
+          <rect x="250" y="300" width="320" height="44" rx="9" fill="#f7e9e3" stroke="#a6492f"/>
+          <text x="410" y="322" text-anchor="middle" fill="#a6492f" font-size="12.5" font-weight="600">客户没选?→ 继续按到期提醒处理</text>
+          <text x="410" y="338" text-anchor="middle" fill="#a6492f" font-size="11">绝不自动变成"购买",绝不自动转移所有权</text>
+        </svg>
+        <div class="cap">三条路客户自己选。"申请购买"用棕色,因为它是合规最敏感、必须最克制的一条。</div>
+      </div>
+    </div>
+
+    <div class="feature">
+      <span class="l-tag l3">第 3 层 · 关键规则</span>
+      <h3>申请购买价怎么算(一期口径)</h3>
+      <p style="font-size:14.5px;margin:6px 0 14px;">客户申请购买时,要付的钱按这个算:</p>
+      <div class="oneliner" style="background:#f1f4f2;border-color:var(--accent);color:var(--ink);">
+        申请购买价 = 当前还没付的剩余租金 + 保证金　|　客户实付 = 购买价 − 保证金抵扣
+      </div>
+      <ul class="rules">
+        <li>这个数和办单助手当初报价单上每期那列"购买参考价"是<b>同一个数</b>,系统三处取同一份快照,不会各算各的。</li>
+        <li>保证金可以抵扣购买价;如果保证金比购买价还高,系统自动退差额。</li>
+        <li>申请购买必须客户<b>主动发起</b>,在<b>独立确认页</b>看清金额后才能支付,付清才转移所有权。</li>
+      </ul>
+      <div class="callout warn">
+        <div class="h">⚠ 必须如实告诉各部门(尤其法务)的一件事</div>
+        现在用的"购买价 = 剩余租金 + 保证金"这个算法,我们内部叫 <b>A 口径</b>。它的好处是简单、系统现成、能马上开发。但它在法律上是<b>偏敏感</b>的——因为"付的租金累计起来约等于设备价",容易被法院往"名为租赁、实为分期买断"上靠。<br><br>
+        所以我们<b>明确把它标成"一期先用、待法务确认"</b>,并准备了二期的优化口径(购买价按设备折旧后的残值算,和剩余租金脱钩)。<b>这一条是这次评审会必须请法务拍板的重点</b>,不是已经定死、没有风险的事。
+      </div>
+      <div class="seealso">详见:<b>在租期间</b> <code>C端/12 §4.2</code>　·　<b>系统定版待完善清单(A口径)</b> <code>开发设计/22</code></div>
+    </div>
+  </section>
+
+</main>
+
+<div class="sample-banner">
+  <div class="inner">
+    <b>以上是样例(长租主流程 3 章)。</b>这套"一句话 → 流程图 → 规则 → 详见链接"的四层写法,如果你觉得对了,我就照这个形式把整套补全:三类合作模式、短租取还车、商家端/门店端/办单助手、财务资金、风控监管锁、权限安全、二期挂起项、各部门待确认清单——每个核心环节都配一张图。补全后这一份就是能给部门开会讲、也能交给开发落地的完整产品文档。
+  </div>
+</div>
+
+<footer>
+  满点租赁系统 · 产品文档(样例)· V0.2.2 · 2026-05-30<br>
+  本文档为产品需求说明,供内部评审与开发参考;涉及合同法律定性的口径(如申请购买价)以法务终审为准。
+</footer>
+
+</body>
+</html>

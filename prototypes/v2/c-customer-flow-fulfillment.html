@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>满点租赁 · C端流程线框:收货确认→在租履约(演示原型)</title>
+<style>
+:root{
+  --blue:#1E3A8A;--blue-light:#3B82F6;--blue-bg:#EFF6FF;
+  --cta:#F97316;--cta-light:#FB923C;--cta-bg:#FFF7ED;
+  --red:#DC2626;--red-bg:#FEF2F2;--green:#16A34A;--green-bg:#F0FDF4;--yellow:#EAB308;--yellow-bg:#FEFCE8;
+  --ink:#0F172A;--ink2:#475569;--ink3:#94A3B8;--card:#FFFFFF;--page:#F8FAFC;--line:#E2E8F0;--disabled:#CBD5E1;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:#eef0f4;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;color:var(--ink);padding:24px 0 60px;display:flex;flex-direction:column;align-items:center;gap:8px;line-height:1.5;}
+.mono{font-variant-numeric:tabular-nums;}
+.demo-note{font-size:12.5px;color:var(--ink2);background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 16px;margin-bottom:4px;text-align:center;max-width:780px;}
+.flow-strip{font-size:12px;color:var(--ink3);margin-bottom:10px;}
+.flow-strip b{color:var(--blue);}
+.stage{display:flex;gap:28px;flex-wrap:wrap;justify-content:center;align-items:flex-start;max-width:1900px;}
+.phone-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;}
+.phone-label{font-size:13px;color:var(--ink2);font-weight:500;max-width:320px;text-align:center;}
+.phone{width:330px;height:710px;background:var(--page);border-radius:38px;border:10px solid #11193a;box-shadow:0 20px 50px rgba(20,30,50,.22);overflow:hidden;position:relative;display:flex;flex-direction:column;}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:148px;height:26px;background:#11193a;border-radius:0 0 16px 16px;z-index:30;}
+.statusbar{height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 22px 0 26px;font-size:12px;font-weight:600;flex-shrink:0;background:#fff;}
+.screen{flex:1;overflow-y:auto;overflow-x:hidden;position:relative;background:var(--page);}
+.screen::-webkit-scrollbar{width:0;}
+.topnav{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;}
+.topnav .back{font-size:22px;color:var(--ink);}
+.topnav .center-title{font-size:16px;font-weight:600;}
+.topnav .pill-native{display:flex;gap:2px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:3px 8px;color:var(--ink2);font-size:13px;}
+.card{background:#fff;border-radius:14px;padding:16px;margin:12px 14px;box-shadow:0 1px 2px rgba(15,23,42,.04);}
+.card-t{font-size:15px;font-weight:600;margin-bottom:4px;}
+.card-sub{font-size:12px;color:var(--ink3);margin-bottom:10px;}
+.prod-line{display:flex;gap:12px;align-items:center;}
+.prod-line .img{width:54px;height:54px;border-radius:10px;background:linear-gradient(135deg,#eef1f6,#dde3ee);flex-shrink:0;}
+.prod-line .nm{font-weight:600;font-size:14px;}
+.prod-line .meta{font-size:12px;color:var(--ink3);margin-top:3px;}
+/* 收货核对 */
+.check-list{margin-top:6px;}
+.check-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;font-size:13px;color:var(--ink2);border-bottom:1px solid var(--line);}
+.check-item:last-child{border-bottom:none;}
+.check-item .box{width:18px;height:18px;border-radius:5px;background:var(--blue);color:#fff;display:grid;place-items:center;font-size:11px;flex-shrink:0;margin-top:1px;}
+.ship-info{background:var(--page);border-radius:10px;padding:12px;margin-top:10px;font-size:13px;}
+.ship-info .r{display:flex;justify-content:space-between;padding:4px 0;}
+.ship-info .r .k{color:var(--ink3);}
+/* 账单 */
+.bill-sum{display:flex;justify-content:space-between;align-items:center;background:var(--blue);border-radius:14px;padding:16px;margin:12px 14px;color:#fff;}
+.bill-sum .l .t{font-size:12px;opacity:.85;}
+.bill-sum .l .v{font-size:26px;font-weight:700;margin-top:2px;}
+.bill-sum .due{font-size:12px;opacity:.9;text-align:right;}
+.bill{display:flex;align-items:center;gap:12px;padding:13px 16px;background:#fff;margin:0 14px;border-bottom:1px solid var(--line);}
+.bill:first-of-type{border-radius:14px 14px 0 0;padding-top:16px;}
+.bill:last-of-type{border-radius:0 0 14px 14px;border-bottom:none;}
+.bill .pn{width:30px;font-size:12px;color:var(--ink3);}
+.bill .info{flex:1;}
+.bill .bt{font-size:13.5px;font-weight:500;}
+.bill .bd{font-size:11.5px;color:var(--ink3);margin-top:2px;}
+.bill .amt{font-size:14px;font-weight:600;}
+.bill .st{font-size:11.5px;padding:2px 8px;border-radius:6px;}
+.bill .st.paid{background:#F1F5F9;color:#64748B;}
+.bill .st.cur{background:var(--cta-bg);color:var(--cta);}
+.bill .st.over{background:var(--red-bg);color:var(--red);}
+.bill.curbox{border:1.5px solid var(--cta);border-radius:12px;margin:8px 14px;}
+.overdue-tip{margin:10px 14px;background:var(--red-bg);border:1px solid #FECACA;border-radius:10px;padding:10px 12px;font-size:12px;color:var(--red);line-height:1.6;}
+/* 到期三选一 */
+.eot-intro{padding:14px 16px 4px;}
+.eot-intro h3{font-size:16px;font-weight:600;}
+.eot-intro p{font-size:12.5px;color:var(--ink2);margin-top:6px;line-height:1.7;}
+.eot-opt{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px;margin:10px 14px;}
+.eot-opt .h{display:flex;align-items:center;gap:12px;}
+.eot-opt .ic{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;background:var(--blue-bg);color:var(--blue);flex-shrink:0;}
+.eot-opt .ti{font-weight:600;font-size:15px;}
+.eot-opt .ar{margin-left:auto;color:var(--disabled);font-size:20px;}
+.eot-opt .d{font-size:12px;color:var(--ink2);margin-top:9px;line-height:1.7;}
+.eot-note{margin:6px 16px 0;font-size:11.5px;color:var(--ink3);line-height:1.7;}
+.equal-tag{font-size:11px;color:var(--green);background:var(--green-bg);padding:2px 8px;border-radius:6px;margin-left:8px;}
+/* 申请购买 */
+.fee-row{display:flex;justify-content:space-between;padding:11px 0;font-size:14px;border-bottom:1px solid var(--line);}
+.fee-row:last-of-type{border-bottom:none;}
+.fee-row .lbl{color:var(--ink2);}
+.fee-row .lbl .sub{display:block;font-size:11px;color:var(--ink3);margin-top:2px;}
+.fee-row .val{color:var(--ink);font-weight:500;}
+.fee-row .val.minus{color:var(--green);}
+.pay-total{display:flex;justify-content:space-between;align-items:baseline;background:var(--cta-bg);border-radius:12px;padding:14px;margin-top:10px;}
+.pay-total .l{font-size:13px;color:var(--cta);font-weight:600;}
+.pay-total .v{font-size:26px;font-weight:700;color:var(--cta);}
+.confirm-box{margin:0 14px 12px;background:var(--blue-bg);border-radius:10px;padding:12px;font-size:12.5px;color:var(--blue);line-height:1.7;}
+.tip{font-size:11.5px;color:var(--ink3);padding:2px 18px 12px;line-height:1.6;}
+.tip.warn{color:#854d0e;}
+.footbar{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:12px;}
+.footbar .pb-info{flex:0 0 auto;}
+.footbar .pb-label{font-size:11px;color:var(--ink3);}
+.footbar .pb-amt{font-size:20px;font-weight:700;color:var(--red);}
+.btn-cta{flex:1;height:50px;background:var(--cta);color:#fff;border:0;border-radius:26px;font-size:16px;font-weight:600;cursor:pointer;}
+.btn-line{height:46px;padding:0 16px;border-radius:24px;border:1px solid var(--line);background:#fff;color:var(--ink2);font-size:14px;}
+</style>
+</head>
+<body>
+<div class="demo-note">C 端核心流程线框 · <b>收货确认 → 在租履约(还款 / 到期三选一)</b> · 演示原型 · 视觉规范方案1 · 守 C 端红线与合规</div>
+<div class="flow-strip">主链路位置:支付生效 → 门店交付 → <b>收货确认 → 在租期间(账单还款 / 到期归还·续租·购买)</b> · 依据 C端 文档 11/12</div>
+<div class="stage">
+
+  <!-- ① 收货确认(文档11) -->
+  <div class="phone-wrap">
+    <div class="phone-label">① 确认收货(文档11)<br>必须本人,不可门店代确认</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="topnav"><span class="back">‹</span><span class="center-title">确认收货</span><span class="pill-native">··· ⊙</span></div>
+        <div class="card">
+          <div class="prod-line"><div class="img"></div><div><div class="nm">iPhone 15 128G 蓝色</div><div class="meta">惠讯租 · 西丽店 · 12 期</div></div></div>
+          <div class="ship-info">
+            <div class="r"><span class="k">配送方式</span><span>门店自送</span></div>
+            <div class="r"><span class="k">物流单号</span><span class="mono">SF1234567890</span></div>
+            <div class="r"><span class="k">发货时间</span><span class="mono">2026-03-01 15:02</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-t">请验收设备后确认</div>
+          <div class="card-sub">确认收货后账单开始起算,设备进入出租中</div>
+          <div class="check-list">
+            <div class="check-item"><span class="box">✓</span><span>设备型号 / 序列号与订单一致</span></div>
+            <div class="check-item"><span class="box">✓</span><span>设备外观无明显损坏</span></div>
+            <div class="check-item"><span class="box">✓</span><span>已开机检测,基本功能正常</span></div>
+          </div>
+        </div>
+        <div class="tip warn">⚠ 须本人用账户确认,门店不可代客户确认收货。如验收发现问题,请点下方「申请争议」上传照片证据。</div>
+      </div>
+      <div class="footbar">
+        <button class="btn-line">申请争议</button>
+        <button class="btn-cta">确认收货</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 账单列表 + 还款(文档12 §2) -->
+  <div class="phone-wrap">
+    <div class="phone-label">② 账单与还款(文档12 §2)<br>逐期账单 · 当前期高亮 · 逾期费用展示</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="topnav"><span class="back">‹</span><span class="center-title">我的账单</span><span class="pill-native">··· ⊙</span></div>
+        <div class="bill-sum">
+          <div class="l"><div class="t">本期应还</div><div class="v mono">¥810.00</div></div>
+          <div class="due">账单日 6月1日<br>含逾期费用 ¥10</div>
+        </div>
+        <div class="overdue-tip">本期已逾期 1 天,产生逾期费用 ¥10.00(0.05%/日,最低 10 元/日)。请尽快还款,避免影响信用与继续使用。</div>
+        <div style="font-size:13px;font-weight:600;padding:8px 16px 4px;color:var(--ink2)">账单明细</div>
+        <div class="bill"><span class="pn">1期</span><div class="info"><div class="bt">首期(首付+保证金)</div><div class="bd">2026-03-01</div></div><span class="amt mono">¥1,600</span><span class="st paid">已还</span></div>
+        <div class="bill"><span class="pn">2期</span><div class="info"><div class="bt">租金</div><div class="bd">2026-04-01</div></div><span class="amt mono">¥800</span><span class="st paid">已还</span></div>
+        <div class="bill"><span class="pn">3期</span><div class="info"><div class="bt">租金</div><div class="bd">2026-05-01</div></div><span class="amt mono">¥800</span><span class="st paid">已还</span></div>
+        <div class="bill curbox"><span class="pn">4期</span><div class="info"><div class="bt">租金 + 逾期费用</div><div class="bd">2026-06-01 · 逾期 1 天</div></div><span class="amt mono">¥810</span><span class="st over">待还·逾期</span></div>
+        <div class="bill"><span class="pn">5期</span><div class="info"><div class="bt">租金</div><div class="bd">2026-07-01</div></div><span class="amt mono">¥800</span><span class="st cur">未到期</span></div>
+        <div class="tip">支持主动还款与部分还款;可用已绑定代扣卡或另选支付方式。还款成功即时入账。</div>
+      </div>
+      <div class="footbar">
+        <div class="pb-info"><div class="pb-label">本期应还</div><div class="pb-amt mono">¥810</div></div>
+        <button class="btn-cta">立即还款</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ 到期三选一(文档12 §3 同等展示) -->
+  <div class="phone-wrap">
+    <div class="phone-label">③ 到期处理 · 三选一(文档12 §3)<br>同等展示,不默认引导购买</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="topnav"><span class="back">‹</span><span class="center-title">到期处理</span><span class="pill-native">··· ⊙</span></div>
+        <div class="eot-intro">
+          <h3>租期即将结束<span class="equal-tag">三选一</span></h3>
+          <p>iPhone 15 128G · 6月3日到期。以下三个选项由您自主选择,我们不会替您决定。</p>
+        </div>
+        <div class="eot-opt">
+          <div class="h"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 5 5v1"/></svg></div><div class="ti">归还设备</div><div class="ar">›</div></div>
+          <div class="d">到期把设备交回门店 / 平台验收,保证金按验收结果退还,订单结束。</div>
+        </div>
+        <div class="eot-opt">
+          <div class="h"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 8"/><path d="M21 3v5h-5M21 12a9 9 0 0 1-9 9 9 9 0 0 1-6-2.3L3 16"/><path d="M3 21v-5h5"/></svg></div><div class="ti">继续使用</div><div class="ar">›</div></div>
+          <div class="d">按续租方案继续使用一段时间,无需再付保证金,走简化签约。</div>
+        </div>
+        <div class="eot-opt">
+          <div class="h"><div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/><path d="M2 3h3l2.5 13h11L21 7H6"/></svg></div><div class="ti">申请购买</div><div class="ar">›</div></div>
+          <div class="d">主动申请取得设备,保证金可抵扣,付清后设备归您所有。</div>
+        </div>
+        <div class="eot-note">温馨提示:三个选项完全由您自主选择,系统不会默认勾选,也不存在"到期自动购买 / 自动转移所有权"。若暂不选择,我们会按到期提醒继续与您联系。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ④ 申请购买确认(文档12 §4 A口径) -->
+  <div class="phone-wrap">
+    <div class="phone-label">④ 申请购买确认(文档12 §4 · A口径)<br>剩余租金+保证金,保证金可抵扣</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="topnav"><span class="back">‹</span><span class="center-title">申请购买</span><span class="pill-native">··· ⊙</span></div>
+        <div class="card">
+          <div class="prod-line"><div class="img"></div><div><div class="nm">iPhone 15 128G 蓝色</div><div class="meta">已还 9 / 12 期 · 剩余 3 期未付</div></div></div>
+        </div>
+        <div class="card">
+          <div class="card-t">购买金额</div>
+          <div class="card-sub">金额取自下单时的报价快照,不重新计算</div>
+          <div class="fee-row"><span class="lbl">剩余应付租金 <span class="sub">¥800 × 3 期</span></span><span class="val mono">¥2,400.00</span></div>
+          <div class="fee-row"><span class="lbl">保证金</span><span class="val mono">¥800.00</span></div>
+          <div class="fee-row"><span class="lbl">购买金额合计 <span class="sub">剩余租金 + 保证金</span></span><span class="val mono">¥3,200.00</span></div>
+          <div class="fee-row"><span class="lbl">保证金抵扣</span><span class="val minus mono">−¥800.00</span></div>
+          <div class="pay-total"><span class="l">实付金额</span><span class="v mono">¥2,400.00</span></div>
+        </div>
+        <div class="confirm-box">购买完成后,设备所有权转移给您,本订单所有账单结清,监管锁(如有)将解除。</div>
+        <div class="tip">支付成功后订单归入「已完成」。如保证金大于购买金额,差额将自动退还。</div>
+      </div>
+      <div class="footbar">
+        <div class="pb-info"><div class="pb-label">实付金额</div><div class="pb-amt mono">¥2,400</div></div>
+        <button class="btn-cta">确认并支付</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

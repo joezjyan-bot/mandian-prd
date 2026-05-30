@@ -6,8 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class LedgerEntry extends Model
 {
+    protected $table = 'yzz_ledger_entries';
+
     protected $fillable = [
-        'subject_code', 'direction', 'amount_cents', 'order_id',
-        'payment_flow_id', 'cooperation_mode', 'memo',
+        'voucher_no', 'order_id', 'account_code', 'account_name',
+        'dc', 'amount_cents', 'summary', 'booked_at',
+    ];
+
+    protected $casts = [
+        'booked_at' => 'datetime',
     ];
 }

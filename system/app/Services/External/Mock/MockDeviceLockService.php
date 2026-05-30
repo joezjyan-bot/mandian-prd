@@ -2,26 +2,25 @@
 
 namespace App\Services\External\Mock;
 
-use App\Services\External\Contracts\DeviceLockServiceInterface;
+use App\Contracts\DeviceLockContract;
 
 /**
- * 模拟监管锁:演示时直接返回"已上锁/已解锁/在线",不调真实管控平台。
+ * 【演示模式】监管锁——返回操作成功。
  */
-class MockDeviceLockService implements DeviceLockServiceInterface
+class MockDeviceLockService implements DeviceLockContract
 {
-    public function lock(string $deviceSn, array $context = []): array
+    public function lock(string $deviceCode, array $context = []): array
     {
-        return ['success' => true, 'lock_status' => 'locked', 'raw' => ['mock' => true, 'sn' => $deviceSn]];
+        return ['device_code' => $deviceCode, 'lock_status' => 'locked', 'at' => now()->toIso8601String()];
     }
 
-    public function unlock(string $deviceSn, array $context = []): array
+    public function unlock(string $deviceCode, array $context = []): array
     {
-        return ['success' => true, 'lock_status' => 'unlocked', 'raw' => ['mock' => true, 'sn' => $deviceSn]];
+        return ['device_code' => $deviceCode, 'lock_status' => 'unlocked', 'at' => now()->toIso8601String()];
     }
 
-    public function queryStatus(string $deviceSn): array
+    public function status(string $deviceCode): array
     {
-        // 演示:默认已上锁+已激活+在线,使结算前置条件可通过
-        return ['locked' => true, 'activation_locked' => true, 'online' => true];
+        return ['device_code' => $deviceCode, 'lock_status' => 'unlocked'];
     }
 }

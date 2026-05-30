@@ -2,20 +2,15 @@
 
 namespace App\Services\External\Mock;
 
-use App\Services\External\Contracts\IdVerifyServiceInterface;
-use Illuminate\Support\Str;
+use App\Contracts\IdVerifyContract;
 
 /**
- * 模拟实名:演示时恒返回通过(高分)。
+ * 【演示模式】实名认证——返回通过。
  */
-class MockIdVerifyService implements IdVerifyServiceInterface
+class MockIdVerifyService implements IdVerifyContract
 {
     public function verify(array $payload): array
     {
-        return [
-            'verified' => true,
-            'score'    => 0.99,
-            'trace_no' => 'MOCK-IDV-' . Str::upper(Str::random(12)),
-        ];
+        return ['passed' => true, 'score' => 99, 'verified_at' => now()->toIso8601String()];
     }
 }

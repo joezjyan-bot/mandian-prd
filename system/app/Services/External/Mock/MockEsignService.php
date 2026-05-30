@@ -2,33 +2,26 @@
 
 namespace App\Services\External\Mock;
 
-use App\Services\External\Contracts\EsignServiceInterface;
+use App\Contracts\EsignContract;
 use Illuminate\Support\Str;
 
 /**
- * 模拟电子签:不调真实通道,直接返回"签署成功",用于演示整套流程。
- * 演示时:前端拿到 sign_url 可以是一个假的"点击即签"页;querySignStatus 恒返回已签。
+ * 【演示模式】电子签约——直接返回签署成功。
  */
-class MockEsignService implements EsignServiceInterface
+class MockEsignService implements EsignContract
 {
-    public function createSignFlow(array $payload): array
+    public function sign(array $payload): array
     {
-        $flowId = 'MOCK-SIGN-' . Str::upper(Str::random(12));
-
         return [
-            'success'      => true,
-            'sign_flow_id' => $flowId,
-            'sign_url'     => url("/mock/esign/{$flowId}"),
-            'raw'          => ['mock' => true, 'payload' => $payload],
+            'sign_id' => 'MOCK-SIGN-' . Str::upper(Str::random(10)),
+            'status' => 'signed',
+            'signed_at' => now()->toIso8601String(),
+            'contract_url' => 'https://mock.local/contract/demo.pdf',
         ];
     }
 
-    public function querySignStatus(string $signFlowId): array
+    public function status(string $signId): array
     {
-        return [
-            'signed'    => true,
-            'signed_at' => now()->toIso8601String(),
-            'pdf_url'   => url("/mock/esign/{$signFlowId}/contract.pdf"),
-        ];
+        return ['sign_id' => $signId, 'status' => 'signed'];
     }
 }

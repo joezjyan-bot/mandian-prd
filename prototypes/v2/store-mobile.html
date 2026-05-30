@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>满点租赁 · 门店手机端(演示原型)</title>
+<style>
+:root{
+  --brand:#2B5CE6;--brand-hover:#1E4FD4;--brand-light:#EEF3FE;
+  --g50:#FAFBFC;--g100:#F4F5F7;--g200:#E5E7EB;--g300:#D1D5DB;--g400:#9CA3AF;--g500:#6B7280;--g700:#374151;--g900:#111827;
+  --success:#10B981;--success-l:#ECFDF5;--warning:#F59E0B;--warning-l:#FFFBEB;--danger:#EF4444;--danger-l:#FEF2F2;--merch:#8a5a1f;--merch-l:#F6EEDE;
+  --r-md:8px;--r-lg:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:#eef0f4;font-family:Inter,-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--g900);padding:24px 0 60px;display:flex;flex-direction:column;align-items:center;gap:8px;}
+.mono{font-family:"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;font-feature-settings:"tnum";}
+.demo-note{font-size:12.5px;color:var(--g500);background:#fff;border:1px solid var(--g200);border-radius:999px;padding:6px 16px;margin-bottom:8px;}
+.stage{display:flex;gap:28px;flex-wrap:wrap;justify-content:center;align-items:flex-start;}
+.phone-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;}
+.phone-label{font-size:13px;color:var(--g500);font-weight:500;}
+.phone{width:340px;height:720px;background:#fff;border-radius:38px;border:10px solid #1a1f2b;box-shadow:0 20px 50px rgba(20,30,50,.22);overflow:hidden;position:relative;display:flex;flex-direction:column;}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:150px;height:26px;background:#1a1f2b;border-radius:0 0 16px 16px;z-index:30;}
+.statusbar{height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 22px 0 26px;font-size:12px;font-weight:600;flex-shrink:0;}
+.screen{flex:1;overflow-y:auto;overflow-x:hidden;background:var(--g50);}
+.screen::-webkit-scrollbar{width:0;}
+.appbar{height:48px;display:flex;align-items:center;justify-content:center;background:var(--merch);color:#fff;position:sticky;top:0;z-index:20;}
+.appbar .title{font-size:16px;font-weight:600;}
+.appbar .back{position:absolute;left:14px;font-size:20px;cursor:pointer;}
+.store-bar{background:var(--merch-l);padding:10px 16px;font-size:13px;color:var(--merch);display:flex;justify-content:space-between;align-items:center;}
+.tabs{display:flex;background:#fff;border-bottom:1px solid var(--g100);position:sticky;top:48px;z-index:19;}
+.tab{flex:1;text-align:center;padding:12px 0;font-size:13px;color:var(--g500);position:relative;cursor:pointer;}
+.tab .cnt{display:inline-block;min-width:16px;height:16px;line-height:16px;background:var(--danger);color:#fff;font-size:10px;border-radius:8px;padding:0 4px;margin-left:3px;vertical-align:top;}
+.tab.on{color:var(--merch);font-weight:600;}
+.tab.on::after{content:"";position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:28px;height:2.5px;background:var(--merch);border-radius:2px;}
+.todo{background:#fff;border-radius:var(--r-lg);margin:12px 14px;padding:14px;box-shadow:0 2px 8px rgba(30,50,90,.05);}
+.todo-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.todo-no{font-size:12px;color:var(--g400);}
+.todo-st{font-size:12px;font-weight:600;}
+.todo-st.wait{color:var(--brand);}.todo-st.deliver{color:var(--warning);}.todo-st.return{color:var(--merch);}
+.todo-body{display:flex;gap:12px;}
+.todo-img{width:54px;height:54px;border-radius:8px;background:linear-gradient(135deg,#eef1f6,#dfe4ec);flex-shrink:0;}
+.todo-info{flex:1;min-width:0;}
+.todo-name{font-weight:600;font-size:14px;}
+.todo-cust{font-size:12.5px;color:var(--g500);margin-top:3px;}
+.todo-meta{font-size:12px;color:var(--g400);margin-top:2px;}
+.todo-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:12px;padding-top:10px;border-top:1px solid var(--g100);}
+.btn{height:36px;padding:0 16px;border-radius:8px;font-size:13.5px;font-weight:500;cursor:pointer;border:1px solid var(--g200);background:#fff;color:var(--g700);}
+.btn:active{transform:scale(.97);}
+.btn.primary{background:var(--merch);color:#fff;border-color:var(--merch);}
+.btn.blue{background:var(--brand);color:#fff;border-color:var(--brand);}
+.tabbar{height:56px;background:#fff;border-top:1px solid var(--g100);display:flex;flex-shrink:0;}
+.bt{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--g400);font-size:11px;cursor:pointer;}
+.bt.on{color:var(--merch);}.bt .bi{font-size:19px;}
+.calc-sec{background:#fff;border-radius:var(--r-lg);margin:12px 14px;padding:14px;box-shadow:0 2px 8px rgba(30,50,90,.05);}
+.calc-sec h4{font-size:13px;color:var(--g500);margin-bottom:12px;font-weight:600;}
+.calc-field{margin-bottom:14px;}
+.calc-field .lbl{font-size:12.5px;color:var(--g500);margin-bottom:6px;}
+.calc-field .input{height:42px;border:1px solid var(--g200);border-radius:8px;display:flex;align-items:center;padding:0 12px;font-size:14px;color:var(--g900);background:var(--g50);}
+.chips{display:flex;gap:8px;flex-wrap:wrap;}
+.chip{padding:8px 14px;border:1px solid var(--g200);border-radius:8px;font-size:13px;color:var(--g700);cursor:pointer;}
+.chip.on{background:var(--brand-light);border-color:var(--brand);color:var(--brand);font-weight:600;}
+.svc-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--g100);}
+.svc-row:last-child{border-bottom:none;}
+.svc-box{width:20px;height:20px;border-radius:5px;border:1.5px solid var(--g300);display:grid;place-items:center;font-size:12px;color:#fff;}
+.svc-box.on{background:var(--brand);border-color:var(--brand);}
+.svc-box.forced{background:var(--g400);border-color:var(--g400);}
+.svc-name{flex:1;font-size:13.5px;}
+.svc-fee{font-size:13px;color:var(--g700);font-weight:500;}
+.svc-tag{font-size:10.5px;color:var(--g400);}
+.result-box{background:var(--merch-l);border-radius:var(--r-lg);margin:12px 14px;padding:16px;}
+.result-row{display:flex;justify-content:space-between;font-size:13.5px;padding:6px 0;}
+.result-row .v{font-weight:600;}
+.result-big{display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed #d8c9a8;margin-top:8px;padding-top:10px;}
+.result-big .bl{font-size:14px;color:var(--merch);font-weight:600;}
+.result-big .bv{font-size:24px;font-weight:700;color:var(--merch);}
+.qr-area{text-align:center;padding:20px 14px;}
+.qr-box{width:170px;height:170px;margin:0 auto;background:#fff;border:1px solid var(--g200);border-radius:12px;display:grid;place-items:center;position:relative;}
+.qr-grid{width:130px;height:130px;background-image:repeating-linear-gradient(0deg,#1a1f2b 0 6px,transparent 6px 12px),repeating-linear-gradient(90deg,#1a1f2b 0 6px,transparent 6px 12px);background-size:13px 13px;opacity:.85;border-radius:4px;}
+.qr-tip{font-size:13px;color:var(--g500);margin-top:14px;}
+.page{display:none;flex-direction:column;height:100%;}
+.page.on{display:flex;}
+.fab{position:absolute;right:18px;bottom:74px;width:54px;height:54px;border-radius:50%;background:var(--merch);color:#fff;display:grid;place-items:center;font-size:24px;box-shadow:0 8px 20px rgba(138,90,31,.35);cursor:pointer;z-index:25;}
+</style>
+</head>
+<body>
+<div class="demo-note">商家门店手机端 · 演示原型 · 模拟数据 · 店员现场办单 / 交付 / 还车</div>
+<div class="stage">
+  <div class="phone-wrap">
+    <div class="phone-label">① 门店待办(待接单/待交付/待还车)</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="appbar"><span class="title">门店待办</span></div>
+        <div class="store-bar"><span>📍 惠讯租 · 西丽店</span><span>赵店长 ▾</span></div>
+        <div class="tabs">
+          <div class="tab on">待交付<span class="cnt">2</span></div>
+          <div class="tab">待还车<span class="cnt">1</span></div>
+          <div class="tab">短租待办</div>
+          <div class="tab">已完成</div>
+        </div>
+        <div class="todo">
+          <div class="todo-head"><span class="todo-no">YZZ…3092 · 长租</span><span class="todo-st deliver">待交付</span></div>
+          <div class="todo-body"><div class="todo-img"></div><div class="todo-info"><div class="todo-name">iPhone 15 128G 蓝色</div><div class="todo-cust">张先生 · 138****6677</div><div class="todo-meta">客户已付首期 · 等待交付</div></div></div>
+          <div class="todo-foot"><button class="btn">联系客户</button><button class="btn primary">去交付 ›</button></div>
+        </div>
+        <div class="todo">
+          <div class="todo-head"><span class="todo-no">YZZ…3098 · 长租</span><span class="todo-st deliver">待交付</span></div>
+          <div class="todo-body"><div class="todo-img"></div><div class="todo-info"><div class="todo-name">华为 Mate 60 256G</div><div class="todo-cust">周女士 · 137****2289</div><div class="todo-meta">客户已签收待激活监管锁</div></div></div>
+          <div class="todo-foot"><button class="btn">联系客户</button><button class="btn primary">去交付 ›</button></div>
+        </div>
+        <div style="height:8px"></div>
+      </div>
+      <div class="fab" title="新建办单">＋</div>
+      <div class="tabbar">
+        <div class="bt on"><div class="bi">▤</div>待办</div>
+        <div class="bt"><div class="bi">＋</div>办单</div>
+        <div class="bt"><div class="bi">📋</div>订单</div>
+        <div class="bt"><div class="bi">👤</div>我的</div>
+      </div>
+    </div>
+  </div>
+  <div class="phone-wrap">
+    <div class="phone-label">② 办单助手(算价)</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="appbar"><span class="back">‹</span><span class="title">办单助手</span></div>
+        <div class="calc-sec">
+          <h4>选择商品</h4>
+          <div class="calc-field"><div class="input" style="justify-content:space-between">iPhone 15 128G 蓝色 <span style="color:var(--g400)">›</span></div></div>
+          <div class="calc-field"><div class="lbl">设备价值</div><div class="input mono">¥6,000.00</div></div>
+        </div>
+        <div class="calc-sec">
+          <h4>租赁方案</h4>
+          <div class="calc-field"><div class="lbl">期数(后台可增删)</div><div class="chips"><span class="chip">3期</span><span class="chip">6期</span><span class="chip on">12期</span></div></div>
+          <div class="calc-field" style="margin-bottom:0"><div class="lbl">首付成数</div><div class="chips"><span class="chip on">0成</span><span class="chip">1成</span><span class="chip">2成</span><span class="chip">3成</span></div></div>
+        </div>
+        <div class="calc-sec">
+          <h4>增值服务</h4>
+          <div class="svc-row"><div class="svc-box forced">✓</div><div class="svc-name">设备管理费 <span class="svc-tag">(强制)</span></div><div class="svc-fee mono">¥120</div></div>
+          <div class="svc-row"><div class="svc-box on">✓</div><div class="svc-name">公证服务费 <span class="svc-tag">(默认勾选)</span></div><div class="svc-fee mono">¥80</div></div>
+          <div class="svc-row"><div class="svc-box"></div><div class="svc-name">延保服务 <span class="svc-tag">(可选)</span></div><div class="svc-fee mono">¥60</div></div>
+        </div>
+        <div class="result-box">
+          <div class="result-row"><span>首期实付</span><span class="v mono">¥1,000</span></div>
+          <div class="result-row"><span>每期应付 × 12</span><span class="v mono">¥800</span></div>
+          <div class="result-row"><span>第12期购买参考价</span><span class="v mono">¥800</span></div>
+          <div class="result-big"><span class="bl">报价合计(总额)</span><span class="bv mono">¥9,800</span></div>
+        </div>
+        <div style="padding:0 14px 16px"><button class="btn blue" style="width:100%;height:46px;font-size:15px">生成报价 · 出下单二维码</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="phone-wrap">
+    <div class="phone-label">③ 下单二维码 → 交付录入</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="page on" id="qr">
+          <div class="appbar"><span class="back">‹</span><span class="title">请客户扫码下单</span></div>
+          <div class="qr-area">
+            <div class="qr-box"><div class="qr-grid"></div></div>
+            <div class="qr-tip">让客户用微信/小程序扫码<br>读取这份报价快照下单</div>
+          </div>
+          <div class="calc-sec" style="margin-top:0">
+            <div class="result-row"><span style="color:var(--g500)">商品</span><span class="v">iPhone 15 128G</span></div>
+            <div class="result-row"><span style="color:var(--g500)">方案</span><span class="v">12期 · 0首付</span></div>
+            <div class="result-row"><span style="color:var(--g500)">首期实付</span><span class="v mono">¥1,000</span></div>
+            <div class="result-row"><span style="color:var(--g500)">快照编号</span><span class="v mono" style="font-size:12px">SNAP…A001</span></div>
+          </div>
+          <div style="padding:0 14px"><button class="btn primary" style="width:100%;height:46px;font-size:15px" onclick="document.getElementById('qr').classList.remove('on');document.getElementById('deliver').classList.add('on')">模拟:客户已下单付款 → 去交付</button></div>
+        </div>
+        <div class="page" id="deliver">
+          <div class="appbar"><span class="back" onclick="document.getElementById('deliver').classList.remove('on');document.getElementById('qr').classList.add('on')">‹</span><span class="title">交付录入</span></div>
+          <div class="calc-sec">
+            <h4>订单信息</h4>
+            <div class="result-row"><span style="color:var(--g500)">客户</span><span class="v">张先生 138****6677</span></div>
+            <div class="result-row"><span style="color:var(--g500)">设备</span><span class="v">iPhone 15 128G 蓝</span></div>
+          </div>
+          <div class="calc-sec">
+            <h4>录入设备唯一码</h4>
+            <div class="calc-field"><div class="lbl">IMEI / SN(扫码或手输)</div><div class="input" style="justify-content:space-between"><span class="mono" style="color:var(--g400)">点击扫码录入</span><span style="color:var(--brand)">⊡ 扫码</span></div></div>
+          </div>
+          <div class="calc-sec">
+            <h4>交付材料</h4>
+            <div class="svc-row"><div class="svc-box on">✓</div><div class="svc-name">设备外观照</div></div>
+            <div class="svc-row"><div class="svc-box on">✓</div><div class="svc-name">人机合照(仅存比对结果)</div></div>
+            <div class="svc-row"><div class="svc-box"></div><div class="svc-name">监管锁上锁(苹果类)</div></div>
+          </div>
+          <div style="padding:0 14px 16px"><button class="btn blue" style="width:100%;height:46px;font-size:15px">提交交付</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

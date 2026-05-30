@@ -2,38 +2,32 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Routing\Controller;
+use App\Http\Controllers\Controller;
+use App\Services\Finance\FinancePostingService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use App\Services\External\Contracts\PaymentServiceInterface;
-use App\Services\Finance\FinancePostingService;
 
 /**
- * 支付回调入口。模拟模式下,演示页"点击支付成功"即打到这里。
- * 真实模式:必须先 verifyCallback 验签,再处理。幂等由 event_id 保证。
+ * 支付回调（幂等）。真实通道回调也走这里。
  */
 class PaymentCallbackController extends Controller
 {
-    public function __construct(
-        private PaymentServiceInterface $payment,
-        private FinancePostingService $finance,
-    ) {}
+    public function __construct(private FinancePostingService $finance) {}
 
     public function handle(Request $request): JsonResponse
     {
-        $callback = $request->all();
+        $data = $request->validate([
+            'order_id' => 'required|integer',
+            'bill_id' => 'nullable|integer',
+            'merchant_id' => 'required|integer',
+            'amount_cents' => 'required|integer|min:0',
+            'channel_trade_no' => 'required|string',
+            'callback_event_id' => 'required|string',
+        ]);
 
-        if (! $this->payment->verifyCallback($callback)) {
-            return response()->json(['error' => 'invalid signature'], 400);
-        }
+        $posted = $this->finance->postPaymentSuccess($data);
 
-        $parsed = $this->payment->parseCallback($callback);
-        if (! $parsed['paid']) {
-            return response()->json(['ok' => true, 'note' => 'not paid, ignored']);
-        }
-
-        $result = $this->finance->onPaymentSuccess($parsed);
-
-        return response()->json(['ok' => true, 'result' => $result]);
+        // 重复回调返回 ok 但 posted=false，不重复入账
+        return response()->json(['ok' => true, 'posted' => $posted]);
     }
 }

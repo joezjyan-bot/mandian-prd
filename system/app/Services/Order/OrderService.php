@@ -2,62 +2,66 @@
 
 namespace App\Services\Order;
 
+use App\Contracts\EsignContract;
+use App\Contracts\PaymentContract;
 use App\Models\Order;
 use App\Models\Bill;
-use App\Services\External\Contracts\EsignServiceInterface;
-use App\Services\External\Contracts\PaymentServiceInterface;
+use App\Services\Finance\FinancePostingService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
- * 下单与订单生命周期编排。演示流程:
- * 创建订单 → 生成首期+保证金账单 → 发起签约(模拟) → 发起首期支付(模拟)。
- * 后续支付成功回调由 PaymentCallbackController 处理(见四账记账)。
+ * 订单编排服务：下单 / 签约 / 首期支付。
+ * 依赖接口（EsignContract/PaymentContract），不感知 mock/real。
  */
 class OrderService
 {
     public function __construct(
-        private EsignServiceInterface $esign,
-        private PaymentServiceInterface $payment,
+        private EsignContract $esign,
+        private PaymentContract $payment,
+        private FinancePostingService $finance,
     ) {}
 
     /**
-     * 创建订单(下单确认页提交)。
-     * @param array $data 已通过办单助手报价快照校验的下单数据
+     * 下单：生成订单 + 账单计划。
      */
     public function create(array $data): Order
     {
         return DB::transaction(function () use ($data) {
             $order = Order::create([
-                'order_no'            => 'YZZ' . date('ymd') . Str::upper(Str::random(8)),
-                'customer_id'         => $data['customer_id'],
-                'merchant_id'         => $data['merchant_id'],
-                'store_id'            => $data['store_id'] ?? null,
-                'product_id'          => $data['product_id'],
-                'cooperation_mode'    => $data['cooperation_mode'],
-                'biz_line'            => $data['biz_line'] ?? 'long_rent',
-                'device_value_cents'  => $data['device_value_cents'],
-                'deposit_cents'       => $data['deposit_cents'],
-                'first_payment_cents' => $data['first_payment_cents'],
-                'period_payment_cents' => $data['period_payment_cents'],
-                'periods'             => $data['periods'],
-                'min_service_period_months' => config('business.min_service_period_months', 3),
-                'status'              => 'created',
-                'order_snapshot'      => $data['snapshot'] ?? null,
-                'quote_snapshot_id'   => $data['quote_snapshot_id'] ?? null,
+                'order_no' => 'YZZ' . now()->format('YmdHis') . Str::upper(Str::random(4)),
+                'customer_id' => $data['customer_id'],
+                'merchant_id' => $data['merchant_id'],
+                'store_id' => $data['store_id'] ?? null,
+                'cooperation_mode' => $data['cooperation_mode'],
+                'product_name' => $data['product_name'],
+                'device_value_cents' => $data['device_value_cents'],
+                'deposit_cents' => $data['deposit_cents'] ?? 0,
+                'periods' => $data['periods'],
+                'period_rent_cents' => $data['period_rent_cents'],
+                'total_amount_cents' => $data['period_rent_cents'] * $data['periods'],
+                'status' => 'created',
             ]);
 
-            // 首期账单 = 首期应付 + 保证金(各记一条,便于四账追溯)
+            // 首期账单
             Bill::create([
-                'order_id' => $order->id, 'period_no' => 0, 'bill_type' => 'first',
-                'amount_due_cents' => $order->first_payment_cents, 'status' => 'unpaid',
+                'order_id' => $order->id,
+                'period_no' => 0,
+                'bill_type' => 'first',
+                'amount_due_cents' => ($data['deposit_cents'] ?? 0) + $data['period_rent_cents'],
+                'status' => 'unpaid',
                 'due_time' => now(),
             ]);
-            if ($order->deposit_cents > 0) {
+
+            // 后续租金账单
+            for ($i = 1; $i < $data['periods']; $i++) {
                 Bill::create([
-                    'order_id' => $order->id, 'period_no' => 0, 'bill_type' => 'deposit',
-                    'amount_due_cents' => $order->deposit_cents, 'status' => 'unpaid',
-                    'due_time' => now(),
+                    'order_id' => $order->id,
+                    'period_no' => $i,
+                    'bill_type' => 'rent',
+                    'amount_due_cents' => $data['period_rent_cents'],
+                    'status' => 'unpaid',
+                    'due_time' => now()->addMonths($i),
                 ]);
             }
 
@@ -65,58 +69,59 @@ class OrderService
         });
     }
 
-    /** 发起合同签署(走模拟或真实,由 Provider 绑定决定) */
-    public function startSigning(Order $order): array
+    /**
+     * 签约（走模拟或真实电子签）。
+     */
+    public function sign(Order $order): Order
     {
-        $order->update(['status' => 'contract_signing']);
-
-        return $this->esign->createSignFlow([
-            'order_id'      => $order->id,
-            'template_code' => 'rental_agreement_v4',
-            'signer'        => ['customer_id' => $order->customer_id],
-            'snapshot'      => $order->order_snapshot,
+        $result = $this->esign->sign([
+            'order_no' => $order->order_no,
+            'customer_id' => $order->customer_id,
+            'product_name' => $order->product_name,
         ]);
-    }
 
-    /** 发起首期支付 */
-    public function startFirstPayment(Order $order): array
-    {
-        $order->update(['status' => 'paying']);
-        $firstBill = Bill::where('order_id', $order->id)->where('bill_type', 'first')->first();
-
-        return $this->payment->createPayment([
-            'bill_id'      => $firstBill?->id,
-            'order_id'     => $order->id,
-            'amount_cents' => (int) $order->first_payment_cents + (int) $order->deposit_cents,
-            'subject'      => "订单 {$order->order_no} 首期+保证金",
+        $order->update([
+            'esign_id' => $result['sign_id'],
+            'status' => 'paying',
+            'signed_at' => now(),
         ]);
+
+        return $order;
     }
 
     /**
-     * 到期三选一。client 必须主动选,系统绝不默认"购买"。
-     * @param string $choice return|renew|buyout
+     * 首期支付（走模拟或真实支付）+ 四账记账。
      */
-    public function handleExpiryChoice(Order $order, string $choice): array
+    public function payFirstBill(Order $order): array
     {
-        return match ($choice) {
-            'return' => $this->handleReturn($order),
-            'renew'  => $this->handleRenew($order),
-            'buyout' => ['next' => 'buyout_confirm', 'note' => '跳独立确认页,见 BuyoutController'],
-            default  => throw new \InvalidArgumentException('无效选择'),
-        };
-    }
+        $bill = $order->bills()->where('period_no', 0)->firstOrFail();
 
-    private function handleReturn(Order $order): array
-    {
-        $order->update(['status' => 'returning']);
-        // TODO[团队]: 生成归还检测单 + 预结算(见 PRD 提前归还/归还检测)
-        return ['next' => 'return_inspection'];
-    }
+        $result = $this->payment->pay([
+            'order_id' => $order->id,
+            'bill_id' => $bill->id,
+            'amount_cents' => $bill->amount_due_cents,
+        ]);
 
-    private function handleRenew(Order $order): array
-    {
-        $order->update(['status' => 'renewing']);
-        // TODO[团队]: 按续租方案生成新账单计划(无需再付保证金)
-        return ['next' => 'renew_plan'];
+        // 记账（幂等）
+        $posted = $this->finance->postPaymentSuccess([
+            'order_id' => $order->id,
+            'bill_id' => $bill->id,
+            'merchant_id' => $order->merchant_id,
+            'amount_cents' => $bill->amount_due_cents,
+            'channel' => 'mock',
+            'channel_trade_no' => $result['channel_trade_no'],
+            'callback_event_id' => $result['payment_id'],
+        ]);
+
+        if ($posted) {
+            $bill->update([
+                'amount_paid_cents' => $bill->amount_due_cents,
+                'status' => 'paid',
+                'paid_time' => now(),
+            ]);
+            $order->update(['status' => 'delivering']);
+        }
+
+        return ['payment' => $result, 'posted' => $posted];
     }
 }

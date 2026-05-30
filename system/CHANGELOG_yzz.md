@@ -74,17 +74,58 @@ ContractService 关键设计:
 3. 电子签走 EsignContract(mock/real 不感知);合同/公证子状态(§6.3/§6.4)字段落库方式由团队决定,骨架不建表。
 4. 主状态推进(PENDING_SIGN → PENDING_FIRST_PAYMENT)与 OrderService::sign 现有逻辑择一,由 Controller 编排避免重复置位。
 
+### 模块 F:第三方回调统一处理
+依据:`全局/07_订单接口事件与补偿动作` §1 / §2-§6 / §7 / §8 / §9
+
+| 文件 | 状态 | 说明 |
+|---|---|---|
+| `app/Services/Webhook/WebhookEventService.php` | **骨架** | 回调动作:record(入库)/verify(验签)/isDuplicate(幂等)/dispatch(分发到领域服务)/pushToExceptionQueue(异常队列)/replay(人工重放)。 |
+
+WebhookEventService 关键设计:
+1. 通用回调契约(§1):先入库→验签→幂等→处理;同一回调幂等;失败进异常队列可重试/重放。
+2. 只做"回调收口 + 分发",业务委托给领域服务(支付→FinancePostingService、监管锁→DeliveryService::verifyLock、合同→ContractService、签收→DeliveryService::confirmReceipt),**不耦合业务细节**。
+3. 不改现有 PaymentCallbackController / FinancePostingService(已实现支付回调幂等);接入时让支付回调也先经 record/verify/dedupe。
+4. 人工补偿守 §8 边界:只允许重放回调,禁止人工改支付成功/分账成功/绕过实名/删日志。
+
+### 模块 G:逾期费用
+依据:`运营端/订单管理/11_逾期费用账单与规则配置`;C端12 §7
+
+| 文件 | 状态 | 说明 |
+|---|---|---|
+| `app/Services/Penalty/PenaltyService.php` | **骨架** | 逾期动作:dailyAmountCents(日金额计算)/dailyAccrual(每日累计)/stopAccrual(停止累计)/editAmount(改额)/reduce(减免)/waive(全免)/outstandingForSettlement(结清前必清检查)。 |
+
+PenaltyService 关键设计:
+1. 独立账单(order_penalty)与主账单两条线并行;全归平台不分账;规则快照不受后续改规则影响。
+2. 减免不可超过原始金额;手动操作必填原因 + 留痕;提前结清/归还前必清(EndOfTermService 编排调用)。
+3. **合规边界(§9.4)**:违约不加速全部未到期费用到期;设备灭失/拒还按设备确认价 + 已到期欠费 + 已生成逾期费用 + 可举证实际损失,不按剩余全部租金。
+4. **计算精度口径待财务确认**:§4.3 比例示例存在"日金额先四舍五入再×天" vs "精确值×天再取整"的 2 分差异;骨架不擅自固化,dailyAmountCents 待财务定口径后实现。
+
+### 模块 H:平台订单门店分配
+依据:`运营端/订单管理/07_平台订单门店分配`;全局/02 §6.12
+
+| 文件 | 状态 | 说明 |
+|---|---|---|
+| `app/Services/Order/StoreAssignService.php` | **骨架** | 分配动作:assignableStores(候选门店)/assign(首次分配)/reassign(改派)/revoke(撤销)。 |
+
+StoreAssignService 关键设计:
+1. 仅平台订单使用;严格顺序(资金来源分配在前,§2.2);核心防"打款打错门店"=多维度匹配 + 工号二次确认 + 操作日志。
+2. 分配字段(§3.1)+ order_store_assign_log(§3.2)由团队按文档建/补,骨架不擅自建表。
+3. 改派权限分级(§9):合同发起前主管可改派,合同已签不可改派只能撤单重下。
+4. C 端红线(§6.2):分配过程/商家主体/收款账户/资金来源/合同模板均不暴露,客户签约后只显示"提货门店:XXX"。
+5. **状态口径冲突待确认**(见下方第五节)。
+
 ---
 
 ## 三、明确未做 / 留待对应模块(避免误以为已完成)
 
 - **审核账单触发点自动挂接**:generateBillPlan 已就绪,但"审核通过后自动调用"需在 ReviewService 实现 + Controller 编排后才生效;当前可手动触发。
 - **合同与签约的主状态推进衔接**:ContractService 骨架与 OrderService::sign 现有简化实现并存,正式接入时需二者择一推进 PENDING_SIGN→PENDING_FIRST_PAYMENT,避免重复。
-- **资金来源分配(§9)/ 风控评分**:依赖资方管理文档,未实现。
+- **资金来源分配(运营端04 §9)/ 风控评分**:依赖资方管理文档(01/03/04),未实现。
 - **归还申请表 / 续租申请表**:EndOfTermService 留 TODO,关联字段 return_request_id / renewal_request_id 未建表。
 - **首期支付单独立实体**(办单助手§8):当前首期支付沿用支付流水,未单独建实体。
 - **门店风控管控**(办单助手§3.3 merchant_order_control)、**联营内部快照**(§7.2)、**§11 默认费率表数据初始化 seeder**:未做,字段结构已留。
-- **平台订单门店分配**(运营端07 PENDING_STORE_ASSIGN)、**逾期费用**(运营端11)、**运营端办单助手配置界面**(办单助手§3)、**公证服务对接**(合同公证02):未做。
+- **运营端办单助手配置界面**(办单助手§3)、**公证服务对接**(合同公证02):未做。
+- **以上 D-H 骨架的落库表**:webhook_event、异常队列、order_penalty(及减免日志、规则配置)、order_store_assign_log 等,均由团队按对应文档建,骨架未擅自建表。
 
 ---
 
@@ -95,4 +136,13 @@ ContractService 关键设计:
 3. C 端任何输出都走 `Order::toCustomerArray()` 白名单,严禁泄露合作模式/资方/风控/服务费拆分等内部字段。
 4. 演示模式(EXTERNAL_MODE=mock)用 Mock* 桩;接真实中控台/支付/电子签时实现 Real* 并按 Contract 接口对接。
 5. 本轮所有提交 message 都标注了对应文档章节,可对照 PRD 复核。
-6. 骨架文件(ReviewService / ContractService)填充时,先读对应文档(运营端04 / 合同公证01),按方法注释里的"对应章节 + 状态 + 校验 + TODO"逐条实现;合规敏感处(资方/风控/合同三方)严格守注释里的边界。
+6. 骨架文件填充时,先读对应文档,按方法注释里的"对应章节 + 状态 + 校验 + TODO"逐条实现;合规敏感处(资方/风控/合同三方/逾期赔偿口径)严格守注释里的边界。
+
+---
+
+## 五、需 Hudson / 业务团队确认的口径(开发前要定)
+
+1. **门店分配状态口径冲突**:运营端07 §2 要新增主状态 `PENDING_STORE_ASSIGN`;但全局/02 §0.1(更新于07之后)未收录,§11.5 明确"门店分配不新增主状态,保持 PENDING_REVIEW 内部子状态"。
+   → 建议以 §0.1 收敛口径为准(不单设主状态)。StoreAssignService 骨架未写死状态置位,待确认。
+2. **逾期费用计算精度口径**:见模块 G,§4.3 比例算法存在 2 分差异,需与财务对齐"先取整再×天"还是"精确×天再取整"。
+3. **留购价二期残值口径**:当前 A 口径(剩余租金+保证金)已实现;二期残值口径(C端12 §4.2 注)挂起,待法务/合规复核后切换。

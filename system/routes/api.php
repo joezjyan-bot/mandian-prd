@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\PaymentCallbackController;
 use App\Http\Controllers\Api\BuyoutController;
 use App\Http\Controllers\Api\DeliveryController;
 use App\Http\Controllers\Api\EndOfTermController;
+use App\Http\Controllers\Api\CalculatorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,6 +32,12 @@ Route::prefix('orders')->group(function () {
     Route::post('/{order}/return', [EndOfTermController::class, 'startReturn']); // 归还
     Route::post('/{order}/renew', [EndOfTermController::class, 'renew']);        // 续租
     Route::post('/{order}/buyout/apply', [EndOfTermController::class, 'applyBuyout']); // 申请购买
+});
+
+// 办单助手：试算 + 生成报价快照（下单二维码）
+Route::prefix('calculator')->group(function () {
+    Route::post('/quote', [CalculatorController::class, 'quote']);       // 试算（不落库）
+    Route::post('/snapshot', [CalculatorController::class, 'snapshot']); // 生成报价快照 + 二维码
 });
 
 // 购买价试算 + 申请购买（独立确认页用）

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>满点租赁 · C端流程线框:订单列表与详情(演示原型)</title>
+<style>
+:root{
+  --blue:#1E3A8A;--blue-light:#3B82F6;--blue-bg:#EFF6FF;
+  --cta:#F97316;--cta-light:#FB923C;--cta-bg:#FFF7ED;
+  --red:#DC2626;--red-bg:#FEF2F2;--green:#16A34A;--green-bg:#F0FDF4;--yellow:#EAB308;--yellow-bg:#FEFCE8;
+  --ink:#0F172A;--ink2:#475569;--ink3:#94A3B8;--card:#FFFFFF;--page:#F8FAFC;--line:#E2E8F0;--disabled:#CBD5E1;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:#eef0f4;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;color:var(--ink);padding:24px 0 60px;display:flex;flex-direction:column;align-items:center;gap:8px;line-height:1.5;}
+.mono{font-variant-numeric:tabular-nums;}
+.demo-note{font-size:12.5px;color:var(--ink2);background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 16px;margin-bottom:4px;text-align:center;max-width:800px;}
+.flow-strip{font-size:12px;color:var(--ink3);margin-bottom:10px;}
+.flow-strip b{color:var(--blue);}
+.stage{display:flex;gap:28px;flex-wrap:wrap;justify-content:center;align-items:flex-start;max-width:1900px;}
+.phone-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;}
+.phone-label{font-size:13px;color:var(--ink2);font-weight:500;max-width:320px;text-align:center;}
+.phone{width:330px;height:710px;background:var(--page);border-radius:38px;border:10px solid #11193a;box-shadow:0 20px 50px rgba(20,30,50,.22);overflow:hidden;position:relative;display:flex;flex-direction:column;}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:148px;height:26px;background:#11193a;border-radius:0 0 16px 16px;z-index:30;}
+.statusbar{height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 22px 0 26px;font-size:12px;font-weight:600;flex-shrink:0;background:#fff;}
+.screen{flex:1;overflow-y:auto;overflow-x:hidden;position:relative;background:var(--page);}
+.screen::-webkit-scrollbar{width:0;}
+.topnav{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;}
+.topnav .back{font-size:22px;color:var(--ink);}
+.topnav .center-title{font-size:16px;font-weight:600;}
+.topnav .pill-native{display:flex;gap:2px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:3px 8px;color:var(--ink2);font-size:13px;}
+/* 列表筛选 */
+.filter{display:flex;gap:8px;padding:12px 14px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:48px;z-index:19;}
+.fchip{padding:6px 14px;border-radius:999px;font-size:13px;color:var(--ink2);background:var(--page);}
+.fchip.on{background:var(--blue-bg);color:var(--blue);font-weight:600;}
+/* 订单卡片 */
+.ord-card{background:#fff;border-radius:14px;margin:12px 14px;box-shadow:0 1px 2px rgba(15,23,42,.04);overflow:hidden;}
+.ord-top{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);}
+.ord-no{font-size:12px;color:var(--ink3);}
+.st-pill{font-size:12px;font-weight:600;padding:3px 9px;border-radius:6px;}
+.st-pill.todo{background:var(--cta-bg);color:var(--cta);}
+.st-pill.active{background:var(--green-bg);color:var(--green);}
+.st-pill.wait{background:var(--blue-bg);color:var(--blue);}
+.st-pill.over{background:var(--red-bg);color:var(--red);}
+.st-pill.done{background:#F1F5F9;color:#64748B;}
+.ord-body{display:flex;gap:12px;padding:13px 14px;}
+.ord-body .img{width:58px;height:58px;border-radius:10px;background:linear-gradient(135deg,#eef1f6,#dde3ee);flex-shrink:0;}
+.ord-info{flex:1;min-width:0;}
+.ord-pname{font-weight:600;font-size:14px;}
+.ord-meta{font-size:12px;color:var(--ink3);margin-top:3px;}
+.ord-amt{font-size:12px;color:var(--ink2);margin-top:4px;}
+.ord-amt b{color:var(--ink);}
+.ord-foot{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-top:1px solid var(--line);background:var(--cta-bg);}
+.ord-foot.plain{background:#fff;justify-content:flex-end;}
+.todo-hint{font-size:12.5px;color:var(--cta);font-weight:500;display:flex;align-items:center;gap:5px;}
+.todo-hint .dot{width:7px;height:7px;border-radius:50%;background:var(--red);}
+.btn-sm{height:34px;padding:0 16px;border-radius:18px;font-size:13px;font-weight:600;border:0;background:var(--cta);color:#fff;}
+.btn-sm.line{background:#fff;border:1px solid var(--blue);color:var(--blue);}
+/* 详情区块 */
+.detail-status{background:linear-gradient(120deg,#1E3A8A,#3B82F6);color:#fff;padding:18px 16px;}
+.detail-status .s{font-size:18px;font-weight:700;}
+.detail-status .d{font-size:12.5px;opacity:.92;margin-top:5px;}
+.block{background:#fff;border-radius:14px;margin:12px 14px;padding:14px 16px;box-shadow:0 1px 2px rgba(15,23,42,.04);}
+.block-t{font-size:13px;font-weight:600;color:var(--ink2);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+.block-t .more{font-size:12px;color:var(--blue);font-weight:400;}
+.kv{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;}
+.kv .k{color:var(--ink3);}
+.kv .v{font-weight:500;}
+.kv .v.hl{color:var(--cta);}
+.prod-line{display:flex;gap:12px;align-items:center;}
+.prod-line .img{width:54px;height:54px;border-radius:10px;background:linear-gradient(135deg,#eef1f6,#dde3ee);flex-shrink:0;}
+.prod-line .nm{font-weight:600;font-size:14px;}
+.prod-line .meta{font-size:12px;color:var(--ink3);margin-top:3px;}
+.status-line{display:flex;align-items:center;gap:8px;font-size:13px;padding:6px 0;}
+.status-line .ck{color:var(--green);}
+.status-line .pd{color:var(--cta);}
+.contact-mini{display:flex;gap:10px;padding:0 14px 12px;}
+.contact-mini .cm{flex:1;height:40px;border:1px solid var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;color:var(--ink2);background:#fff;}
+.tip{font-size:11.5px;color:var(--ink3);padding:2px 18px 14px;line-height:1.6;}
+.footbar{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 16px;display:flex;gap:10px;flex-wrap:wrap;}
+.btn-cta{flex:1;height:48px;background:var(--cta);color:#fff;border:0;border-radius:24px;font-size:15px;font-weight:600;cursor:pointer;min-width:120px;}
+.btn-line{height:48px;padding:0 16px;border-radius:24px;border:1px solid var(--line);background:#fff;color:var(--ink2);font-size:14px;}
+.btn-line.blue{border-color:var(--blue);color:var(--blue);}
+.action-grid{display:flex;gap:8px;flex-wrap:wrap;width:100%;}
+.action-grid .btn-line{flex:1;min-width:80px;justify-content:center;display:flex;align-items:center;}
+</style>
+</head>
+<body>
+<div class="demo-note">C 端流程线框 · <b>订单列表与详情</b> · 演示原型 · 视觉规范方案1 · 守 C 端红线(仅客户向状态,无内部字段)</div>
+<div class="flow-strip">枢纽页:「我的」→ <b>订单列表 → 订单详情(按状态动态待办)</b> · 依据 C端 文档 10</div>
+<div class="stage">
+
+  <!-- ① 订单列表(文档10 §2) -->
+  <div class="phone-wrap">
+    <div class="phone-label">① 订单列表(文档10 §2)<br>状态标签 + 关键待办高亮 + 筛选</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="topnav"><span class="back">‹</span><span class="center-title">我的订单</span><span class="pill-native">··· ⊙</span></div>
+        <div class="filter"><span class="fchip on">全部</span><span class="fchip">进行中</span><span class="fchip">已完成</span><span class="fchip">异常</span></div>
+        <!-- 待支付:有待办高亮 -->
+        <div class="ord-card">
+          <div class="ord-top"><span class="ord-no">YZZ…3092</span><span class="st-pill todo">待支付</span></div>
+          <div class="ord-body"><div class="img"></div><div class="ord-info"><div class="ord-pname">iPhone 15 128G 蓝色</div><div class="ord-meta">惠讯租 · 西丽店 · 12 期</div><div class="ord-amt">合计应付 <b class="mono">¥1,600</b></div></div></div>
+          <div class="ord-foot"><span class="todo-hint"><span class="dot"></span>合同已签,待支付保证金/首期</span><button class="btn-sm">去支付</button></div>
+        </div>
+        <!-- 履约中 -->
+        <div class="ord-card">
+          <div class="ord-top"><span class="ord-no">YZZ…3066</span><span class="st-pill active">履约中</span></div>
+          <div class="ord-body"><div class="img"></div><div class="ord-info"><div class="ord-pname">华为 Mate 60 256G</div><div class="ord-meta">惠讯租 · 西丽店 · 已还 3/12 期</div><div class="ord-amt">每期应付 <b class="mono">¥880</b> · 下期 6月1日</div></div></div>
+          <div class="ord-foot plain"><button class="btn-sm line">查看账单</button></div>
+        </div>
+        <!-- 待收货 -->
+        <div class="ord-card">
+          <div class="ord-top"><span class="ord-no">YZZ…3081</span><span class="st-pill todo">待收货</span></div>
+          <div class="ord-body"><div class="img"></div><div class="ord-info"><div class="ord-pname">iPad Air 11"</div><div class="ord-meta">鼎租 · 车公庙店 · 12 期</div><div class="ord-amt">门店已发货,请验机后确认</div></div></div>
+          <div class="ord-foot"><span class="todo-hint"><span class="dot"></span>请确认收货</span><button class="btn-sm">确认收货</button></div>
+        </div>
+        <!-- 已完成 -->
+        <div class="ord-card">
+          <div class="ord-top"><span class="ord-no">YZZ…2990</span><span class="st-pill done">已完成</span></div>
+          <div class="ord-body"><div class="img"></div><div class="ord-info"><div class="ord-pname">iPhone 14</div><div class="ord-meta">鼎租 · 车公庙店 · 已购买</div><div class="ord-amt">订单已结束</div></div></div>
+          <div class="ord-foot plain"><button class="btn-sm line">查看记录</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 订单详情 · 履约中(文档10 §3 区块 + §3.2 动态待办) -->
+  <div class="phone-wrap">
+    <div class="phone-label">② 订单详情 · 履约中(文档10 §3)<br>按区块组织 + 动态待办按钮</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="topnav"><span class="back">‹</span><span class="center-title">订单详情</span><span class="pill-native">··· ⊙</span></div>
+        <div class="detail-status">
+          <div class="s">履约中</div>
+          <div class="d">已还 3 / 12 期 · 下期账单 6月1日 · YZZ…3066</div>
+        </div>
+        <div class="block">
+          <div class="block-t">商品信息</div>
+          <div class="prod-line"><div class="img"></div><div><div class="nm">华为 Mate 60 256G 雅川青</div><div class="meta">惠讯租 · 西丽店 · 全新 · 12 期</div></div></div>
+        </div>
+        <div class="block">
+          <div class="block-t">价格信息</div>
+          <div class="kv"><span class="k">保证金</span><span class="v mono">¥880.00</span></div>
+          <div class="kv"><span class="k">首期(已付)</span><span class="v mono">¥880.00</span></div>
+          <div class="kv"><span class="k">每期应付</span><span class="v mono">¥880.00</span></div>
+          <div class="kv"><span class="k">申请购买参考金额</span><span class="v hl mono">¥8,800.00</span></div>
+          <div class="kv"><span class="k">总金额 / 已付</span><span class="v mono">¥10,560 / ¥3,520</span></div>
+        </div>
+        <div class="block">
+          <div class="block-t">办理状态</div>
+          <div class="status-line"><span class="ck">✓</span>实名认证已完成</div>
+          <div class="status-line"><span class="ck">✓</span>合同已签署 <span style="margin-left:auto;font-size:12px;color:var(--blue)">查看副本 ›</span></div>
+          <div class="status-line"><span class="ck">✓</span>代扣卡已绑定 ****6628</div>
+          <div class="status-line"><span class="ck">✓</span>已签收 · 履约中</div>
+        </div>
+        <div class="block">
+          <div class="block-t">账单 <span class="more">查看全部 ›</span></div>
+          <div class="kv"><span class="k">第 4 期(6月1日)</span><span class="v mono">¥880 · 待还</span></div>
+          <div class="kv"><span class="k">第 3 期(5月1日)</span><span class="v mono">¥880 · 已还</span></div>
+        </div>
+        <div class="contact-mini">
+          <div class="cm">📞 联系门店</div>
+          <div class="cm">💬 联系客服</div>
+        </div>
+        <div class="tip">履约中可:查看账单 / 主动还款 / 申请购买 / 申请归还 / 申请续租。</div>
+      </div>
+      <div class="footbar">
+        <div class="action-grid">
+          <button class="btn-line blue">申请归还</button>
+          <button class="btn-line blue">申请续租</button>
+          <button class="btn-line blue">申请购买</button>
+        </div>
+        <button class="btn-cta">查看 / 支付账单</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ 订单详情 · 待支付(文档10 §3.2 动态待办示例) -->
+  <div class="phone-wrap">
+    <div class="phone-label">③ 订单详情 · 待支付(文档10 §3.2)<br>不同状态展示不同待办按钮</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="topnav"><span class="back">‹</span><span class="center-title">订单详情</span><span class="pill-native">··· ⊙</span></div>
+        <div class="detail-status">
+          <div class="s">待支付</div>
+          <div class="d">合同已签,请支付保证金 / 首期 · YZZ…3092</div>
+        </div>
+        <div class="block">
+          <div class="block-t">商品信息</div>
+          <div class="prod-line"><div class="img"></div><div><div class="nm">iPhone 15 128G 蓝色</div><div class="meta">惠讯租 · 西丽店 · 全新 · 12 期</div></div></div>
+        </div>
+        <div class="block">
+          <div class="block-t">价格信息</div>
+          <div class="kv"><span class="k">保证金</span><span class="v mono">¥800.00</span></div>
+          <div class="kv"><span class="k">首期应付</span><span class="v mono">¥800.00</span></div>
+          <div class="kv"><span class="k">合计应付</span><span class="v hl mono">¥1,600.00</span></div>
+          <div class="kv"><span class="k">每期应付 × 12</span><span class="v mono">¥800.00</span></div>
+        </div>
+        <div class="block">
+          <div class="block-t">办理状态</div>
+          <div class="status-line"><span class="ck">✓</span>实名认证已完成</div>
+          <div class="status-line"><span class="ck">✓</span>信用授权已签署</div>
+          <div class="status-line"><span class="ck">✓</span>合同已签署 <span style="margin-left:auto;font-size:12px;color:var(--blue)">查看副本 ›</span></div>
+          <div class="status-line"><span class="pd">●</span>待支付保证金 / 首期</div>
+        </div>
+        <div class="contact-mini">
+          <div class="cm">📞 联系门店</div>
+          <div class="cm">💬 联系客服</div>
+        </div>
+        <div class="tip">待支付状态下可:立即支付 / 申请关闭订单(未支付前)。72 小时未支付将自动关单。</div>
+      </div>
+      <div class="footbar">
+        <button class="btn-line">申请关闭</button>
+        <button class="btn-cta">立即支付 ¥1,600</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

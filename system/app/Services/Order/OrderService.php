@@ -5,24 +5,20 @@ namespace App\Services\Order;
 use App\Contracts\EsignContract;
 use App\Contracts\PaymentContract;
 use App\Models\Order;
-use App\Models\Bill;
 use App\Services\Finance\FinancePostingService;
+use App\Services\Bill\BillPlanService;
 use App\Support\OrderStatus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
- * 订单编排服务:下单 / 签约 / 首期支付。
+ * 订单编排服务:下单 / 签约 / 首期支付 / 账单计划生成。
  * 依赖接口(EsignContract/PaymentContract),不感知 mock/real。
  *
- * 状态依据:全局/02 状态字典 §0.1 + §5.1 流转图。
- * 注:§5.1 完整长租前置链路为
- *   DRAFT → PENDING_CUSTOMER_SUBMIT → PENDING_REVIEW →(PENDING_SUPPLEMENT/REVIEW_REJECTED)
- *   → PENDING_SIGN →(SIGN_FAILED)→ PENDING_FIRST_PAYMENT →(FIRST_PAYMENT_FAILED)
- *   → PENDING_DELIVERY → PENDING_RECEIPT_CONFIRM → PENDING_LOCK_VERIFY
- *   → PENDING_PLATFORM_SETTLEMENT → IN_FULFILLMENT
- * 本服务实现下单、签约、首付三段;风控审核(PENDING_REVIEW)、补资料、签约失败重试等
- * 环节由对应模块按 §5.1 补充,此处不省略状态、也不擅自合并审核流程。
+ * 状态依据:全局/02 状态字典 §0.1 + §5.1;账单时机依据 办单助手02 §8。
+ * §8 流程:报价快照 → 客户扫码确认 → 订单创建(冻结快照) → 生成首期支付单
+ *         → 审核通过后生成账单计划 → 客户支付/代扣 → 账单结清触发分账。
+ * 关键:账单计划在"审核通过后"生成,不在下单时生成(§8)。
  */
 class OrderService
 {
@@ -30,17 +26,19 @@ class OrderService
         private EsignContract $esign,
         private PaymentContract $payment,
         private FinancePostingService $finance,
+        private BillPlanService $billPlan,
     ) {}
 
     /**
-     * 下单:生成订单 + 账单计划。
-     * 文档 §0.1:草稿(DRAFT)由商家/运营创建;客户扫码进入待提交资料(PENDING_CUSTOMER_SUBMIT)。
-     * 本方法生成的是已带客户信息的订单,初始进入 PENDING_CUSTOMER_SUBMIT。
+     * 下单:创建订单并冻结报价快照。
+     * 文档 §8:下单时只创建订单(冻结快照),不生成账单计划。
+     * 客户扫码进入,初始进入 PENDING_CUSTOMER_SUBMIT(§0.1)。
+     * 账单计划改由审核通过后调用 generateBillPlan() 生成(见下方方法)。
      */
     public function create(array $data): Order
     {
         return DB::transaction(function () use ($data) {
-            $order = Order::create([
+            return Order::create([
                 'order_no' => 'YZZ' . now()->format('YmdHis') . Str::upper(Str::random(4)),
                 'customer_id' => $data['customer_id'],
                 'merchant_id' => $data['merchant_id'],
@@ -51,34 +49,23 @@ class OrderService
                 'deposit_cents' => $data['deposit_cents'] ?? 0,
                 'periods' => $data['periods'],
                 'period_rent_cents' => $data['period_rent_cents'],
-                'total_amount_cents' => $data['period_rent_cents'] * $data['periods'],
+                'total_amount_cents' => $data['total_amount_cents'] ?? ($data['period_rent_cents'] * $data['periods']),
+                'price_snapshot_id' => $data['price_snapshot_id'] ?? null,
                 'status' => OrderStatus::PENDING_CUSTOMER_SUBMIT,
             ]);
-
-            // 首期账单(bill_type 枚举见 §6.7:first/rent/service/notary/purchase/diff)
-            Bill::create([
-                'order_id' => $order->id,
-                'period_no' => 0,
-                'bill_type' => 'first',
-                'amount_due_cents' => ($data['deposit_cents'] ?? 0) + $data['period_rent_cents'],
-                'status' => 'unpaid',
-                'due_time' => now(),
-            ]);
-
-            // 后续租金账单
-            for ($i = 1; $i < $data['periods']; $i++) {
-                Bill::create([
-                    'order_id' => $order->id,
-                    'period_no' => $i,
-                    'bill_type' => 'rent',
-                    'amount_due_cents' => $data['period_rent_cents'],
-                    'status' => 'unpaid',
-                    'due_time' => now()->addMonths($i),
-                ]);
-            }
-
-            return $order;
+            // 注意(§8):此处不再生成账单计划;账单计划在审核通过后由 generateBillPlan() 生成。
         });
+    }
+
+    /**
+     * 生成账单计划(§8:审核通过后调用)。
+     * 由审核模块在订单审核通过(PENDING_REVIEW → PENDING_SIGN)后调用;
+     * 当前审核模块未实现,此方法作为账单计划的唯一生成入口预留,可手动触发演示。
+     * 账单逐期金额来自办单助手算价结果 quote(与报价快照同源,§1.3),不重算。
+     */
+    public function generateBillPlan(Order $order, array $quote, ?\DateTimeInterface $startDate = null): array
+    {
+        return $this->billPlan->generateForOrder($order, $quote, $startDate);
     }
 
     /**
@@ -106,34 +93,30 @@ class OrderService
     /**
      * 首期支付(走模拟或真实支付)+ 四账记账。
      * 文档 §5.1:PENDING_FIRST_PAYMENT →(成功)→ PENDING_DELIVERY;失败进 FIRST_PAYMENT_FAILED。
+     *
+     * 说明(§8):首期实付与后续账单分开存。首期支付金额取订单首期实付(报价快照 first_pay_cents),
+     * 不依赖账单计划(账单计划此时可能尚未生成或仅含逐期租金)。
+     *
+     * @param int $firstPayCents 首期实付金额(来自报价快照 first_pay_cents)
      */
-    public function payFirstBill(Order $order): array
+    public function payFirstBill(Order $order, int $firstPayCents): array
     {
-        $bill = $order->bills()->where('period_no', 0)->firstOrFail();
-
         $result = $this->payment->pay([
             'order_id' => $order->id,
-            'bill_id' => $bill->id,
-            'amount_cents' => $bill->amount_due_cents,
+            'amount_cents' => $firstPayCents,
         ]);
 
         // 记账(幂等)
         $posted = $this->finance->postPaymentSuccess([
             'order_id' => $order->id,
-            'bill_id' => $bill->id,
             'merchant_id' => $order->merchant_id,
-            'amount_cents' => $bill->amount_due_cents,
+            'amount_cents' => $firstPayCents,
             'channel' => 'mock',
             'channel_trade_no' => $result['channel_trade_no'],
             'callback_event_id' => $result['payment_id'],
         ]);
 
         if ($posted) {
-            $bill->update([
-                'amount_paid_cents' => $bill->amount_due_cents,
-                'status' => 'paid',
-                'paid_time' => now(),
-            ]);
             $order->update(['status' => OrderStatus::PENDING_DELIVERY]);
         }
 

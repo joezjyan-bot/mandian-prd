@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>满点租赁系统 · 完整产品文档 V0.2.2</title>
+<style>
+  :root{
+    --ink:#1a1f2b;--ink-soft:#4a5163;--line:#e3e6ec;--line-strong:#c7ccd6;
+    --paper:#ffffff;--paper-warm:#faf9f6;--band:#f4f2ec;
+    --accent:#1f6f5c;--accent-soft:#e6f0ec;--accent-ink:#16513f;
+    --gold:#b08534;--gold-soft:#f6efe0;--warn:#a6492f;--warn-soft:#f7e9e3;
+    --c-cust:#2b6fb0;--c-cust-soft:#e6f0f8;--c-sys:#1f6f5c;--c-sys-soft:#e6f0ec;
+    --c-merch:#8a5a1f;--c-merch-soft:#f6eede;
+    --radius:10px;--maxw:940px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",-apple-system,sans-serif;
+    color:var(--ink);background:var(--paper-warm);line-height:1.75;font-size:16px;}
+  .cover{background:linear-gradient(135deg,#16513f 0%,#1f6f5c 55%,#2a8a6f 100%);color:#fff;
+    padding:70px 32px 60px;text-align:center;position:relative;overflow:hidden;}
+  .cover::after{content:"";position:absolute;inset:0;
+    background-image:radial-gradient(circle at 20% 30%,rgba(255,255,255,.08) 0,transparent 40%),
+      radial-gradient(circle at 80% 70%,rgba(255,255,255,.06) 0,transparent 45%);pointer-events:none;}
+  .cover .kicker{font-size:13px;letter-spacing:4px;opacity:.85;margin-bottom:18px;}
+  .cover h1{font-size:36px;margin:0 0 14px;font-weight:700;letter-spacing:1px;}
+  .cover .sub{font-size:16px;opacity:.92;max-width:600px;margin:0 auto 24px;}
+  .cover .meta{display:inline-flex;gap:10px;flex-wrap:wrap;justify-content:center;font-size:13px;}
+  .cover .meta span{background:rgba(255,255,255,.16);padding:6px 14px;border-radius:20px;backdrop-filter:blur(4px);}
+  .howto{max-width:var(--maxw);margin:-28px auto 0;padding:0 24px;position:relative;z-index:2;}
+  .howto-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:22px 26px;box-shadow:0 8px 30px rgba(20,30,40,.08);}
+  .howto-card h3{margin:0 0 14px;font-size:15px;color:var(--accent-ink);display:flex;align-items:center;gap:8px;}
+  .howto-card h3::before{content:"";width:6px;height:18px;background:var(--accent);border-radius:3px;display:inline-block;}
+  .layer-row{display:flex;gap:10px;flex-wrap:wrap;}
+  .layer-chip{flex:1;min-width:180px;border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:var(--paper-warm);}
+  .layer-chip .n{display:inline-block;width:22px;height:22px;line-height:22px;text-align:center;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;margin-right:8px;}
+  .layer-chip .t{font-weight:600;font-size:14px;}
+  .layer-chip .d{font-size:12.5px;color:var(--ink-soft);margin-top:4px;line-height:1.5;}
+  .layer-chip.skip{opacity:.7;}
+  .layer-chip.skip .n{background:var(--line-strong);}
+  .toc{max-width:var(--maxw);margin:26px auto 0;padding:0 24px;}
+  .toc-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px 28px;box-shadow:0 2px 10px rgba(20,30,40,.03);}
+  .toc-card h3{margin:0 0 16px;font-size:16px;color:var(--accent-ink);}
+  .toc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px 24px;}
+  .toc-grid a{text-decoration:none;color:var(--ink);font-size:14px;padding:6px 0;border-bottom:1px solid var(--line);display:flex;gap:10px;transition:color .15s;}
+  .toc-grid a:hover{color:var(--accent);}
+  .toc-grid a .tn{color:#fff;background:var(--accent);width:24px;height:22px;line-height:22px;text-align:center;border-radius:5px;font-size:12px;font-weight:700;flex-shrink:0;}
+  main{max-width:var(--maxw);margin:0 auto;padding:40px 24px 80px;}
+  .chapter{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:32px 30px 10px;margin-bottom:26px;box-shadow:0 2px 10px rgba(20,30,40,.03);scroll-margin-top:20px;}
+  .chapter > h2{font-size:24px;margin:0 0 4px;color:var(--ink);font-weight:700;display:flex;align-items:baseline;gap:12px;}
+  .chapter > h2 .idx{font-size:14px;color:#fff;background:var(--accent);padding:3px 11px;border-radius:6px;font-weight:700;letter-spacing:1px;flex-shrink:0;}
+  .chapter > .lead{color:var(--ink-soft);font-size:15px;margin:8px 0 24px;}
+  .feature{border-top:1px dashed var(--line);padding:26px 0 8px;}
+  .feature:first-of-type{border-top:none;padding-top:8px;}
+  .feature h3{font-size:18px;margin:0 0 4px;color:var(--accent-ink);font-weight:650;}
+  .l-tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.5px;padding:2px 9px;border-radius:4px;margin-bottom:10px;}
+  .l1{background:var(--accent-soft);color:var(--accent-ink);}
+  .l2{background:var(--c-cust-soft);color:var(--c-cust);}
+  .l3{background:var(--gold-soft);color:var(--gold);}
+  .oneliner{background:var(--accent-soft);border-left:4px solid var(--accent);padding:12px 16px;border-radius:0 8px 8px 0;font-size:15px;margin:6px 0 20px;color:var(--accent-ink);}
+  .diagram{background:var(--paper-warm);border:1px solid var(--line);border-radius:10px;padding:24px 16px;margin:18px 0 22px;text-align:center;overflow-x:auto;}
+  .diagram svg{max-width:100%;height:auto;}
+  .diagram .cap{font-size:12.5px;color:var(--ink-soft);margin-top:14px;font-style:italic;}
+  table{width:100%;border-collapse:collapse;margin:14px 0 22px;font-size:14.5px;}
+  th,td{border:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top;}
+  th{background:var(--band);font-weight:600;color:var(--ink);}
+  tr:nth-child(even) td{background:var(--paper-warm);}
+  td .who,.who{font-weight:600;}
+  .cust{color:var(--c-cust);}.sys{color:var(--c-sys);}.merch{color:var(--c-merch);}
+  .rules{margin:10px 0 20px;padding:0;list-style:none;}
+  .rules li{position:relative;padding:7px 0 7px 26px;font-size:14.5px;border-bottom:1px solid var(--line);}
+  .rules li:last-child{border-bottom:none;}
+  .rules li::before{content:"";position:absolute;left:4px;top:14px;width:8px;height:8px;border-radius:2px;background:var(--accent);}
+  .seealso{font-size:13px;color:var(--ink-soft);background:var(--band);padding:9px 14px;border-radius:7px;margin:6px 0 4px;}
+  .seealso b{color:var(--accent-ink);font-weight:600;}
+  .seealso code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;background:#fff;padding:1px 5px;border-radius:4px;border:1px solid var(--line);}
+  .callout{border-radius:9px;padding:14px 18px;margin:16px 0;font-size:14.5px;}
+  .callout .h{font-weight:700;margin-bottom:5px;display:flex;align-items:center;gap:7px;}
+  .callout.warn{background:var(--warn-soft);border:1px solid #e6c4b8;}
+  .callout.warn .h{color:var(--warn);}
+  .callout.gold{background:var(--gold-soft);border:1px solid #e6d3a8;}
+  .callout.gold .h{color:var(--gold);}
+  .callout.info{background:var(--c-cust-soft);border:1px solid #b9d3ea;}
+  .callout.info .h{color:var(--c-cust);}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;margin-bottom:6px;font-size:13px;}
+  .legend i{display:inline-block;width:14px;height:14px;border-radius:3px;margin-right:6px;vertical-align:-2px;}
+  footer{text-align:center;padding:30px;color:var(--ink-soft);font-size:13px;border-top:1px solid var(--line);background:#fff;}
+  .backtop{position:fixed;right:20px;bottom:20px;width:44px;height:44px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:20px;box-shadow:0 4px 14px rgba(20,40,30,.25);z-index:50;}
+  @media print{body{background:#fff;font-size:11pt;}.cover{padding:40px 20px;}.chapter,.howto-card,.toc-card{box-shadow:none;break-inside:avoid;}.feature,.diagram{break-inside:avoid;}.backtop{display:none;}.chapter{border:none;border-bottom:2px solid var(--line);border-radius:0;}}
+  @media(max-width:600px){.cover h1{font-size:27px;}.chapter{padding:22px 18px 6px;}.layer-chip{min-width:100%;}}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="kicker">满 点 租 赁 系 统 · 完 整 产 品 需 求 文 档</div>
+  <h1>满点租赁系统 产品文档</h1>
+  <div class="sub">一份产品经理拿着能给你讲、你能看懂、开发也能照着做的完整文档。<br>每个核心环节都配流程图或页面示意,按"一句话 → 图 → 规则 → 详见"四层组织。</div>
+  <div class="meta">
+    <span>版本 V0.2.2</span>
+    <span>一期:安心用长租 + 体验租短租 + IM客服</span>
+    <span>更新 2026-05-30</span>
+  </div>
+</div>
+
+<div class="howto">
+  <div class="howto-card">
+    <h3>这份文档怎么看(每个功能都按这四层写,从上到下越来越细)</h3>
+    <div class="layer-row">
+      <div class="layer-chip"><div><span class="n">1</span><span class="t">这块是干嘛的</span></div><div class="d">一句话说清。老板、各部门看这层就懂。</div></div>
+      <div class="layer-chip"><div><span class="n">2</span><span class="t">流程图 / 页面示意</span></div><div class="d">你和开发的"共同语言"。产品经理指着图讲。</div></div>
+      <div class="layer-chip"><div><span class="n">3</span><span class="t">每一步的规则</span></div><div class="d">谁看到什么、什么条件怎么变。你能懂,开发能做。</div></div>
+      <div class="layer-chip skip"><div><span class="n">4</span><span class="t">技术细节(详见链接)</span></div><div class="d">字段、接口在细分文档里。你跳过,开发深挖。</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="toc">
+  <div class="toc-card">
+    <h3>目录</h3>
+    <div class="toc-grid">
+      <a href="#c1"><span class="tn">1</span>长租主流程总览</a>
+      <a href="#c2"><span class="tn">2</span>三类合作模式</a>
+      <a href="#c3"><span class="tn">3</span>下单与订单确认</a>
+      <a href="#c4"><span class="tn">4</span>实名 · 签约 · 支付 · 交付签收</a>
+      <a href="#c5"><span class="tn">5</span>到期三选一与申请购买</a>
+      <a href="#c6"><span class="tn">6</span>提前归还与归还检测</a>
+      <a href="#c7"><span class="tn">7</span>体验租短租(取还车)</a>
+      <a href="#c8"><span class="tn">8</span>C端 / 商家端 / 门店端</a>
+      <a href="#c9"><span class="tn">9</span>办单助手与配置能力</a>
+      <a href="#c10"><span class="tn">10</span>运营后台</a>
+      <a href="#c11"><span class="tn">11</span>IM 客服</a>
+      <a href="#c12"><span class="tn">12</span>设备与资产管理</a>
+      <a href="#c13"><span class="tn">13</span>财务 · 钱包 · 结算</a>
+      <a href="#c14"><span class="tn">14</span>风控 · 监管锁 · 权限</a>
+      <a href="#c15"><span class="tn">15</span>二期挂起 + 待确认清单</a>
+    </div>
+  </div>
+</div>
+
+<main>
+
+  <section class="chapter" id="c1">
+    <h2><span class="idx">第 1 章</span>长租主流程总览</h2>
+    <p class="lead">安心用长租,是客户从门店租走一台设备(手机 / 电动车 / 数码),按月付费使用,到期再决定还回去、继续租、还是申请买下来的完整业务。这一章先看全局,后面几章拆开每个关键环节。</p>
+    <div class="feature">
+      <span class="l-tag l1">第 1 层 · 这块是干嘛的</span>
+      <h3>一句话</h3>
+      <div class="oneliner">客户扫门店的码 → 确认要租什么、花多少钱 → 实名签合同 → 付首期 → 门店把设备交给客户 → 客户签收 → 按月还款用着 → 到期选择:还 / 续 / 买。</div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l2">第 2 层 · 流程图</span>
+      <h3>整条主流程长这样</h3>
+      <div class="diagram">
+        <div class="legend">
+          <span><i style="background:var(--c-cust)"></i>客户做的事</span>
+          <span><i style="background:var(--c-sys)"></i>系统/平台做的事</span>
+          <span><i style="background:var(--c-merch)"></i>商家/门店做的事</span>
+        </div>
+        <svg viewBox="-160 0 1020 560" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif">
+          <defs><marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#9aa1ad"/></marker></defs>
+          <g><rect x="40" y="20" width="200" height="46" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/><text x="140" y="48" text-anchor="middle" fill="#1f4e7a" font-size="15" font-weight="600">① 扫码 / 选品</text></g>
+          <line x1="140" y1="66" x2="140" y2="86" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <g><rect x="40" y="88" width="200" height="46" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/><text x="140" y="116" text-anchor="middle" fill="#1f4e7a" font-size="15" font-weight="600">② 确认订单</text></g>
+          <line x1="140" y1="134" x2="140" y2="154" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <g><rect x="40" y="156" width="200" height="46" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/><text x="140" y="178" text-anchor="middle" fill="#1f4e7a" font-size="14" font-weight="600">③ 实名 + 信用授权</text><text x="140" y="194" text-anchor="middle" fill="#5a7fa0" font-size="11">填资料、人脸认证</text></g>
+          <line x1="140" y1="202" x2="140" y2="222" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <g><polygon points="140,224 250,266 140,308 30,266" fill="#e6f0ec" stroke="#1f6f5c"/><text x="140" y="262" text-anchor="middle" fill="#16513f" font-size="14" font-weight="600">④ 审核</text><text x="140" y="280" text-anchor="middle" fill="#3d7a68" font-size="11">平台/商家</text></g>
+          <line x1="30" y1="266" x2="-2" y2="266" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <g><rect x="-150" y="244" width="146" height="44" rx="9" fill="#f7e9e3" stroke="#a6492f"/><text x="-77" y="264" text-anchor="middle" fill="#a6492f" font-size="12.5" font-weight="600">驳回 / 补资料</text><text x="-77" y="280" text-anchor="middle" fill="#a6492f" font-size="10.5">告知客户原因</text></g>
+          <line x1="140" y1="308" x2="140" y2="328" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/><text x="152" y="322" fill="#3d7a68" font-size="11">通过</text>
+          <g><rect x="40" y="330" width="200" height="46" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/><text x="140" y="358" text-anchor="middle" fill="#1f4e7a" font-size="15" font-weight="600">⑤ 签署合同</text></g>
+          <line x1="140" y1="376" x2="140" y2="396" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <g><rect x="40" y="398" width="200" height="46" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/><text x="140" y="420" text-anchor="middle" fill="#1f4e7a" font-size="14" font-weight="600">⑥ 付首期 + 保证金</text><text x="140" y="436" text-anchor="middle" fill="#5a7fa0" font-size="11">支付成功才进入交付</text></g>
+          <line x1="240" y1="421" x2="300" y2="421" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <g><rect x="302" y="398" width="190" height="46" rx="9" fill="#f6eede" stroke="#8a5a1f"/><text x="397" y="420" text-anchor="middle" fill="#6b441a" font-size="14" font-weight="600">⑦ 商家交付设备</text><text x="397" y="436" text-anchor="middle" fill="#8a6533" font-size="11">录设备码、拍照</text></g>
+          <line x1="397" y1="398" x2="397" y2="360" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <g><rect x="302" y="314" width="190" height="46" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/><text x="397" y="336" text-anchor="middle" fill="#1f4e7a" font-size="14" font-weight="600">⑧ 客户签收</text><text x="397" y="352" text-anchor="middle" fill="#5a7fa0" font-size="11">电子确认单 / AI问答</text></g>
+          <line x1="397" y1="314" x2="397" y2="276" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <g><rect x="302" y="230" width="190" height="46" rx="9" fill="#e6f0ec" stroke="#1f6f5c"/><text x="397" y="252" text-anchor="middle" fill="#16513f" font-size="14" font-weight="600">⑨ 平台结算</text><text x="397" y="268" text-anchor="middle" fill="#3d7a68" font-size="11">锁校验 / 替代验收</text></g>
+          <line x1="492" y1="253" x2="560" y2="253" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <g><rect x="562" y="230" width="190" height="46" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/><text x="657" y="252" text-anchor="middle" fill="#1f4e7a" font-size="14" font-weight="600">⑩ 按月还款(履约中)</text><text x="657" y="268" text-anchor="middle" fill="#5a7fa0" font-size="11">逾期则催收/管控</text></g>
+          <line x1="657" y1="276" x2="657" y2="320" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <g><polygon points="657,322 770,366 657,410 544,366" fill="#f6efe0" stroke="#b08534"/><text x="657" y="362" text-anchor="middle" fill="#8a6518" font-size="14" font-weight="700">⑪ 到期</text><text x="657" y="380" text-anchor="middle" fill="#a07a28" font-size="11">三选一</text></g>
+          <line x1="600" y1="400" x2="560" y2="450" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <line x1="657" y1="410" x2="657" y2="450" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <line x1="714" y1="400" x2="754" y2="450" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr)"/>
+          <g><rect x="480" y="452" width="120" height="44" rx="9" fill="#e6f0ec" stroke="#1f6f5c"/><text x="540" y="479" text-anchor="middle" fill="#16513f" font-size="13" font-weight="600">归还设备</text></g>
+          <g><rect x="600" y="452" width="114" height="44" rx="9" fill="#e6f0ec" stroke="#1f6f5c"/><text x="657" y="479" text-anchor="middle" fill="#16513f" font-size="13" font-weight="600">继续使用</text></g>
+          <g><rect x="714" y="452" width="120" height="44" rx="9" fill="#f6efe0" stroke="#b08534"/><text x="774" y="479" text-anchor="middle" fill="#8a6518" font-size="13" font-weight="600">申请购买</text></g>
+          <text x="540" y="510" text-anchor="middle" fill="#7a8089" font-size="11">检测、退保证金</text>
+          <text x="774" y="510" text-anchor="middle" fill="#7a8089" font-size="11">独立确认+支付</text>
+        </svg>
+        <div class="cap">蓝=客户操作　绿=系统/平台　棕=商家/门店。①→⑪是一条完整的长租生命周期。</div>
+      </div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l3">第 3 层 · 关键规则</span>
+      <h3>看这条流程时,先记住三件事</h3>
+      <ul class="rules">
+        <li><b>客户全程只跟"门店(甲方)"发生租赁关系</b>,平台是技术通道。客户看到的是"租设备",不是"借钱"或"分期买"。</li>
+        <li><b>每一步都留快照、留证据</b>:看到的价格、签的合同、签收的确认,系统都存档,将来有纠纷能拿出来。</li>
+        <li><b>到期三个选项平等展示,系统不默认帮客户选"购买"</b>,所有权不会因为租满或还清自动转移给客户。</li>
+      </ul>
+      <div class="seealso">详见:<b>长租全生命周期</b> <code>运营端/订单管理/08</code>　·　<b>状态字典</b> <code>全局/02</code></div>
+    </div>
+  </section>
+
+  <section class="chapter" id="c2">
+    <h2><span class="idx">第 2 章</span>三类合作模式</h2>
+    <p class="lead">同样一台设备租出去,背后"谁的货、谁出钱、谁担责、钱怎么分"可以有三种安排。这三种叫商家订单、联营订单、平台订单。<b>这是内部经营和分账的区别,客户完全看不到——客户永远只是"租了门店一台设备"。</b></p>
+    <div class="feature">
+      <span class="l-tag l1">第 1 层 · 这块是干嘛的</span>
+      <h3>一句话</h3>
+      <div class="oneliner">一套系统、一条客户流程,底层用"合作模式"这个标记区分三种生意:商家自己干、平台和商家一起干、平台主导干。客户侧三种长得一模一样。</div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l2">第 2 层 · 三种模式对比图</span>
+      <h3>三种模式,差别在"后台"不在"客户端"</h3>
+      <div class="diagram">
+        <svg viewBox="0 0 820 400" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif">
+          <defs><marker id="a2" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#9aa1ad"/></marker></defs>
+          <rect x="210" y="16" width="400" height="50" rx="10" fill="#e6f0f8" stroke="#2b6fb0"/>
+          <text x="410" y="38" text-anchor="middle" fill="#1f4e7a" font-size="14" font-weight="700">客户看到的:租了门店一台设备(三种完全一样)</text>
+          <text x="410" y="56" text-anchor="middle" fill="#5a7fa0" font-size="11">客户永远看不到下面是哪种模式</text>
+          <line x1="410" y1="66" x2="410" y2="92" stroke="#9aa1ad" stroke-width="1.5"/>
+          <line x1="140" y1="92" x2="680" y2="92" stroke="#9aa1ad" stroke-width="1.5"/>
+          <line x1="140" y1="92" x2="140" y2="118" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a2)"/>
+          <line x1="410" y1="92" x2="410" y2="118" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a2)"/>
+          <line x1="680" y1="92" x2="680" y2="118" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a2)"/>
+          <rect x="30" y="120" width="220" height="250" rx="10" fill="#f6eede" stroke="#8a5a1f"/>
+          <text x="140" y="146" text-anchor="middle" fill="#6b441a" font-size="15" font-weight="700">商家订单</text>
+          <line x1="50" y1="158" x2="230" y2="158" stroke="#e0cba8"/>
+          <text x="50" y="182" fill="#6b441a" font-size="12.5">货:商家自己的</text>
+          <text x="50" y="206" fill="#6b441a" font-size="12.5">出钱:商家自己</text>
+          <text x="50" y="230" fill="#6b441a" font-size="12.5">审核:商家可自主</text>
+          <text x="50" y="254" fill="#6b441a" font-size="12.5">担责:商家承担</text>
+          <text x="50" y="278" fill="#6b441a" font-size="12.5">收款:扣平台服务费后</text>
+          <text x="62" y="296" fill="#6b441a" font-size="12.5">进商家钱包</text>
+          <text x="50" y="330" fill="#8a6533" font-size="11.5">办单方案:商家自己配</text>
+          <text x="50" y="352" fill="#8a6533" font-size="11.5">退款:商家自行承担</text>
+          <rect x="300" y="120" width="220" height="250" rx="10" fill="#e6f0ec" stroke="#1f6f5c"/>
+          <text x="410" y="146" text-anchor="middle" fill="#16513f" font-size="15" font-weight="700">联营订单</text>
+          <line x1="320" y1="158" x2="500" y2="158" stroke="#bcd9ce"/>
+          <text x="320" y="182" fill="#16513f" font-size="12.5">货:商家/平台</text>
+          <text x="320" y="206" fill="#16513f" font-size="12.5">出钱:双方按约定</text>
+          <text x="320" y="230" fill="#16513f" font-size="12.5">审核:运营主控</text>
+          <text x="320" y="254" fill="#16513f" font-size="12.5">担责:按协议分担</text>
+          <text x="320" y="278" fill="#16513f" font-size="12.5">收款:按比例拆分进</text>
+          <text x="332" y="296" fill="#16513f" font-size="12.5">商家/平台/内部台账</text>
+          <text x="320" y="330" fill="#3d7a68" font-size="11.5">办单方案:运营配置</text>
+          <text x="320" y="352" fill="#3d7a68" font-size="11.5">商家只看履约,不碰资金</text>
+          <rect x="570" y="120" width="220" height="250" rx="10" fill="#e6f0ec" stroke="#1f6f5c"/>
+          <text x="680" y="146" text-anchor="middle" fill="#16513f" font-size="15" font-weight="700">平台订单</text>
+          <line x1="590" y1="158" x2="770" y2="158" stroke="#bcd9ce"/>
+          <text x="590" y="182" fill="#16513f" font-size="12.5">货:平台货源</text>
+          <text x="590" y="206" fill="#16513f" font-size="12.5">出钱:平台</text>
+          <text x="590" y="230" fill="#16513f" font-size="12.5">审核:平台主控</text>
+          <text x="590" y="254" fill="#16513f" font-size="12.5">担责:平台</text>
+          <text x="590" y="278" fill="#16513f" font-size="12.5">收款:进平台台账</text>
+          <text x="590" y="330" fill="#3d7a68" font-size="11.5">办单方案:运营配置</text>
+          <text x="590" y="352" fill="#3d7a68" font-size="11.5">门店只做现场履约</text>
+        </svg>
+        <div class="cap">三种模式共用同一套系统和同一条客户流程,区别只在后台的"货源/出资/审核/担责/分账"。</div>
+      </div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l3">第 3 层 · 关键规则</span>
+      <h3>三种模式的规矩</h3>
+      <table>
+        <tr><th style="width:20%">模式</th><th>谁主控</th><th>办单方案谁配</th><th>退款责任</th></tr>
+        <tr><td class="merch">商家订单</td><td>商家自己审核、自己经营</td><td>商家自己配置</td><td>商家自行承担</td></tr>
+        <tr><td class="sys">联营订单</td><td>运营主控审核/改价/资金</td><td>运营端配置</td><td>线下协商方案后执行</td></tr>
+        <tr><td class="sys">平台订单</td><td>平台主控全流程</td><td>运营端配置</td><td>线下协商方案后执行</td></tr>
+      </table>
+      <div class="callout warn">
+        <div class="h">⚠ C 端红线(所有部门都要守)</div>
+        客户端<b>绝对不能出现</b>:资方/资金来源、合作模式是哪种、风控结论、内部审核备注、平台服务费怎么拆、商家结算价、平台利润、返点规则、内部标签、黑灰名单结论。客户只看到"租门店的设备、每期付多少、保证金多少"。
+      </div>
+      <div class="seealso">详见:<b>全局措辞规范</b> <code>全局/10</code>　·　<b>合作模式与收益分配</b> <code>运营端/财务管理/12</code></div>
+    </div>
+  </section>
+
+  <section class="chapter" id="c3">
+    <h2><span class="idx">第 3 章</span>下单与订单确认</h2>
+    <p class="lead">客户扫了门店办单助手生成的二维码后,看到的第一个页面。这一页决定了客户对"我要租什么、花多少钱、有什么规矩"的全部认知,也是合规和证据链最关键的一页。</p>
+    <div class="feature">
+      <span class="l-tag l1">第 1 层 · 这块是干嘛的</span>
+      <h3>一句话</h3>
+      <div class="oneliner">把门店给客户定好的方案(哪台设备、多少钱、租几期、什么规矩)清清楚楚摆给客户看,客户逐项确认、勾选同意,然后才能下单。</div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l2">第 2 层 · 页面示意</span>
+      <h3>订单确认页大概长这样</h3>
+      <div class="diagram">
+        <svg viewBox="0 0 420 620" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif">
+          <rect x="20" y="14" width="380" height="592" rx="26" fill="#fff" stroke="#c7ccd6" stroke-width="2"/>
+          <rect x="20" y="14" width="380" height="48" rx="26" fill="#16513f"/><rect x="20" y="40" width="380" height="22" fill="#16513f"/>
+          <text x="210" y="44" text-anchor="middle" fill="#fff" font-size="15" font-weight="600">确认订单</text>
+          <rect x="36" y="76" width="348" height="74" rx="8" fill="#faf9f6" stroke="#e3e6ec"/>
+          <rect x="48" y="88" width="50" height="50" rx="6" fill="#dfe4ea"/><text x="73" y="117" text-anchor="middle" fill="#9aa1ad" font-size="10">设备图</text>
+          <text x="112" y="100" fill="#1a1f2b" font-size="13.5" font-weight="600">iPhone(示例)128G 蓝</text>
+          <text x="112" y="120" fill="#4a5163" font-size="11.5">成色:全新　设备价值:¥6,000</text>
+          <text x="112" y="138" fill="#2b6fb0" font-size="11">合同保障 · 正品保障 · 客服协助</text>
+          <rect x="36" y="160" width="348" height="48" rx="8" fill="#e6f0ec" stroke="#1f6f5c"/>
+          <text x="50" y="180" fill="#16513f" font-size="12.5" font-weight="600">✓ 设备价值确认</text>
+          <text x="50" y="198" fill="#3d7a68" font-size="11">型号 / 成色 / 价值 ¥6,000,客户只读确认</text>
+          <rect x="36" y="218" width="348" height="120" rx="8" fill="#faf9f6" stroke="#e3e6ec"/>
+          <text x="50" y="240" fill="#1a1f2b" font-size="13" font-weight="600">费用方案</text>
+          <text x="50" y="262" fill="#4a5163" font-size="12">保证金</text><text x="370" y="262" text-anchor="end" fill="#1a1f2b" font-size="12">¥800</text>
+          <text x="50" y="282" fill="#4a5163" font-size="12">首期应付</text><text x="370" y="282" text-anchor="end" fill="#1a1f2b" font-size="12">¥800</text>
+          <text x="50" y="302" fill="#4a5163" font-size="12">每期应付 × 12 期</text><text x="370" y="302" text-anchor="end" fill="#1a1f2b" font-size="12">¥800</text>
+          <line x1="50" y1="312" x2="370" y2="312" stroke="#e3e6ec"/>
+          <text x="50" y="330" fill="#16513f" font-size="13" font-weight="700">实际您要付:¥1,600</text>
+          <text x="370" y="330" text-anchor="end" fill="#9aa1ad" font-size="10.5">总额¥1,680−保证金抵¥80</text>
+          <rect x="36" y="348" width="348" height="70" rx="8" fill="#f6efe0" stroke="#b08534"/>
+          <text x="50" y="368" fill="#8a6518" font-size="12.5" font-weight="700">最低服务期:3 个月起</text>
+          <text x="50" y="386" fill="#a07a28" font-size="11">3个月内提前归还,需结清已发生费用</text>
+          <text x="50" y="404" fill="#a07a28" font-size="11">到期可:归还 / 继续使用 / 申请购买</text>
+          <rect x="36" y="428" width="348" height="92" rx="8" fill="#faf9f6" stroke="#e3e6ec"/>
+          <rect x="50" y="442" width="14" height="14" rx="3" fill="#1f6f5c"/><text x="72" y="453" fill="#4a5163" font-size="11.5">我已阅读《租赁服务协议》《隐私政策》等</text>
+          <rect x="50" y="466" width="14" height="14" rx="3" fill="#1f6f5c"/><text x="72" y="477" fill="#4a5163" font-size="11.5">我已确认设备型号、成色及价值无误</text>
+          <rect x="50" y="490" width="14" height="14" rx="3" fill="#1f6f5c"/><text x="72" y="501" fill="#4a5163" font-size="11.5">我已知悉最低服务期 3 个月起及其规则</text>
+          <rect x="36" y="532" width="348" height="48" rx="24" fill="#1f6f5c"/><text x="210" y="561" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">立即下单</text>
+        </svg>
+        <div class="cap">给设计/前端参考的"中保真示意",不是最终视觉。位置、要素、有哪些勾选项是确定的,配色字体由 UI 团队最终把控。</div>
+      </div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l3">第 3 层 · 关键规则</span>
+      <h3>这一页上,每个东西的规矩</h3>
+      <table>
+        <tr><th style="width:30%">页面元素</th><th>规则</th></tr>
+        <tr><td class="who">设备价值确认区</td><td>必须独立成块,客户<b>只读、不可改</b>;型号/成色/价值都来自这一单的设备价。客户必须单独勾"确认无误"才能下单。</td></tr>
+        <tr><td class="who">价格双层显示</td><td>大字显示"<span class="cust">实际您要付 ¥X</span>",小字解释"总额−保证金抵扣"。避免客户误解为分期买断。</td></tr>
+        <tr><td class="who">最低服务期</td><td>显著展示"<b>3 个月起</b>"(安心用统一,不分品类),并说明"3个月内提前归还要结清已发生费用"。必须单独勾选确认。</td></tr>
+        <tr><td class="who">到期三选一说明</td><td>这一页就要告诉客户"到期可以:归还/继续用/申请购买",三个平等列出,不暗示一定要买。</td></tr>
+        <tr><td class="who">下单按钮</td><td>所有必勾项没勾完,点击就提示"请先阅读并同意相关协议",不放行。</td></tr>
+      </table>
+      <div class="callout gold">
+        <div class="h">⚑ 这一页为什么这么重要(给老板和法务看)</div>
+        客户在这页看到、确认、勾选的一切,系统都会拍成"快照"存档(看了什么价、什么时间、什么设备、IP是多少)。将来万一打官司,这页快照就是证明"客户当初清楚自己在租设备、知道规矩"的核心证据。所以这页必须干净、清楚、留痕。
+      </div>
+      <div class="seealso">详见:<b>订单确认页</b> <code>C端/02</code>　·　<b>设备价值确认单</b> <code>运营端/资产管理/02</code></div>
+    </div>
+  </section>
+
+  <section class="chapter" id="c4">
+    <h2><span class="idx">第 4 章</span>实名 · 签约 · 支付 · 交付签收</h2>
+    <p class="lead">客户点了"立即下单"之后,到设备真正交到客户手里、订单开始计费,中间这几步是把"意向"变成"有法律效力、有钱到账、有设备交付"的实质环节。</p>
+    <div class="feature">
+      <span class="l-tag l1">第 1 层 · 这块是干嘛的</span>
+      <h3>一句话</h3>
+      <div class="oneliner">客户实名认证 → 平台/商家审核 → 签电子合同 → 付首期和保证金 → 门店把设备交出去(录设备码、拍照) → 客户签收确认 → 平台结算,订单正式进入"按月还款"。</div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l2">第 2 层 · 流程图</span>
+      <h3>这几步怎么衔接</h3>
+      <div class="diagram">
+        <svg viewBox="0 0 800 360" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif">
+          <defs><marker id="a4" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#9aa1ad"/></marker></defs>
+          <g><rect x="30" y="30" width="160" height="48" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/><text x="110" y="52" text-anchor="middle" fill="#1f4e7a" font-size="13" font-weight="600">实名认证</text><text x="110" y="68" text-anchor="middle" fill="#5a7fa0" font-size="10.5">身份证+人脸</text></g>
+          <line x1="190" y1="54" x2="226" y2="54" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a4)"/>
+          <g><rect x="228" y="30" width="160" height="48" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/><text x="308" y="52" text-anchor="middle" fill="#1f4e7a" font-size="13" font-weight="600">信用/信息授权</text><text x="308" y="68" text-anchor="middle" fill="#5a7fa0" font-size="10.5">合法渠道授权</text></g>
+          <line x1="388" y1="54" x2="424" y2="54" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a4)"/>
+          <g><polygon points="510,30 590,78 510,126 430,78" fill="#e6f0ec" stroke="#1f6f5c"/><text x="510" y="74" text-anchor="middle" fill="#16513f" font-size="13" font-weight="600">审核</text><text x="510" y="90" text-anchor="middle" fill="#3d7a68" font-size="10">平台/商家</text></g>
+          <line x1="590" y1="78" x2="640" y2="78" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a4)"/>
+          <g><rect x="642" y="54" width="140" height="48" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/><text x="712" y="76" text-anchor="middle" fill="#1f4e7a" font-size="13" font-weight="600">签电子合同</text><text x="712" y="92" text-anchor="middle" fill="#5a7fa0" font-size="10.5">合同存档+快照</text></g>
+          <line x1="712" y1="102" x2="712" y2="150" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a4)"/>
+          <g><rect x="642" y="152" width="140" height="50" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/><text x="712" y="174" text-anchor="middle" fill="#1f4e7a" font-size="13" font-weight="600">付首期+保证金</text><text x="712" y="190" text-anchor="middle" fill="#5a7fa0" font-size="10.5">成功才进交付</text></g>
+          <line x1="642" y1="177" x2="606" y2="177" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a4)"/>
+          <g><rect x="446" y="152" width="160" height="50" rx="9" fill="#f6eede" stroke="#8a5a1f"/><text x="526" y="174" text-anchor="middle" fill="#6b441a" font-size="13" font-weight="600">商家交付设备</text><text x="526" y="190" text-anchor="middle" fill="#8a6533" font-size="10.5">录IMEI/SN、拍照、人机合照</text></g>
+          <line x1="446" y1="177" x2="410" y2="177" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a4)"/>
+          <g><rect x="250" y="152" width="160" height="50" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/><text x="330" y="174" text-anchor="middle" fill="#1f4e7a" font-size="13" font-weight="600">客户签收</text><text x="330" y="190" text-anchor="middle" fill="#5a7fa0" font-size="10.5">电子确认单/AI问答</text></g>
+          <line x1="330" y1="202" x2="330" y2="250" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a4)"/>
+          <g><rect x="250" y="252" width="200" height="56" rx="9" fill="#e6f0ec" stroke="#1f6f5c"/><text x="350" y="276" text-anchor="middle" fill="#16513f" font-size="13" font-weight="600">⑨ 平台结算</text><text x="350" y="294" text-anchor="middle" fill="#3d7a68" font-size="10.5">监管锁校验 或 替代验收条件满足</text></g>
+          <line x1="450" y1="280" x2="500" y2="280" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a4)"/>
+          <g><rect x="502" y="252" width="200" height="56" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/><text x="602" y="282" text-anchor="middle" fill="#1f4e7a" font-size="13" font-weight="600">进入"按月还款"履约中</text></g>
+        </svg>
+        <div class="cap">审核不通过会退回补资料(见第1章)。付款成功是进入交付的硬门槛;签收+结算条件满足后,订单才正式开始计费。</div>
+      </div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l3">第 3 层 · 关键规则</span>
+      <h3>每一步的规矩</h3>
+      <table>
+        <tr><th style="width:22%">环节</th><th>规则</th></tr>
+        <tr><td class="who">实名认证</td><td>身份证 + 人脸,必须本人真实信息。冒用他人信息客户自负全部法律责任。</td></tr>
+        <tr><td class="who">审核</td><td>商家订单商家可自主审核;联营/平台订单运营主控。审核结果、命中的内部规则、黑灰名单结论<b>不展示给客户</b>,只告诉客户"通过/驳回/补资料"。</td></tr>
+        <tr><td class="who">签合同</td><td>合同内容(设备、费用、最低服务期、归还/购买规则)必须和订单快照一致。系统存合同PDF+签署回调+页面快照。</td></tr>
+        <tr><td class="who">付首期+保证金</td><td>支付成功才进入交付。支付回调必须幂等——重复通知不重复入账。</td></tr>
+        <tr><td class="who">交付</td><td>门店录入设备唯一码(IMEI/SN/车架号),拍交付照、人机/人车合照。<b>人机合照只存比对结果和评分,不建人脸库</b>,客户端不出现"人脸/风控"字眼。</td></tr>
+        <tr><td class="who">签收</td><td>电子确认单或AI问答确认(可配)。AI问答可核实本人办理、设备、期数、每期应付、是否知晓协议。</td></tr>
+        <tr><td class="who">结算</td><td>苹果类手机等需监管锁的品类:要签收通过+锁已上+激活锁已激活才结算。其它无锁品类:签收+设备码归档+交付证据完整+前置检测完成即可结算,不因没有监管锁卡住。</td></tr>
+      </table>
+      <div class="seealso">详见:<b>长租全生命周期</b> <code>运营端/订单管理/08</code>　·　<b>签收确认配置</b> <code>运营端/发货履约/02</code>　·　<b>C端实名/合同/支付</b> <code>C端/04 · 06 · 08</code></div>
+    </div>
+  </section>
+
+  <section class="chapter" id="c5">
+    <h2><span class="idx">第 5 章</span>到期三选一 与 申请购买</h2>
+    <p class="lead">租期快到时,客户要做一个选择。这一章是整个业务里"合规"最敏感的地方——处理得好是干净的租赁,处理不好就会被认为是"变相分期买断"。</p>
+    <div class="feature">
+      <span class="l-tag l1">第 1 层 · 这块是干嘛的</span>
+      <h3>一句话</h3>
+      <div class="oneliner">到期前,系统平等地给客户三个选择——把设备还回去、再续租一段、或者申请把这台设备买下来。客户主动选,系统绝不替客户默认勾"购买"。</div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l2">第 2 层 · 流程图</span>
+      <h3>客户选择后,各自怎么走</h3>
+      <div class="diagram">
+        <svg viewBox="0 0 820 420" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif">
+          <defs><marker id="arr2" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#9aa1ad"/></marker></defs>
+          <rect x="320" y="20" width="180" height="50" rx="10" fill="#f6efe0" stroke="#b08534"/>
+          <text x="410" y="42" text-anchor="middle" fill="#8a6518" font-size="14" font-weight="700">到期前 · 三个选项</text>
+          <text x="410" y="60" text-anchor="middle" fill="#a07a28" font-size="11">同等展示,不默认勾选</text>
+          <line x1="410" y1="70" x2="160" y2="110" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <line x1="410" y1="70" x2="410" y2="110" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <line x1="410" y1="70" x2="660" y2="110" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <rect x="60" y="112" width="200" height="46" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/><text x="160" y="140" text-anchor="middle" fill="#1f4e7a" font-size="14" font-weight="600">归还设备</text>
+          <line x1="160" y1="158" x2="160" y2="186" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <rect x="60" y="188" width="200" height="64" rx="9" fill="#e6f0ec" stroke="#1f6f5c"/><text x="160" y="212" text-anchor="middle" fill="#16513f" font-size="12.5">寄回/到店 → 检测验收</text><text x="160" y="232" text-anchor="middle" fill="#16513f" font-size="12.5">退还保证金、订单结束</text>
+          <rect x="310" y="112" width="200" height="46" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/><text x="410" y="140" text-anchor="middle" fill="#1f4e7a" font-size="14" font-weight="600">继续使用(续租)</text>
+          <line x1="410" y1="158" x2="410" y2="186" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <rect x="310" y="188" width="200" height="64" rx="9" fill="#e6f0ec" stroke="#1f6f5c"/><text x="410" y="212" text-anchor="middle" fill="#16513f" font-size="12.5">按系统续租方案</text><text x="410" y="232" text-anchor="middle" fill="#16513f" font-size="12.5">继续按月付,无需再付保证金</text>
+          <rect x="560" y="112" width="200" height="46" rx="9" fill="#f6efe0" stroke="#b08534"/><text x="660" y="140" text-anchor="middle" fill="#8a6518" font-size="14" font-weight="600">申请购买</text>
+          <line x1="660" y1="158" x2="660" y2="186" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <rect x="560" y="188" width="200" height="80" rx="9" fill="#f6efe0" stroke="#b08534"/><text x="660" y="210" text-anchor="middle" fill="#8a6518" font-size="12" font-weight="600">独立确认页</text><text x="660" y="228" text-anchor="middle" fill="#a07a28" font-size="11">显示购买价、保证金抵扣</text><text x="660" y="246" text-anchor="middle" fill="#a07a28" font-size="11">客户确认 → 支付</text><text x="660" y="262" text-anchor="middle" fill="#a07a28" font-size="11">付清后所有权才转移</text>
+          <rect x="250" y="300" width="320" height="44" rx="9" fill="#f7e9e3" stroke="#a6492f"/><text x="410" y="322" text-anchor="middle" fill="#a6492f" font-size="12.5" font-weight="600">客户没选?→ 继续按到期提醒处理</text><text x="410" y="338" text-anchor="middle" fill="#a6492f" font-size="11">绝不自动变成"购买",绝不自动转移所有权</text>
+        </svg>
+        <div class="cap">三条路客户自己选。"申请购买"用棕色,因为它是合规最敏感、必须最克制的一条。</div>
+      </div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l3">第 3 层 · 关键规则</span>
+      <h3>申请购买价怎么算(一期口径)</h3>
+      <p style="font-size:14.5px;margin:6px 0 14px;">客户申请购买时,要付的钱按这个算:</p>
+      <div class="oneliner" style="background:#f1f4f2;border-color:var(--accent);color:var(--ink);">申请购买价 = 当前还没付的剩余租金 + 保证金　|　客户实付 = 购买价 − 保证金抵扣</div>
+      <ul class="rules">
+        <li>这个数和办单助手当初报价单上每期那列"购买参考价"是<b>同一个数</b>,系统三处取同一份快照,不会各算各的。</li>
+        <li>保证金可以抵扣购买价;如果保证金比购买价还高,系统自动退差额。</li>
+        <li>申请购买必须客户<b>主动发起</b>,在<b>独立确认页</b>看清金额后才能支付,付清才转移所有权。</li>
+      </ul>
+      <div class="callout warn">
+        <div class="h">⚠ 必须如实告诉各部门(尤其法务)的一件事</div>
+        现在用的"购买价 = 剩余租金 + 保证金"这个算法,我们内部叫 <b>A 口径</b>。它的好处是简单、系统现成、能马上开发。但它在法律上是<b>偏敏感</b>的——因为"付的租金累计起来约等于设备价",容易被法院往"名为租赁、实为分期买断"上靠。<br><br>
+        所以我们<b>明确把它标成"一期先用、待法务确认"</b>,并准备了二期的优化口径(购买价按设备折旧后的残值算,和剩余租金脱钩)。<b>这一条是这次评审会必须请法务拍板的重点</b>,不是已经定死、没有风险的事。
+      </div>
+      <div class="seealso">详见:<b>在租期间</b> <code>C端/12 §4.2</code>　·　<b>系统定版待完善清单(A口径)</b> <code>开发设计/22</code></div>
+    </div>
+  </section>
+
+  <section class="chapter" id="c6">
+    <h2><span class="idx">第 6 章</span>提前归还 与 归还检测</h2>
+    <p class="lead">客户租到一半不想租了,或到期选择归还,设备要交回来验收。这一章讲"提前还怎么算钱"和"还回来的设备怎么检测、费用怎么认"。</p>
+    <div class="feature">
+      <span class="l-tag l1">第 1 层 · 这块是干嘛的</span>
+      <h3>一句话</h3>
+      <div class="oneliner">客户可以中途申请提前归还,系统先给一个"预结算"让客户看清要付多少;设备收回后做检测,有损坏/缺件按实际发生且有凭证的费用扣,最后结算保证金退还。</div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l2">第 2 层 · 流程图</span>
+      <h3>提前归还到结算的流程</h3>
+      <div class="diagram">
+        <svg viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif">
+          <defs><marker id="a6" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#9aa1ad"/></marker></defs>
+          <g><rect x="20" y="40" width="150" height="56" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/><text x="95" y="64" text-anchor="middle" fill="#1f4e7a" font-size="13" font-weight="600">客户申请提前归还</text><text x="95" y="82" text-anchor="middle" fill="#5a7fa0" font-size="10.5">履约中订单详情</text></g>
+          <line x1="170" y1="68" x2="206" y2="68" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a6)"/>
+          <g><rect x="208" y="32" width="170" height="72" rx="9" fill="#f6efe0" stroke="#b08534"/><text x="293" y="54" text-anchor="middle" fill="#8a6518" font-size="13" font-weight="600">系统展示预结算</text><text x="293" y="72" text-anchor="middle" fill="#a07a28" font-size="10">已用时间/已发生费用/</text><text x="293" y="87" text-anchor="middle" fill="#a07a28" font-size="10">预计检测费/物流费/保证金退</text></g>
+          <line x1="378" y1="68" x2="414" y2="68" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a6)"/>
+          <g><rect x="416" y="40" width="150" height="56" rx="9" fill="#f6eede" stroke="#8a5a1f"/><text x="491" y="64" text-anchor="middle" fill="#6b441a" font-size="13" font-weight="600">门店收货+检测</text><text x="491" y="82" text-anchor="middle" fill="#8a6533" font-size="10.5">拍照、验成色配件</text></g>
+          <line x1="566" y1="68" x2="602" y2="68" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a6)"/>
+          <g><rect x="604" y="40" width="170" height="56" rx="9" fill="#e6f0ec" stroke="#1f6f5c"/><text x="689" y="64" text-anchor="middle" fill="#16513f" font-size="13" font-weight="600">最终结算</text><text x="689" y="82" text-anchor="middle" fill="#3d7a68" font-size="10.5">保证金扣退、订单结束</text></g>
+          <rect x="120" y="150" width="560" height="100" rx="10" fill="#fff" stroke="#e3e6ec"/>
+          <text x="400" y="174" text-anchor="middle" fill="#1a1f2b" font-size="13" font-weight="700">最低服务期联动(安心用统一)</text>
+          <text x="140" y="200" fill="#4a5163" font-size="12">· 最低服务期 = 3 个月起,自签收日算</text>
+          <text x="140" y="222" fill="#4a5163" font-size="12">· 3 个月内提前还:结清"已发生设备使用费 + 已实际发生的增值服务费"</text>
+          <text x="140" y="244" fill="#4a5163" font-size="12">· 超过 3 个月再提前还:只按"已发生费用"结算,不收未到期费用</text>
+        </svg>
+        <div class="cap">系统提交提前归还时<b>不</b>默认要客户付清全部未到期费用;最终金额以实际检测结果和凭证为准。</div>
+      </div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l3">第 3 层 · 关键规则</span>
+      <h3>归还检测的费用,必须"实际发生 + 有凭证"</h3>
+      <p style="font-size:14.5px;margin:6px 0 12px;">检测出来要扣的每一笔钱,都要挂对应凭证,不能凭空填:</p>
+      <table>
+        <tr><th style="width:34%">费用类型</th><th>需要的凭证</th></tr>
+        <tr><td>维修费</td><td>维修报价单 / 维修发票 / 维修收据 / 门店维修单</td></tr>
+        <tr><td>检测费</td><td>检测报告照片</td></tr>
+        <tr><td>物流费 / 拖车费 / 仓储费 / 停车费</td><td>对应单据凭证</td></tr>
+        <tr><td>电动车定位取回协作费</td><td>默认 200 元/次,需挂取回记录或定位轨迹截图证明真实发生</td></tr>
+        <tr><td>设备照片 / 视频</td><td>外观、损坏情况留证</td></tr>
+      </table>
+      <ul class="rules">
+        <li>客户对检测结果有异议,3 个工作日内可提,进争议处理,不直接扣款。</li>
+        <li>这套凭证结构,将来"设备无法返还赔偿"里的"实际费用"部分也用同一套数据(赔偿计算本身挂二期)。</li>
+      </ul>
+      <div class="seealso">详见:<b>归还检测报告与凭证结构</b> <code>运营端/订单管理/05 §8.1.3</code>　·　<b>提前归还预结算</b> <code>C端/12 §5</code></div>
+    </div>
+  </section>
+
+  <section class="chapter" id="c7">
+    <h2><span class="idx">第 7 章</span>体验租短租(取还车)</h2>
+    <p class="lead">体验租是和长租并列的另一条业务线——按小时/天/周/月租电动车这类设备,到店取车、用完还车。它和长租<b>完全分开</b>:独立入口、独立订单、独立车辆库存、独立保证金,不走长租那套办单助手和分期账单。一期先做电动车。</p>
+    <div class="feature">
+      <span class="l-tag l1">第 1 层 · 这块是干嘛的</span>
+      <h3>一句话</h3>
+      <div class="oneliner">客户选城市门店和车型 → 付租金和保证金 → 商家接单 → 到店扫码绑定具体车辆取车 → 用车 → 还车验收 → 退保证金。有事故/违章/损坏/丢车按证据和保险定责,平台不默认兜底。</div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l2">第 2 层 · 流程图</span>
+      <h3>取还车主流程</h3>
+      <div class="diagram">
+        <div class="legend">
+          <span><i style="background:var(--c-cust)"></i>客户</span>
+          <span><i style="background:var(--c-sys)"></i>系统/平台</span>
+          <span><i style="background:var(--c-merch)"></i>商家/门店</span>
+        </div>
+        <svg viewBox="0 0 820 470" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif">
+          <defs><marker id="a7" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#9aa1ad"/></marker></defs>
+          <g><rect x="40" y="20" width="190" height="46" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/><text x="135" y="42" text-anchor="middle" fill="#1f4e7a" font-size="13" font-weight="600">选城市/门店/车型/租期</text><text x="135" y="58" text-anchor="middle" fill="#5a7fa0" font-size="10">时租/日租/周租/月租</text></g>
+          <line x1="135" y1="66" x2="135" y2="84" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a7)"/>
+          <g><rect x="40" y="86" width="190" height="46" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/><text x="135" y="108" text-anchor="middle" fill="#1f4e7a" font-size="13" font-weight="600">骑行人信息+认证</text><text x="135" y="124" text-anchor="middle" fill="#5a7fa0" font-size="10">证件/人脸/紧急联系人</text></g>
+          <line x1="135" y1="132" x2="135" y2="150" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a7)"/>
+          <g><rect x="40" y="152" width="190" height="46" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/><text x="135" y="174" text-anchor="middle" fill="#1f4e7a" font-size="13" font-weight="600">付租金 + 保证金/免押</text></g>
+          <line x1="230" y1="175" x2="266" y2="175" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a7)"/>
+          <g><polygon points="350,152 430,198 350,244 270,198" fill="#f6eede" stroke="#8a5a1f"/><text x="350" y="194" text-anchor="middle" fill="#6b441a" font-size="13" font-weight="600">商家接单</text><text x="350" y="210" text-anchor="middle" fill="#8a6533" font-size="10">倒计时</text></g>
+          <line x1="350" y1="244" x2="350" y2="280" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a7)"/><text x="362" y="266" fill="#a6492f" font-size="10">拒单/超时</text>
+          <g><rect x="255" y="282" width="190" height="42" rx="9" fill="#f7e9e3" stroke="#a6492f"/><text x="350" y="308" text-anchor="middle" fill="#a6492f" font-size="12" font-weight="600">优先自动退款 / 转客服</text></g>
+          <line x1="430" y1="198" x2="466" y2="198" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a7)"/>
+          <g><rect x="468" y="174" width="180" height="48" rx="9" fill="#f6eede" stroke="#8a5a1f"/><text x="558" y="196" text-anchor="middle" fill="#6b441a" font-size="13" font-weight="600">到店核销 + 绑车</text><text x="558" y="212" text-anchor="middle" fill="#8a6533" font-size="10">扫码绑唯一车辆码,不符禁取</text></g>
+          <line x1="648" y1="198" x2="684" y2="198" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a7)"/>
+          <g><rect x="686" y="174" width="110" height="48" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/><text x="741" y="202" text-anchor="middle" fill="#1f4e7a" font-size="13" font-weight="600">取车确认</text></g>
+          <line x1="741" y1="222" x2="741" y2="258" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a7)"/>
+          <g><rect x="640" y="260" width="156" height="48" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/><text x="718" y="282" text-anchor="middle" fill="#1f4e7a" font-size="13" font-weight="600">用车中</text><text x="718" y="298" text-anchor="middle" fill="#5a7fa0" font-size="10">剩余时间/续租/控车状态</text></g>
+          <line x1="718" y1="308" x2="718" y2="344" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a7)"/>
+          <g><rect x="640" y="346" width="156" height="48" rx="9" fill="#f6eede" stroke="#8a5a1f"/><text x="718" y="368" text-anchor="middle" fill="#6b441a" font-size="13" font-weight="600">还车验收</text><text x="718" y="384" text-anchor="middle" fill="#8a6533" font-size="10">验车、拍照、传凭证</text></g>
+          <line x1="640" y1="370" x2="500" y2="370" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a7)"/>
+          <g><rect x="320" y="346" width="180" height="48" rx="9" fill="#e6f0ec" stroke="#1f6f5c"/><text x="410" y="368" text-anchor="middle" fill="#16513f" font-size="13" font-weight="600">保证金扣退、订单结束</text><text x="410" y="384" text-anchor="middle" fill="#3d7a68" font-size="10">超时费/损坏费按规则+证据</text></g>
+        </svg>
+        <div class="cap">取车前必须"扫码绑定具体车辆",车不对禁止取车——这是短租和长租很不一样的一步。</div>
+      </div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l3">第 3 层 · 关键规则</span>
+      <h3>短租的几条硬规矩</h3>
+      <table>
+        <tr><th style="width:24%">事项</th><th>规则</th></tr>
+        <tr><td class="who">车辆唯一码</td><td>每台车以车架号/SN唯一识别。同一台设备<b>不能同时</b>在长租交付和短租可租库存里。</td></tr>
+        <tr><td class="who">接单/拒单</td><td>付款成功但商家没接单或拒单,优先自动退款,异常或争议转客服。</td></tr>
+        <tr><td class="who">事故/违章/损坏/丢车</td><td><b>平台不默认兜底</b>。先走保险和协议约定,再按证据(现场照片、报警材料、定位轨迹、维修报价、还车照片等)分客户/商家/平台/第三方责任。每种情形都要有状态、证据、审批、客服介入入口。</td></tr>
+        <tr><td class="who">保证金扣款</td><td>必须有规则、证据、审批、通知客户、申诉窗口,不能门店说扣就扣。</td></tr>
+        <tr><td class="who">短租经营模式</td><td>也分三种:商家自营(商家车商家接)、平台自营(平台车)、平台货源门店履约(平台出车门店取还)。客户侧不展示。</td></tr>
+      </table>
+      <div class="seealso">详见:<b>体验租业务总览</b> <code>短租业务/01</code>　·　<b>数据模型与状态机</b> <code>短租业务/05</code>　·　<b>风险责任规则表</b> <code>短租业务/11</code></div>
+    </div>
+  </section>
+
+  <section class="chapter" id="c8">
+    <h2><span class="idx">第 8 章</span>C端 / 商家端 / 门店端</h2>
+    <p class="lead">系统对外有几个不同的"端",每个端是给不同的人用的。这一章一眼看清:谁用哪个端、能干什么。</p>
+    <div class="feature">
+      <span class="l-tag l1">第 1 层 · 这块是干嘛的</span>
+      <h3>一句话</h3>
+      <div class="oneliner">客户用 C 端(小程序/H5)租设备;商家老板用商家端(电脑)管经营和钱;门店店员用门店手机端(手机)现场办单和交付还车。三端权限和能看的数据严格分开。</div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l2">第 2 层 · 三端关系图</span>
+      <h3>谁用哪个端</h3>
+      <div class="diagram">
+        <svg viewBox="0 0 800 330" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif">
+          <rect x="310" y="135" width="180" height="60" rx="12" fill="#16513f"/><text x="400" y="160" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">满点租赁系统</text><text x="400" y="180" text-anchor="middle" fill="#bfe0d4" font-size="11">一套底层,多端接入</text>
+          <g><rect x="40" y="40" width="200" height="80" rx="10" fill="#e6f0f8" stroke="#2b6fb0"/><text x="140" y="64" text-anchor="middle" fill="#1f4e7a" font-size="14" font-weight="700">C 端(客户)</text><text x="140" y="86" text-anchor="middle" fill="#5a7fa0" font-size="11">小程序 / H5</text><text x="140" y="104" text-anchor="middle" fill="#5a7fa0" font-size="11">下单·签约·支付·签收·还/购</text></g>
+          <line x1="240" y1="90" x2="310" y2="150" stroke="#9aa1ad" stroke-width="1.5"/>
+          <g><rect x="560" y="40" width="200" height="80" rx="10" fill="#f6eede" stroke="#8a5a1f"/><text x="660" y="64" text-anchor="middle" fill="#6b441a" font-size="14" font-weight="700">商家端(老板)</text><text x="660" y="86" text-anchor="middle" fill="#8a6533" font-size="11">电脑 PC</text><text x="660" y="104" text-anchor="middle" fill="#8a6533" font-size="11">经营·订单·钱包·员工权限</text></g>
+          <line x1="560" y1="90" x2="490" y2="150" stroke="#9aa1ad" stroke-width="1.5"/>
+          <g><rect x="300" y="250" width="200" height="70" rx="10" fill="#f6eede" stroke="#8a5a1f"/><text x="400" y="274" text-anchor="middle" fill="#6b441a" font-size="14" font-weight="700">门店手机端(店员)</text><text x="400" y="296" text-anchor="middle" fill="#8a6533" font-size="11">手机 · 现场办单/交付/还车</text></g>
+          <line x1="400" y1="250" x2="400" y2="195" stroke="#9aa1ad" stroke-width="1.5"/>
+          <g><rect x="560" y="250" width="200" height="70" rx="10" fill="#e6f0ec" stroke="#1f6f5c"/><text x="660" y="274" text-anchor="middle" fill="#16513f" font-size="14" font-weight="700">运营后台(平台)</text><text x="660" y="296" text-anchor="middle" fill="#3d7a68" font-size="11">第10章详述</text></g>
+          <line x1="560" y1="285" x2="490" y2="190" stroke="#9aa1ad" stroke-width="1.5"/>
+        </svg>
+        <div class="cap">四个端共用同一套底层数据,但每个端看到的内容、能做的操作都按角色权限严格隔离。</div>
+      </div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l3">第 3 层 · 各端能干什么</span>
+      <table>
+        <tr><th style="width:22%">端</th><th>谁用</th><th>主要能力</th></tr>
+        <tr><td class="cust">C 端</td><td>客户</td><td>浏览/扫码下单、实名、签约、支付、签收、查账单、申请归还/续租/购买、联系客服。看不到任何内部信息。</td></tr>
+        <tr><td class="merch">商家端</td><td>商家老板/管理员/财务</td><td>看自己的订单、履约、钱包余额、提现、对账、配置自己的办单方案、管理员工权限。看不到平台利润和别家数据。</td></tr>
+        <tr><td class="merch">门店手机端</td><td>门店店员</td><td>现场办单助手、交付材料上传、签收、短租取还车待办。简单、少跳转。</td></tr>
+        <tr><td class="sys">运营后台</td><td>平台运营/客服/财务/风控/法务</td><td>平台主控全局(第10章)。</td></tr>
+      </table>
+      <div class="callout info">
+        <div class="h">ℹ 商家财务权限的底线</div>
+        商家老板可以授权财务人员看钱包、发起提现,但财务人员<b>不能</b>改结算账户、收款账户、主体证件、门店归属、员工权限。改结算账户只能老板或被单独授权的管理员做,且要二次确认+短信验证。
+      </div>
+      <div class="seealso">详见:<b>商家工作台</b> <code>商家端/工作台/01</code>　·　<b>门店待办</b> <code>门店手机端/订单待办/01</code>　·　<b>权限矩阵</b> <code>运营端/权限日志/02</code></div>
+    </div>
+  </section>
+
+  <section class="chapter" id="c9">
+    <h2><span class="idx">第 9 章</span>办单助手 与 配置能力</h2>
+    <p class="lead">办单助手是门店给客户算价、出报价、生成下单二维码的核心工具。它<b>不是一个写死的计算器</b>,而是后台可配置、和租赁系统完全联通的活工具——商品、增值服务、期数、首付、费率全是后台可调的。</p>
+    <div class="feature">
+      <span class="l-tag l1">第 1 层 · 这块是干嘛的</span>
+      <h3>一句话</h3>
+      <div class="oneliner">门店选好设备、期数、首付、增值服务,办单助手按后台配的费率算出首期实付、每期应付、购买参考价,生成报价单和"请扫码下单"二维码;客户扫码读取这份报价快照下单。配置可改,但下单后的报价快照锁死不可变。</div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l2">第 2 层 · 配置与出单关系图</span>
+      <h3>后台配置 → 办单助手 → 客户扫码</h3>
+      <div class="diagram">
+        <svg viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif">
+          <defs><marker id="a9" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#9aa1ad"/></marker></defs>
+          <rect x="30" y="40" width="210" height="270" rx="10" fill="#e6f0ec" stroke="#1f6f5c"/>
+          <text x="135" y="66" text-anchor="middle" fill="#16513f" font-size="14" font-weight="700">后台配置(可调)</text>
+          <line x1="50" y1="78" x2="220" y2="78" stroke="#bcd9ce"/>
+          <text x="50" y="104" fill="#16513f" font-size="12.5">· 商品 + 设备价</text>
+          <text x="50" y="132" fill="#16513f" font-size="12.5">· 增值服务(设备管理费/</text>
+          <text x="62" y="150" fill="#16513f" font-size="12.5">公证费等,可设默认/强制勾)</text>
+          <text x="50" y="178" fill="#16513f" font-size="12.5">· 期数(可自行增删)</text>
+          <text x="50" y="206" fill="#16513f" font-size="12.5">· 首付成数</text>
+          <text x="50" y="234" fill="#16513f" font-size="12.5">· 费率计算方式</text>
+          <text x="62" y="252" fill="#16513f" font-size="12.5">(未付×费率 / 设备价×费率)</text>
+          <text x="50" y="284" fill="#3d7a68" font-size="11">改费率/期数=高危,留版本快照</text>
+          <line x1="240" y1="175" x2="286" y2="175" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a9)"/>
+          <rect x="288" y="70" width="220" height="210" rx="10" fill="#f6eede" stroke="#8a5a1f"/>
+          <text x="398" y="96" text-anchor="middle" fill="#6b441a" font-size="14" font-weight="700">办单助手算价</text>
+          <line x1="308" y1="108" x2="488" y2="108" stroke="#e0cba8"/>
+          <text x="308" y="134" fill="#6b441a" font-size="12.5">门店选:设备/期数/首付/服务</text>
+          <text x="308" y="162" fill="#6b441a" font-size="12.5">→ 首期实付</text>
+          <text x="308" y="188" fill="#6b441a" font-size="12.5">→ 每期应付 × N 期</text>
+          <text x="308" y="214" fill="#6b441a" font-size="12.5">→ 购买参考价(每期一列)</text>
+          <text x="308" y="244" fill="#8a6533" font-size="11.5">金额全程以分整数算,不浮点</text>
+          <text x="308" y="266" fill="#8a6533" font-size="11.5">生成报价快照(锁死)</text>
+          <line x1="508" y1="175" x2="554" y2="175" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a9)"/>
+          <rect x="556" y="110" width="220" height="130" rx="10" fill="#e6f0f8" stroke="#2b6fb0"/>
+          <text x="666" y="136" text-anchor="middle" fill="#1f4e7a" font-size="14" font-weight="700">生成下单二维码</text>
+          <line x1="576" y1="148" x2="756" y2="148" stroke="#bcd5ea"/>
+          <text x="576" y="174" fill="#1f4e7a" font-size="12.5">客户扫码 → 读报价快照</text>
+          <text x="576" y="200" fill="#1f4e7a" font-size="12.5">→ 进订单确认页(第3章)</text>
+          <text x="576" y="226" fill="#5a7fa0" font-size="11">配置后改不影响已生成的快照</text>
+        </svg>
+        <div class="cap">这正是你强调的"办单助手必须和后台联通、不是静态页"。蓝本以 GitHub 仓库 phone-rent 目录为准,默认规则先同步到三种方案。</div>
+      </div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l3">第 3 层 · 关键规则</span>
+      <h3>办单助手配置界面 + 三方案分权</h3>
+      <ul class="rules">
+        <li><b>运营后台要有一个"办单助手配置界面"</b>,把商品、增值服务(含是否默认勾选/强制勾选)、期数、首付成数、费率计算方式全做成可配置项。</li>
+        <li><b>三种方案分权配置</b>:商家订单的办单助手由商家自己改;联营订单、平台订单的办单助手由运营后台设置。配置修改权限可按角色分配。</li>
+        <li>先把 phone-rent 的默认规则同步到全部三种方案,作为起点。</li>
+        <li>改费率、增值服务、期数、首付成数、作废报价快照都是<b>高危操作</b>,要权限+二次确认+审计+配置版本快照。</li>
+      </ul>
+      <div class="seealso">详见:<b>办单助手字段与账单公式表</b> <code>门店手机端/办单助手/02</code>　·　<b>办单助手三入口</b> <code>门店手机端/办单助手/01</code>　·　蓝本仓库 <code>joezjyan-bot/calculator · phone-rent/</code></div>
+    </div>
+  </section>
+
+  <section class="chapter" id="c10">
+    <h2><span class="idx">第 10 章</span>运营后台</h2>
+    <p class="lead">运营后台是平台自己用的"中控台",管所有商家、商品、订单、钱、风控、客服。它模块很多,这一章给个全景,具体每块在对应章节或细分文档。</p>
+    <div class="feature">
+      <span class="l-tag l1">第 1 层 · 这块是干嘛的</span>
+      <h3>一句话</h3>
+      <div class="oneliner">平台运营、客服、财务、风控、法务在这里管全局:审店铺、上商品、处理订单、对账打款、风控审核、客服派单、看经营数据。所有高危操作都有权限和日志。</div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l2">第 2 层 · 模块全景图</span>
+      <h3>运营后台有哪些模块</h3>
+      <div class="diagram">
+        <svg viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif">
+          <text x="400" y="28" text-anchor="middle" fill="#16513f" font-size="15" font-weight="700">运营后台模块</text>
+          <rect x="20" y="46" width="185" height="160" rx="10" fill="#e6f0f8" stroke="#2b6fb0"/>
+          <text x="112" y="70" text-anchor="middle" fill="#1f4e7a" font-size="13" font-weight="700">经营管理</text>
+          <text x="36" y="96" fill="#1f4e7a" font-size="12">· 工作台/数据看板</text>
+          <text x="36" y="120" fill="#1f4e7a" font-size="12">· 店铺管理(审核/风险)</text>
+          <text x="36" y="144" fill="#1f4e7a" font-size="12">· 商品管理(指导价)</text>
+          <text x="36" y="168" fill="#1f4e7a" font-size="12">· 用户管理</text>
+          <text x="36" y="192" fill="#1f4e7a" font-size="12">· 渠道管理(佣金)</text>
+          <rect x="215" y="46" width="185" height="160" rx="10" fill="#e6f0ec" stroke="#1f6f5c"/>
+          <text x="307" y="70" text-anchor="middle" fill="#16513f" font-size="13" font-weight="700">交易履约</text>
+          <text x="231" y="96" fill="#16513f" font-size="12">· 订单管理(审核/改价)</text>
+          <text x="231" y="120" fill="#16513f" font-size="12">· 发货履约/签收配置</text>
+          <text x="231" y="144" fill="#16513f" font-size="12">· 合同公证</text>
+          <text x="231" y="168" fill="#16513f" font-size="12">· 资产管理(设备/价值)</text>
+          <text x="231" y="192" fill="#16513f" font-size="12">· 体验租管理</text>
+          <rect x="410" y="46" width="185" height="160" rx="10" fill="#f6efe0" stroke="#b08534"/>
+          <text x="502" y="70" text-anchor="middle" fill="#8a6518" font-size="13" font-weight="700">资金财务</text>
+          <text x="426" y="96" fill="#8a6518" font-size="12">· 支付/账单/分账</text>
+          <text x="426" y="120" fill="#8a6518" font-size="12">· 钱包/提现/对账</text>
+          <text x="426" y="144" fill="#8a6518" font-size="12">· 退款/冲正</text>
+          <text x="426" y="168" fill="#8a6518" font-size="12">· 总账分录</text>
+          <text x="426" y="192" fill="#8a6518" font-size="12">· 账龄/Vintage 报表</text>
+          <rect x="605" y="46" width="175" height="160" rx="10" fill="#f7e9e3" stroke="#a6492f"/>
+          <text x="692" y="70" text-anchor="middle" fill="#a6492f" font-size="13" font-weight="700">风控安全</text>
+          <text x="621" y="96" fill="#a6492f" font-size="12">· 订单审核/复审</text>
+          <text x="621" y="120" fill="#a6492f" font-size="12">· 监管锁管理</text>
+          <text x="621" y="144" fill="#a6492f" font-size="12">· 黑名单库</text>
+          <text x="621" y="168" fill="#a6492f" font-size="12">· 权限/操作日志</text>
+          <text x="621" y="192" fill="#a6492f" font-size="12">· 法诉证据包</text>
+          <rect x="120" y="230" width="560" height="56" rx="10" fill="#16513f"/>
+          <text x="400" y="254" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">客服中心(IM) · 配置管理 · 数据管理</text>
+          <text x="400" y="274" text-anchor="middle" fill="#bfe0d4" font-size="11">贯穿所有模块的支撑能力</text>
+          <rect x="120" y="305" width="560" height="90" rx="10" fill="#fff" stroke="#e3e6ec"/>
+          <text x="400" y="329" text-anchor="middle" fill="#1a1f2b" font-size="13" font-weight="700">贯穿全后台的两条铁律</text>
+          <text x="140" y="355" fill="#4a5163" font-size="12">· 四账分离:订单账 / 支付流水账 / 钱包账 / 总账分录,互相关联不混表(第13章)</text>
+          <text x="140" y="378" fill="#4a5163" font-size="12">· 高危动作:拆细权限点 + 操作日志 + 审计 + 二次确认/二人复核(第14章)</text>
+        </svg>
+        <div class="cap">模块虽多,但都围绕"经营、交易、资金、风控"四大块,加上客服/配置/数据三个支撑能力。</div>
+      </div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l3">第 3 层 · 关键规则</span>
+      <ul class="rules">
+        <li>店铺管理里:平台可手动停单或关闭某门店的低首付。低首付<b>不设全局固定值</b>,运营按门店禁用具体首付成数,被禁用的成数在该门店办单助手和客户报价里不可选。</li>
+        <li>店铺详情展示静默率、逾期率等风险数据。逾期率分母 = 该门店所有已起租及之后的订单(含已完成、已逾期、已坏账),不含未起租订单。</li>
+        <li>账单生成前可按权限改价并重新生成计划;<b>账单生成后任何人不能直接改账单</b>,只能走补收、减免、退款、冲正、坏账核销或回收完成。</li>
+      </ul>
+      <div class="seealso">详见:<b>运营工作台</b> <code>运营端/工作台/01</code>　·　<b>店铺详情与配置</b> <code>运营端/店铺管理/02</code>　·　<b>数据看板口径</b> <code>运营端/工作台/02</code></div>
+    </div>
+  </section>
+
+  <section class="chapter" id="c11">
+    <h2><span class="idx">第 11 章</span>IM 客服</h2>
+    <p class="lead">客户、商家有问题要找人,客服要有地方接、看得到订单背景、聊天记录能存证。一期做基础能力,不做复杂机器人和完整工单系统。</p>
+    <div class="feature">
+      <span class="l-tag l1">第 1 层 · 这块是干嘛的</span>
+      <h3>一句话</h3>
+      <div class="oneliner">解决"客户找谁、客服看什么、沟通怎么存证"三件事:客服上班进派单池→系统轮询派单→接入会话(带订单背景)→沟通→记录沉淀为证据。复杂动作(退款/扣款/锁车)只能跳到对应模块做,IM 里不直接执行。</div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l2">第 2 层 · 客服工作台示意</span>
+      <h3>客服工作台四栏布局</h3>
+      <div class="diagram">
+        <svg viewBox="0 0 800 360" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif">
+          <rect x="20" y="20" width="760" height="320" rx="10" fill="#fff" stroke="#c7ccd6"/>
+          <rect x="20" y="20" width="760" height="40" rx="10" fill="#16513f"/><rect x="20" y="44" width="760" height="16" fill="#16513f"/>
+          <text x="40" y="46" fill="#fff" font-size="13" font-weight="600">客服工作台</text>
+          <text x="660" y="46" fill="#bfe0d4" font-size="11">● 上班中 · 派单池</text>
+          <rect x="32" y="72" width="170" height="256" rx="8" fill="#f4f2ec" stroke="#e3e6ec"/>
+          <text x="117" y="94" text-anchor="middle" fill="#1a1f2b" font-size="12" font-weight="700">① 会话列表</text>
+          <rect x="44" y="108" width="146" height="40" rx="6" fill="#e6f0ec" stroke="#1f6f5c"/><text x="54" y="124" fill="#16513f" font-size="10.5">客户A · 长租订单</text><text x="54" y="138" fill="#3d7a68" font-size="9.5">等待 2分钟 · 高优</text>
+          <rect x="44" y="154" width="146" height="40" rx="6" fill="#fff" stroke="#e3e6ec"/><text x="54" y="170" fill="#4a5163" font-size="10.5">商家B · 提现问题</text><text x="54" y="184" fill="#9aa1ad" font-size="9.5">等待 5分钟</text>
+          <rect x="44" y="200" width="146" height="40" rx="6" fill="#fff" stroke="#e3e6ec"/><text x="54" y="216" fill="#4a5163" font-size="10.5">客户C · 保证金争议</text><text x="54" y="230" fill="#9aa1ad" font-size="9.5">等待 1分钟</text>
+          <rect x="210" y="72" width="330" height="256" rx="8" fill="#faf9f6" stroke="#e3e6ec"/>
+          <text x="375" y="94" text-anchor="middle" fill="#1a1f2b" font-size="12" font-weight="700">② 消息区</text>
+          <rect x="224" y="108" width="180" height="34" rx="8" fill="#fff" stroke="#e3e6ec"/><text x="234" y="129" fill="#4a5163" font-size="10.5">客户:我的设备怎么还没到?</text>
+          <rect x="346" y="150" width="180" height="34" rx="8" fill="#e6f0ec" stroke="#1f6f5c"/><text x="356" y="171" fill="#16513f" font-size="10.5">客服:帮您查一下物流~</text>
+          <rect x="224" y="192" width="302" height="40" rx="8" fill="#e6f0f8" stroke="#2b6fb0"/><text x="234" y="210" fill="#1f4e7a" font-size="10.5">📦 订单卡片:#12345 待签收</text><text x="234" y="224" fill="#5a7fa0" font-size="9.5">设备已发出 · 顺丰 SF12345</text>
+          <rect x="224" y="280" width="302" height="36" rx="8" fill="#fff" stroke="#e3e6ec"/><text x="234" y="302" fill="#9aa1ad" font-size="10.5">输入消息… 📎 图片 视频 订单卡片</text>
+          <rect x="548" y="72" width="220" height="150" rx="8" fill="#faf9f6" stroke="#e3e6ec"/>
+          <text x="658" y="94" text-anchor="middle" fill="#1a1f2b" font-size="12" font-weight="700">③ 上下文卡片</text>
+          <text x="562" y="116" fill="#4a5163" font-size="10.5">客户脱敏资料</text>
+          <text x="562" y="136" fill="#4a5163" font-size="10.5">订单状态/账单摘要</text>
+          <text x="562" y="156" fill="#4a5163" font-size="10.5">门店/短租车辆</text>
+          <text x="562" y="176" fill="#4a5163" font-size="10.5">异常标记</text>
+          <text x="562" y="202" fill="#a6492f" font-size="10">敏感信息脱敏,按权限展开</text>
+          <rect x="548" y="230" width="220" height="98" rx="8" fill="#f6efe0" stroke="#b08534"/>
+          <text x="658" y="252" text-anchor="middle" fill="#8a6518" font-size="12" font-weight="700">④ 操作区</text>
+          <text x="562" y="274" fill="#8a6518" font-size="10.5">快捷回复 · 转接 · 标记</text>
+          <text x="562" y="294" fill="#8a6518" font-size="10.5">跳订单/跳退款/跳保证金</text>
+          <text x="562" y="314" fill="#a6492f" font-size="10">退款/扣款/锁车只跳转不直接做</text>
+        </svg>
+        <div class="cap">IM 里能看背景、能沟通、能跳转,但所有动钱动锁的高危动作都要跳到对应业务模块执行,不在聊天框里直接操作。</div>
+      </div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l3">第 3 层 · 关键规则</span>
+      <ul class="rules">
+        <li><b>上班才进派单池</b>:客服点上班才接单,系统按队列和空闲客服轮询派单,3分钟没接自动转下一人。下班/掉线/小休未接任务自动回收。</li>
+        <li><b>会话单人锁定</b>:已接会话归该客服,主管可强制改派并留痕。</li>
+        <li><b>证据沉淀</b>:消息、附件、订单上下文、转派记录、合规命中都能归入法诉证据包。客服不能私自下载完整证据包。</li>
+      </ul>
+      <div class="seealso">详见:<b>IM客服体系总览</b> <code>运营端/客服中心/00</code>　·　<b>IM页面与接口规则</b> <code>运营端/客服中心/01</code></div>
+    </div>
+  </section>
+
+  <section class="chapter" id="c12">
+    <h2><span class="idx">第 12 章</span>设备 与 资产管理</h2>
+    <p class="lead">每台租出去的设备,平台要能追踪它现在在谁手里、什么状态、值多少钱、有没有交付凭证。这套叫设备资产管理,是法诉举证和资产处置的基础。</p>
+    <div class="feature">
+      <span class="l-tag l1">第 1 层 · 这块是干嘛的</span>
+      <h3>一句话</h3>
+      <div class="oneliner">长租订单交付后,系统自动给这台设备建一份"资产档案"(型号、唯一码、成色、价值、绑定订单、当前状态、交付凭证),全程跟踪到归还/购买/处置;客户确认的"设备价值"也存进来,作为合同附件和证据。</div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l2">第 2 层 · 设备资产状态流转</span>
+      <h3>一台设备的状态怎么流转</h3>
+      <div class="diagram">
+        <svg viewBox="0 0 800 250" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif">
+          <defs><marker id="a12" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#9aa1ad"/></marker></defs>
+          <g><rect x="20" y="90" width="130" height="50" rx="9" fill="#f6efe0" stroke="#b08534"/><text x="85" y="112" text-anchor="middle" fill="#8a6518" font-size="12" font-weight="600">订单后资产化</text><text x="85" y="128" text-anchor="middle" fill="#a07a28" font-size="10">下单即建档(待交付)</text></g>
+          <line x1="150" y1="115" x2="186" y2="115" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a12)"/>
+          <g><rect x="188" y="90" width="120" height="50" rx="9" fill="#f6eede" stroke="#8a5a1f"/><text x="248" y="112" text-anchor="middle" fill="#6b441a" font-size="12" font-weight="600">已交付</text><text x="248" y="128" text-anchor="middle" fill="#8a6533" font-size="10">回填IMEI/SN校验</text></g>
+          <line x1="308" y1="115" x2="344" y2="115" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a12)"/>
+          <g><rect x="346" y="90" width="110" height="50" rx="9" fill="#e6f0f8" stroke="#2b6fb0"/><text x="401" y="118" text-anchor="middle" fill="#1f4e7a" font-size="12" font-weight="600">在租中</text></g>
+          <line x1="456" y1="115" x2="492" y2="115" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a12)"/>
+          <g><rect x="494" y="30" width="130" height="46" rx="9" fill="#e6f0ec" stroke="#1f6f5c"/><text x="559" y="58" text-anchor="middle" fill="#16513f" font-size="12" font-weight="600">已归还(回库)</text></g>
+          <g><rect x="494" y="92" width="130" height="46" rx="9" fill="#e6f0ec" stroke="#1f6f5c"/><text x="559" y="120" text-anchor="middle" fill="#16513f" font-size="12" font-weight="600">已购买(转客户)</text></g>
+          <g><rect x="494" y="154" width="130" height="46" rx="9" fill="#f7e9e3" stroke="#a6492f"/><text x="559" y="182" text-anchor="middle" fill="#a6492f" font-size="12" font-weight="600">已处置(灭失/报废)</text></g>
+          <line x1="456" y1="108" x2="494" y2="58" stroke="#9aa1ad" stroke-width="1.2" marker-end="url(#a12)"/>
+          <line x1="456" y1="115" x2="494" y2="115" stroke="#9aa1ad" stroke-width="1.2" marker-end="url(#a12)"/>
+          <line x1="456" y1="122" x2="494" y2="172" stroke="#9aa1ad" stroke-width="1.2" marker-end="url(#a12)"/>
+          <text x="660" y="100" fill="#4a5163" font-size="11">归还→检测→回库/再租</text>
+          <text x="660" y="120" fill="#4a5163" font-size="11">购买→所有权转客户</text>
+          <text x="660" y="140" fill="#4a5163" font-size="11">处置→挂资产+凭证+审批</text>
+        </svg>
+        <div class="cap">设备资产和短租车辆库存是分开的两套;长租用"订单后资产化"(不强制提前入库),短租必须先有车辆库存。</div>
+      </div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l3">第 3 层 · 关键规则</span>
+      <ul class="rules">
+        <li><b>设备价值确认</b>:设备价值 = 这一单的设备价格(办单助手填或客服后台填)。客户在订单确认页只读勾选,不可改;交付时回填设备唯一码并校验成色/型号一致,不一致触发重新确认。</li>
+        <li><b>订单后资产化</b>:不强制门店提前入库,下单后系统自动给设备建档,交付时回填唯一码。</li>
+        <li><b>三处联动</b>:设备价值确认要和订单确认页(客户勾选)、合同附件、页面快照联动,作为法诉证据链一环。</li>
+      </ul>
+      <div class="seealso">详见:<b>设备资产中心与订单后资产化</b> <code>运营端/资产管理/01</code>　·　<b>设备价值确认单</b> <code>运营端/资产管理/02</code></div>
+    </div>
+  </section>
+
+  <section class="chapter" id="c13">
+    <h2><span class="idx">第 13 章</span>财务 · 钱包 · 结算</h2>
+    <p class="lead">钱怎么收、怎么分、怎么提现、怎么退、怎么对账,是整个系统最不能出错的地方。核心是一个原则:四账分离。</p>
+    <div class="feature">
+      <span class="l-tag l1">第 1 层 · 这块是干嘛的</span>
+      <h3>一句话</h3>
+      <div class="oneliner">客户付的钱,经过平台代收、按合作模式分账、扣平台服务费、进商家钱包或平台台账;商家可提现;退款、冲正、坏账、对账都有完整流水。一笔钱从订单能追到支付、钱包、总账,可追溯、可审计、可回滚、可幂等。</div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l2">第 2 层 · 四账分离图</span>
+      <h3>四账分离:一笔钱的四个视角</h3>
+      <div class="diagram">
+        <svg viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif">
+          <defs><marker id="a13" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#9aa1ad"/></marker></defs>
+          <rect x="300" y="20" width="200" height="44" rx="10" fill="#16513f"/><text x="400" y="40" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">客户付一笔钱</text><text x="400" y="56" text-anchor="middle" fill="#bfe0d4" font-size="10.5">同时记进下面四本账</text>
+          <line x1="400" y1="64" x2="400" y2="84" stroke="#9aa1ad" stroke-width="1.5"/>
+          <line x1="130" y1="84" x2="670" y2="84" stroke="#9aa1ad" stroke-width="1.5"/>
+          <line x1="130" y1="84" x2="130" y2="108" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a13)"/>
+          <line x1="310" y1="84" x2="310" y2="108" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a13)"/>
+          <line x1="490" y1="84" x2="490" y2="108" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a13)"/>
+          <line x1="670" y1="84" x2="670" y2="108" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a13)"/>
+          <g><rect x="40" y="110" width="180" height="150" rx="10" fill="#e6f0f8" stroke="#2b6fb0"/><text x="130" y="134" text-anchor="middle" fill="#1f4e7a" font-size="13" font-weight="700">①订单业务账</text><text x="56" y="160" fill="#1f4e7a" font-size="11">看订单应收、已收、</text><text x="56" y="178" fill="#1f4e7a" font-size="11">待收、套餐、账单计划</text><text x="56" y="208" fill="#5a7fa0" font-size="10.5">谁用:运营/客服/商家</text><text x="56" y="234" fill="#a6492f" font-size="10">≠ 真实到账</text></g>
+          <g><rect x="220" y="110" width="180" height="150" rx="10" fill="#e6f0ec" stroke="#1f6f5c"/><text x="310" y="134" text-anchor="middle" fill="#16513f" font-size="13" font-weight="700">②支付流水账</text><text x="236" y="160" fill="#16513f" font-size="11">看通道支付、回调、</text><text x="236" y="178" fill="#16513f" font-size="11">退款、手续费、幂等</text><text x="236" y="208" fill="#3d7a68" font-size="10.5">谁用:技术/财务</text><text x="236" y="234" fill="#a6492f" font-size="10">≠ 钱包余额</text></g>
+          <g><rect x="400" y="110" width="180" height="150" rx="10" fill="#f6efe0" stroke="#b08534"/><text x="490" y="134" text-anchor="middle" fill="#8a6518" font-size="13" font-weight="700">③钱包/账户账</text><text x="416" y="160" fill="#8a6518" font-size="11">看商家可提现、冻结、</text><text x="416" y="178" fill="#8a6518" font-size="11">提现中、返点、分账到账</text><text x="416" y="208" fill="#a07a28" font-size="10.5">谁用:商家/财务</text><text x="416" y="234" fill="#a6492f" font-size="10">≠ 财务总账</text></g>
+          <g><rect x="580" y="110" width="180" height="150" rx="10" fill="#f7e9e3" stroke="#a6492f"/><text x="670" y="134" text-anchor="middle" fill="#a6492f" font-size="13" font-weight="700">④财务总账</text><text x="596" y="160" fill="#a6492f" font-size="11">看平台收入、应付商家、</text><text x="596" y="178" fill="#a6492f" font-size="11">服务费、坏账、冲正</text><text x="596" y="208" fill="#a6492f" font-size="10.5">谁用:财务/老板</text><text x="596" y="234" fill="#a6492f" font-size="10">≠ 给业务改状态</text></g>
+          <text x="400" y="294" text-anchor="middle" fill="#1a1f2b" font-size="12.5" font-weight="600">四本账互相关联、互相对账,但不能混成一本——这是资金不出错的根基</text>
+        </svg>
+        <div class="cap">业务看订单、财务看总账、商家看钱包、技术看支付回调。任何一笔钱都要四账对得上。</div>
+      </div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l3">第 3 层 · 关键规则</span>
+      <table>
+        <tr><th style="width:26%">事项</th><th>规则</th></tr>
+        <tr><td class="who">平台服务费</td><td>当前口径 2%,后台可配。商家长租和商家自营短租:客户付款后扣服务费,剩余进商家钱包。<b>客户侧不展示服务费拆分。</b></td></tr>
+        <tr><td class="who">提现</td><td>商家单笔 500–20000 元,每天最多 3 次,手续费 0.2%+0.5 元,超 2 万人工审核。</td></tr>
+        <tr><td class="who">退款</td><td>商家订单商家承担;联营/平台订单线下协商。退款必须同时影响订单账、支付账、钱包账、总账,不能只改订单状态。已分账的走退款工单(门店先转回再退客户)。</td></tr>
+        <tr><td class="who">逾期费用</td><td>0.05%/日、最低 10 元/日。不叫罚息/利息。商家订单的逾期费用不算平台收入;联营/平台订单归平台。</td></tr>
+        <tr><td class="who">坏账</td><td>平台不默认兜底,按合同/证据/责任定。核销不删原账单,后续追回可回原订单做"回收完成"。</td></tr>
+        <tr><td class="who">对外融资报表</td><td>账龄分析、Vintage 世代分析,给银行/合作方尽调用。只读聚合,不产生资金流水,不反向改订单/钱包/总账。</td></tr>
+      </table>
+      <div class="seealso">详见:<b>财务流水模型与对账规则</b> <code>运营端/财务管理/06</code>　·　<b>账龄与Vintage报表</b> <code>运营端/财务管理/09</code>　·　<b>合作模式与收益分配</b> <code>运营端/财务管理/12</code></div>
+    </div>
+  </section>
+
+  <section class="chapter" id="c14">
+    <h2><span class="idx">第 14 章</span>风控 · 监管锁 · 权限安全</h2>
+    <p class="lead">这一章是系统的"安全底座":怎么审客户、怎么管设备防赖账、谁能动哪些高危操作。</p>
+    <div class="feature">
+      <span class="l-tag l1">第 1 层 · 这块是干嘛的</span>
+      <h3>一句话</h3>
+      <div class="oneliner">风控负责审客户资质、查黑名单;监管锁负责对苹果类设备的远程管控防赖账;权限系统负责把所有动钱动数据的高危操作锁起来,谁能发起、谁审批、要不要二次确认,都写死并留日志。</div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l2">第 2 层 · 设备管控阶梯图</span>
+      <h3>客户逾期后,设备管控的阶梯</h3>
+      <div class="diagram">
+        <svg viewBox="0 0 800 230" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC,Microsoft YaHei,sans-serif">
+          <defs><marker id="a14" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#9aa1ad"/></marker></defs>
+          <g><rect x="20" y="80" width="160" height="60" rx="9" fill="#e6f0ec" stroke="#1f6f5c"/><text x="100" y="106" text-anchor="middle" fill="#16513f" font-size="13" font-weight="600">第一步:提醒</text><text x="100" y="124" text-anchor="middle" fill="#3d7a68" font-size="10.5">短信/电话/微信/推送</text></g>
+          <line x1="180" y1="110" x2="216" y2="110" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a14)"/>
+          <g><rect x="218" y="80" width="160" height="60" rx="9" fill="#f6efe0" stroke="#b08534"/><text x="298" y="106" text-anchor="middle" fill="#8a6518" font-size="13" font-weight="600">第二步:限制</text><text x="298" y="124" text-anchor="middle" fill="#a07a28" font-size="10.5">部分功能限制</text></g>
+          <line x1="378" y1="110" x2="414" y2="110" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a14)"/>
+          <g><rect x="416" y="80" width="170" height="60" rx="9" fill="#f7e9e3" stroke="#a6492f"/><text x="501" y="100" text-anchor="middle" fill="#a6492f" font-size="13" font-weight="600">第三步:管控</text><text x="501" y="118" text-anchor="middle" fill="#a6492f" font-size="10">逾期超3日且催告无效</text><text x="501" y="132" text-anchor="middle" fill="#a6492f" font-size="10">远程锁定(数据需先备份)</text></g>
+          <line x1="586" y1="110" x2="622" y2="110" stroke="#9aa1ad" stroke-width="1.5" marker-end="url(#a14)"/>
+          <g><rect x="624" y="80" width="156" height="60" rx="9" fill="#e6f0ec" stroke="#1f6f5c"/><text x="702" y="106" text-anchor="middle" fill="#16513f" font-size="13" font-weight="600">第四步:解除</text><text x="702" y="124" text-anchor="middle" fill="#3d7a68" font-size="10.5">结清后7工作日内解除</text></g>
+          <text x="400" y="180" text-anchor="middle" fill="#4a5163" font-size="12">监管锁适用于苹果类手机/平板/手表;改监管锁状态=高危,要权限+审批+日志+审计</text>
+          <text x="400" y="204" text-anchor="middle" fill="#7a8089" font-size="11">无监管锁的品类是正常业务形态,按签收+设备码+交付证据+前置检测结算,不因没锁卡住</text>
+        </svg>
+        <div class="cap">管控措施只为督促履约和保设备安全,异常放行必须审批+审计。</div>
+      </div>
+    </div>
+    <div class="feature">
+      <span class="l-tag l3">第 3 层 · 权限</span>
+      <h3>高危操作要锁起来</h3>
+      <p style="font-size:14.5px;margin:6px 0 12px;">下面这些动作,即便有权限也要二次确认、写审计日志,大额/不可逆的还要二人复核:</p>
+      <table>
+        <tr><th style="width:34%">高危操作(举例)</th><th>谁能审批</th></tr>
+        <tr><td>发起/审核退款、打款、提现</td><td>按金额分级:小额≤5000、中额5000–20000、大额>20000,老板可终审</td></tr>
+        <tr><td>修改账单(生成后)</td><td><b>禁止直接改</b>,只能走补收/减免/冲正/退款/核销</td></tr>
+        <tr><td>坏账核销、法诉材料导出</td><td>财务/法务发起,老板/法务主管审批</td></tr>
+        <tr><td>修改监管锁状态、异常放行</td><td>运营主管,异常放行二人复核</td></tr>
+        <tr><td>改办单助手费率/期数/首付、作废报价快照</td><td>运营主管/产品,老板或授权主管审批,留配置版本</td></tr>
+        <tr><td>资产处置、修改设备价值</td><td>运营主管/法务,留改前后值和凭证</td></tr>
+      </table>
+      <ul class="rules">
+        <li><b>技术不能自己决定业务结果</b>:退款责任、账单金额、钱包余额、坏账核销、证据删除、监管锁放行、订单强关等,即使要技术协助也必须先有业务审批单。</li>
+        <li>普通操作写操作日志,高危操作写审计日志(记录操作人、审批人、时间、IP、设备、原因、前后快照)。</li>
+      </ul>
+      <div class="seealso">详见:<b>权限矩阵</b> <code>运营端/权限日志/02</code>　·　<b>监管锁配置</b> <code>运营端/监管锁管理/01</code>　·　<b>法诉证据包</b> <code>运营端/租后管理/03</code></div>
+    </div>
+  </section>
+
+  <section class="chapter" id="c15">
+    <h2><span class="idx">第 15 章</span>一期范围 · 二期挂起 · 各部门待确认清单</h2>
+    <p class="lead">这一章是给开会拍板用的:哪些这期做、哪些后面做、哪些事项需要各部门当场定。</p>
+    <div class="feature">
+      <span class="l-tag l1">第 1 层 · 一期做什么</span>
+      <h3>一期上线范围</h3>
+      <ul class="rules">
+        <li><b>安心用长租</b>:下单→实名→审核→签约→支付→交付→签收→履约→到期三选一→归还/续租/申请购买→逾期→法诉证据,全链路。</li>
+        <li><b>体验租短租 V1</b>:电动车取还车全流程 + 事故/违章/损坏/丢车责任结构。</li>
+        <li><b>IM 客服基础能力</b>:上下班、轮询派单、会话、转主管、证据沉淀。</li>
+        <li><b>财务四账 + 权限安全 + 法诉证据链</b>。</li>
+      </ul>
+    </div>
+    <div class="feature">
+      <span class="l-tag l3">第 2 层 · 二期挂起</span>
+      <h3>二期挂起项(这期不做,标记在案)</h3>
+      <table>
+        <tr><th style="width:34%">挂起项</th><th>一期怎么处理</th></tr>
+        <tr><td>申请购买价改"折旧余值"口径</td><td>一期用 A 口径(剩余租金+保证金),二期评估后切换</td></tr>
+        <tr><td>设备无法返还赔偿自动计算</td><td>依赖折旧口径,跟着二期一起做;一期凭证结构已就位</td></tr>
+        <tr><td>平台服务费客户侧怎么显示</td><td>一期客户侧不展示拆分,待渠道/产品定</td></tr>
+        <tr><td>完整工单系统</td><td>一期只做 IM 会话 + 转主管占位</td></tr>
+        <tr><td>门店处罚系统化</td><td>一期人工备注、冻结、停用</td></tr>
+        <tr><td>短租更多品类</td><td>一期先电动车,后扩手机/数码/工具</td></tr>
+      </table>
+    </div>
+    <div class="feature">
+      <span class="l-tag l3">第 3 层 · 待确认清单</span>
+      <h3>各部门待确认清单(评审会逐条拍板)</h3>
+      <div class="callout warn">
+        <div class="h">⚠ 这张表是开会的核心——每一条都要有部门当场认领、当场拍板</div>
+      </div>
+      <table>
+        <tr><th style="width:30%">待确认事项</th><th style="width:24%">牵头部门</th><th>当前口径</th></tr>
+        <tr><td><b>申请购买价口径</b>(合规最敏感)</td><td>老板/产品/<b>法务</b></td><td>一期 A 口径(剩余租金+保证金),标"待法务确认";二期折旧余值</td></tr>
+        <tr><td>合同 v4 草案的法律定性</td><td><b>法务</b>/老板</td><td>草案作为修订基础,需律师终审签字</td></tr>
+        <tr><td>最低服务期</td><td>法务/产品/运营</td><td>安心用统一 3 个月起,下单页展示并留痕</td></tr>
+        <tr><td>平台服务费 C 端是否展示</td><td>产品/渠道/运营</td><td>一期客户侧不展示拆分</td></tr>
+        <tr><td>财务科目编码</td><td>财务</td><td>PRD 给口径,财务定最终编码</td></tr>
+        <tr><td>监管锁适用品类</td><td>风控/技术/运营</td><td>苹果类手机/平板/手表</td></tr>
+        <tr><td>短租责任划分</td><td>运营/风控/法务</td><td>非车辆质量问题由承租人承担,平台不兜底</td></tr>
+        <tr><td>银行账龄/Vintage 口径</td><td>财务</td><td>报表口径待对接银行后固化</td></tr>
+        <tr><td>供应商联调字段</td><td>技术/运营</td><td>适配层字段以联调结果固化</td></tr>
+        <tr><td>测试准入</td><td>测试/产品/技术</td><td>按端到端验收矩阵执行</td></tr>
+      </table>
+      <div class="callout gold">
+        <div class="h">⚑ 一句必须说清的话</div>
+        本文档是产品需求说明,帮各部门看懂系统、对齐口径、定开发范围。但凡涉及<b>合同法律定性</b>的事项(尤其申请购买价 A 口径),都标了"待法务确认",<b>不代表已经合规、没有风险</b>。这些必须由法务结合当地裁判口径终审拍板,系统按拍板结果实现或二期切换。
+      </div>
+      <div class="seealso">详见:<b>系统定版待完善清单(A口径)</b> <code>开发设计/22</code>　·　<b>最终文档地图</b> <code>docs/V0.2.2_FINAL_DOC_MAP.md</code>　·　<b>总PRD</b> <code>PRD/V0.2/00_V0.2.2_开发冻结版总PRD.md</code></div>
+    </div>
+  </section>
+
+</main>
+<a href="#" class="backtop">↑</a>
+
+<footer>
+  满点租赁系统 · 完整产品文档 · V0.2.2 · 2026-05-30<br>
+  本文档为产品需求说明,供公司内部评审与开发参考;涉及合同法律定性的口径(如申请购买价 A 口径)以法务终审为准,不构成法律意见。
+</footer>
+
+</body>
+</html>

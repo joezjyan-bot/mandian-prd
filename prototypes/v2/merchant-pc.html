@@ -100,9 +100,26 @@ tbody tr:hover{background:var(--g100);}
 .tag-mode{display:inline-flex;height:22px;padding:0 8px;border-radius:4px;font-size:12px;align-items:center;}
 .tag-mode.self{background:var(--brand-light);color:var(--brand);}
 .demo-banner{background:linear-gradient(90deg,var(--brand),#6E8EF0);color:#fff;text-align:center;font-size:12.5px;padding:7px;}
-.filter-row{display:flex;gap:12px;align-items:center;margin-bottom:16px;}
+.filter-row{display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
 .field{height:38px;border:1px solid var(--g200);border-radius:6px;background:#fff;padding:0 12px;display:flex;align-items:center;color:var(--g500);font-size:13px;}
 .field select{border:0;outline:0;background:transparent;font:inherit;color:var(--g700);}
+/* goods tabs */
+.gtabs{display:flex;gap:4px;border-bottom:1px solid var(--g200);margin-bottom:16px;}
+.gtab{padding:10px 16px;font-size:14px;color:var(--g500);cursor:pointer;position:relative;border-bottom:2px solid transparent;margin-bottom:-1px;}
+.gtab .cnt{font-size:11px;color:var(--g400);margin-left:4px;}
+.gtab.on{color:var(--brand);font-weight:600;border-bottom-color:var(--brand);}
+.gtab.on .cnt{color:var(--brand);}
+.src-tag{display:inline-flex;height:20px;padding:0 7px;border-radius:4px;font-size:11px;align-items:center;}
+.src-tag.self{background:var(--brand-light);color:var(--brand);}
+.src-tag.copy{background:var(--g100);color:var(--g500);}
+.spec-sum{font-size:12px;color:var(--g500);}
+.sync-dot{display:inline-flex;align-items:center;gap:5px;font-size:12px;}
+.sync-dot::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--g300);}
+.sync-dot.on::before{background:var(--success);}
+.sync-dot.part::before{background:var(--warning);}
+.sync-dot.fail::before{background:var(--danger);}
+.thumb{width:38px;height:38px;border-radius:6px;background:linear-gradient(135deg,#eef1f6,#dde3ee);flex-shrink:0;}
+.goods-cell{display:flex;align-items:center;gap:10px;}
 </style>
 </head>
 <body>
@@ -114,7 +131,7 @@ tbody tr:hover{background:var(--g100);}
       <div class="menu-group-title">经营</div>
       <div class="menu-item active" onclick="nav('dash',this)"><span class="ic">▦</span>经营工作台</div>
       <div class="menu-item" onclick="nav('orders',this)"><span class="ic">▤</span>我的订单</div>
-      <div class="menu-item" onclick="nav('blank',this)"><span class="ic">▢</span>车辆/设备</div>
+      <div class="menu-item" onclick="nav('goods',this)"><span class="ic">▢</span>商品管理</div>
       <div class="menu-item" onclick="nav('blank',this)"><span class="ic">◌</span>办单方案配置</div>
       <div class="menu-group-title">资金</div>
       <div class="menu-item" onclick="nav('wallet',this)"><span class="ic">◈</span>我的钱包</div>
@@ -176,6 +193,98 @@ tbody tr:hover{background:var(--g100);}
       </div>
     </div>
 
+    <!-- GOODS 商品管理(依据 商家端/商品管理/01_商家商品与增值服务 §3-§5/§8) -->
+    <div class="view" id="goods">
+      <div class="page-head"><div class="crumb">经营 / 商品管理</div><div class="page-title">商品管理</div><div class="page-sub">维护本店商品、规格与增值服务 · 自建商品需平台审核通过后才能上架并同步办单助手</div></div>
+      <div class="content">
+        <!-- 商品 / 增值服务 二级切换 -->
+        <div class="filter-row">
+          <div class="gtabs" style="border:0;margin:0">
+            <div class="gtab on" onclick="gnav('list',this)">商品列表</div>
+            <div class="gtab" onclick="gnav('svc',this)">增值服务</div>
+          </div>
+        </div>
+
+        <!-- 商品列表 -->
+        <div id="g-list">
+          <!-- 4 状态 Tab(文档 §3) -->
+          <div class="gtabs">
+            <div class="gtab on">上架中 <span class="cnt">18</span></div>
+            <div class="gtab">已下架 <span class="cnt">3</span></div>
+            <div class="gtab">待审核 <span class="cnt">2</span></div>
+            <div class="gtab">草稿 <span class="cnt">1</span></div>
+          </div>
+          <div class="filter-row">
+            <div class="field"><input style="border:0;outline:0;background:transparent;font:inherit;width:150px" placeholder="商品名称搜索"></div>
+            <div class="field"><select><option>全部来源</option><option>自建商品</option><option>平台复制商品</option></select></div>
+            <div class="field"><select><option>全部类目</option><option>手机</option><option>电动车</option><option>平板</option><option>短租车辆</option></select></div>
+            <div class="field"><select><option>全部租赁模式</option><option>长租</option><option>短租</option><option>长短租</option></select></div>
+            <div class="field"><select><option>同步办单助手:全部</option><option>已同步</option><option>部分同步</option><option>未同步</option><option>同步失败</option></select></div>
+            <div style="flex:1"></div>
+            <button class="btn btn-primary">+ 新增商品</button>
+          </div>
+          <div class="card" style="padding:0">
+            <div class="table-wrap"><table>
+              <thead><tr><th>商品</th><th>来源</th><th>类目/品牌</th><th>规格摘要</th><th>租赁模式</th><th>增值服务</th><th>办单助手</th><th>上下架</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><div class="goods-cell"><div class="thumb"></div><div><div class="cell-primary">iPhone 15 128G</div><div class="cell-sub">SKU 6 个</div></div></div></td>
+                  <td><span class="src-tag self">自建</span></td><td>手机 / Apple</td>
+                  <td class="spec-sum">全新·二手 / 128G·256G / 黑·蓝</td><td>长租</td>
+                  <td class="cell-sub">2 项<span class="cell-sub">(1 必选)</span></td>
+                  <td><span class="sync-dot on">已同步</span></td><td><span class="pill green">上架中</span></td>
+                </tr>
+                <tr>
+                  <td><div class="goods-cell"><div class="thumb"></div><div><div class="cell-primary">华为 Mate 60 256G</div><div class="cell-sub">SKU 4 个</div></div></div></td>
+                  <td><span class="src-tag self">自建</span></td><td>手机 / 华为</td>
+                  <td class="spec-sum">全新 / 256G·512G / 雅川青·白</td><td>长租</td>
+                  <td class="cell-sub">2 项<span class="cell-sub">(1 必选)</span></td>
+                  <td><span class="sync-dot part">部分同步</span></td><td><span class="pill green">上架中</span></td>
+                </tr>
+                <tr>
+                  <td><div class="goods-cell"><div class="thumb"></div><div><div class="cell-primary">小米电动车 M5 Pro</div><div class="cell-sub">SKU 2 个</div></div></div></td>
+                  <td><span class="src-tag copy">平台复制</span></td><td>电动车 / 小米</td>
+                  <td class="spec-sum">全新 / 48V·60V</td><td>长租</td>
+                  <td class="cell-sub">1 项</td>
+                  <td><span class="sync-dot on">已同步</span></td><td><span class="pill green">上架中</span></td>
+                </tr>
+                <tr>
+                  <td><div class="goods-cell"><div class="thumb"></div><div><div class="cell-primary">iPad Air 11"</div><div class="cell-sub">SKU 3 个</div></div></div></td>
+                  <td><span class="src-tag self">自建</span></td><td>平板 / Apple</td>
+                  <td class="spec-sum">全新·99新 / 128G·256G</td><td>长短租</td>
+                  <td class="cell-sub">2 项</td>
+                  <td><span class="sync-dot fail">同步失败</span></td><td><span class="pill green">上架中</span></td>
+                </tr>
+              </tbody>
+            </table></div>
+          </div>
+          <div style="color:var(--g400);font-size:12px;margin-top:10px">演示原型 · 上方为「上架中」Tab 示例数据。已下架 / 待审核 / 草稿 Tab 切换后展示对应状态商品(同结构)。同步失败行可点开查看失败原因(规格价格缺失 / 短租无可用设备 / 增值服务冲突 / 未审核通过)。</div>
+        </div>
+
+        <!-- 增值服务 -->
+        <div id="g-svc" style="display:none">
+          <div class="filter-row">
+            <div class="field"><select><option>全部类型</option><option>服务费</option><option>设备管理费</option><option>公证费</option><option>配送费</option><option>保障服务</option></select></div>
+            <div class="field"><select><option>全部状态</option><option>启用</option><option>停用</option></select></div>
+            <div style="flex:1"></div>
+            <button class="btn btn-primary">+ 新增服务</button>
+          </div>
+          <div class="card" style="padding:0">
+            <div class="table-wrap"><table>
+              <thead><tr><th>服务名称</th><th>类型</th><th>默认金额</th><th>是否必选</th><th>可改价</th><th>收取节点</th><th>财务归属</th><th>状态</th></tr></thead>
+              <tbody>
+                <tr><td class="cell-primary">设备管理费</td><td>设备管理费</td><td class="mono">¥120</td><td><span class="pill blue">必选</span></td><td class="cell-sub">否</td><td class="cell-sub">下单</td><td class="cell-sub">商家收入</td><td><span class="pill green">启用</span></td></tr>
+                <tr><td class="cell-primary">公证服务费</td><td>公证费</td><td class="mono">¥80</td><td><span class="cell-sub">默认勾选</span></td><td class="cell-sub">否</td><td class="cell-sub">审核通过</td><td class="cell-sub">平台代收</td><td><span class="pill green">启用</span></td></tr>
+                <tr><td class="cell-primary">延保服务</td><td>保障服务</td><td class="mono">¥60</td><td class="cell-sub">可选</td><td class="cell-sub">是</td><td class="cell-sub">下单</td><td class="cell-sub">商家收入</td><td><span class="pill green">启用</span></td></tr>
+                <tr><td class="cell-primary">送装上门</td><td>配送费</td><td class="mono">¥30</td><td class="cell-sub">可选</td><td class="cell-sub">是</td><td class="cell-sub">发货前</td><td class="cell-sub">成本项</td><td><span class="pill gray">停用</span></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+          <div style="color:var(--g400);font-size:12px;margin-top:10px">必选服务在客户扫码下单页、办单助手价格预览、订单详情中均拆开展示;订单保存服务快照,后续停用不影响历史订单(文档 §5.2)。</div>
+        </div>
+      </div>
+    </div>
+
     <!-- WALLET -->
     <div class="view" id="wallet">
       <div class="page-head"><div class="crumb">资金 / 我的钱包</div><div class="page-title">我的钱包</div><div class="page-sub">客户回款扣除平台服务费后进入钱包 · 可自助提现</div></div>
@@ -203,14 +312,14 @@ tbody tr:hover{background:var(--g100);}
 
     <!-- PERM -->
     <div class="view" id="perm">
-      <div class="page-head"><div class="crumb">管理 / 员工与权限</div><div class="page-title">员工与权限</div><div class="page-sub">按员工分配权限 · 财务人员可提现但不可改结算账户</div></div>
+      <div class="page-head"><div class="crumb">管理 / 员工与权限</div><div class="page-title">员工与权限</div><div class="page-sub">按员工分配权限 · 财务人员可提现但不可改结算账户 · 店员不可编辑商品/不可见成本价</div></div>
       <div class="content">
         <div class="toolbar"><div></div><button class="btn btn-primary">+ 添加员工</button></div>
         <div class="perm-grid">
-          <div class="emp-card"><div class="emp-head"><div class="emp-av">王</div><div><div class="emp-name">王老板</div><div class="emp-role">商家老板 · 全部权限</div></div></div><div><span class="perm-tag on">钱包</span><span class="perm-tag on">提现</span><span class="perm-tag on">改结算账户</span><span class="perm-tag on">员工管理</span><span class="perm-tag on">办单</span></div></div>
-          <div class="emp-card"><div class="emp-head"><div class="emp-av">李</div><div><div class="emp-name">李会计</div><div class="emp-role">财务人员</div></div></div><div><span class="perm-tag on">钱包查看</span><span class="perm-tag on">提现</span><span class="perm-tag">改结算账户</span><span class="perm-tag">员工管理</span></div><div style="font-size:11.5px;color:var(--g400);margin-top:8px">财务人员不可改结算账户/收款账户/员工权限</div></div>
-          <div class="emp-card"><div class="emp-head"><div class="emp-av">赵</div><div><div class="emp-name">赵店长</div><div class="emp-role">店长</div></div></div><div><span class="perm-tag on">办单</span><span class="perm-tag on">交付</span><span class="perm-tag on">还车验收</span><span class="perm-tag">钱包</span><span class="perm-tag">提现</span></div></div>
-          <div class="emp-card"><div class="emp-head"><div class="emp-av">孙</div><div><div class="emp-name">孙店员</div><div class="emp-role">普通员工</div></div></div><div><span class="perm-tag on">办单</span><span class="perm-tag on">交付</span><span class="perm-tag">钱包</span><span class="perm-tag">提现</span></div></div>
+          <div class="emp-card"><div class="emp-head"><div class="emp-av">王</div><div><div class="emp-name">王老板</div><div class="emp-role">商家老板 · 全部权限</div></div></div><div><span class="perm-tag on">钱包</span><span class="perm-tag on">提现</span><span class="perm-tag on">改结算账户</span><span class="perm-tag on">员工管理</span><span class="perm-tag on">商品管理</span><span class="perm-tag on">办单</span></div></div>
+          <div class="emp-card"><div class="emp-head"><div class="emp-av">李</div><div><div class="emp-name">李会计</div><div class="emp-role">财务人员</div></div></div><div><span class="perm-tag on">钱包查看</span><span class="perm-tag on">提现</span><span class="perm-tag">改结算账户</span><span class="perm-tag">员工管理</span><span class="perm-tag">商品管理</span></div><div style="font-size:11.5px;color:var(--g400);margin-top:8px">财务人员不可改结算账户/收款账户/员工权限;商品只读价格与费用</div></div>
+          <div class="emp-card"><div class="emp-head"><div class="emp-av">赵</div><div><div class="emp-name">赵店长</div><div class="emp-role">店长</div></div></div><div><span class="perm-tag on">办单</span><span class="perm-tag on">交付</span><span class="perm-tag on">还车验收</span><span class="perm-tag on">商品管理</span><span class="perm-tag">钱包</span><span class="perm-tag">提现</span></div></div>
+          <div class="emp-card"><div class="emp-head"><div class="emp-av">孙</div><div><div class="emp-name">孙店员</div><div class="emp-role">普通员工</div></div></div><div><span class="perm-tag on">办单</span><span class="perm-tag on">交付</span><span class="perm-tag">商品管理</span><span class="perm-tag">钱包</span><span class="perm-tag">提现</span></div><div style="font-size:11.5px;color:var(--g400);margin-top:8px">店员不可编辑商品、不可见成本价/钱包/分账/提现</div></div>
         </div>
       </div>
     </div>
@@ -227,6 +336,12 @@ function nav(id,el){
   document.getElementById(id).classList.add('active');
   document.querySelectorAll('.menu-item').forEach(m=>m.classList.remove('active'));
   el.classList.add('active');window.scrollTo(0,0);
+}
+function gnav(which,el){
+  document.getElementById('g-list').style.display = which==='list' ? 'block':'none';
+  document.getElementById('g-svc').style.display = which==='svc' ? 'block':'none';
+  el.parentNode.querySelectorAll('.gtab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
 }
 </script>
 </body>

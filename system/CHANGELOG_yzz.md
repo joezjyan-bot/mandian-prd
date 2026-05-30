@@ -45,29 +45,46 @@
 
 ## 二、骨架 / 接口契约(待业务团队实现)
 
+> 共同特点:方法体均为 `throw 未实现` 占位;每个方法注释写明"对应文档章节 + 该置什么状态 + 该校验什么 + TODO";
+> 不直接耦合其它服务(由 Controller 编排);零数据库改动、不擅自建表/加字段;合规敏感部分(资方/风控)只留扩展位不实现。
+> 团队接手时,这些文件本身就是按文档填充的 ToDo 清单。
+
 ### 模块 D:订单审核
 依据:`运营端/订单管理/04_待审核与资方分配` §8 / §6 / §11 / §12;状态字典 §6.1 / §11.1
 
 | 文件 | 状态 | 说明 |
 |---|---|---|
-| `app/Services/Order/ReviewService.php` | **骨架** | 定义审核动作:claim(接单)/approveDataStage(资料审核)/passRiskControl(风控)/approve(通过)/reject(驳回)/requireSupplement(补资料)/escalate(转复核)。**方法体均为 throw 占位**,每个方法注释写明:对应文档章节、该置什么状态、该校验什么、TODO。团队照注释填实现即可。 |
+| `app/Services/Order/ReviewService.php` | **骨架** | 审核动作:claim(接单)/approveDataStage(资料审核)/passRiskControl(风控)/approve(通过)/reject(驳回)/requireSupplement(补资料)/escalate(转复核)。 |
 
-ReviewService 关键设计(降低耦合,便于接手):
-1. 只负责审核状态流转 + 结论记录,**不直接调** OrderService / BillPlanService。
-2. 审核通过后"生成账单计划"由上层 Controller 编排(approve 成功 → 调 OrderService::generateBillPlan)。
-3. 审核子状态建议用 review_sub_status 字段(§11.1),**字段是否落库、落 orders 还是独立审核表由团队决定**,骨架未擅自建表/加字段。
-4. **合规边界**:资金来源分配(§9)、风控评分算法(§9.3.1)依赖「资方管理/01、03」文档,涉及资方/授信/风控,**骨架不实现,仅在流程中预留调用位**。C 端红线:资金来源/资方/风控结论/合同模板等绝不进 C 端。
+ReviewService 关键设计:
+1. 只负责审核状态流转 + 结论记录,**不直接调** OrderService / BillPlanService;通过后由 Controller 调 generateBillPlan。
+2. 审核子状态建议用 review_sub_status 字段(§11.1),字段落库方式由团队决定,骨架未擅自建表。
+3. **合规边界**:资金来源分配(§9)、风控评分算法(§9.3.1)依赖「资方管理/01、03」,骨架不实现,仅预留调用位。
+
+### 模块 E:合同签署
+依据:`运营端/合同公证/01_合同签署流程` §1-§8;状态字典 §6.3(合同状态)/ §6.4(公证状态)
+
+| 文件 | 状态 | 说明 |
+|---|---|---|
+| `app/Services/Contract/ContractService.php` | **骨架** | 合同动作:initiate(发起)/onCustomerSigned/onStoreSigned/platformSign(三方签署)/onAllSigned(完成)/initiateNotary(公证,可选)/handleTimeout(超时)/handleFailure(失败)。 |
+
+ContractService 关键设计:
+1. **合规约束(§2)**:合同三方=门店(甲/出租人)、客户(乙/承租人)、平台(丙/居间技术);**资方不出现,避免融资租赁定性**。
+2. 合同模板按订单 contract_template_id 选择(§3),该字段审核阶段已锁定,本服务只读取使用,不决定资金来源。
+3. 电子签走 EsignContract(mock/real 不感知);合同/公证子状态(§6.3/§6.4)字段落库方式由团队决定,骨架不建表。
+4. 主状态推进(PENDING_SIGN → PENDING_FIRST_PAYMENT)与 OrderService::sign 现有逻辑择一,由 Controller 编排避免重复置位。
 
 ---
 
 ## 三、明确未做 / 留待对应模块(避免误以为已完成)
 
 - **审核账单触发点自动挂接**:generateBillPlan 已就绪,但"审核通过后自动调用"需在 ReviewService 实现 + Controller 编排后才生效;当前可手动触发。
+- **合同与签约的主状态推进衔接**:ContractService 骨架与 OrderService::sign 现有简化实现并存,正式接入时需二者择一推进 PENDING_SIGN→PENDING_FIRST_PAYMENT,避免重复。
 - **资金来源分配(§9)/ 风控评分**:依赖资方管理文档,未实现。
 - **归还申请表 / 续租申请表**:EndOfTermService 留 TODO,关联字段 return_request_id / renewal_request_id 未建表。
 - **首期支付单独立实体**(办单助手§8):当前首期支付沿用支付流水,未单独建实体。
 - **门店风控管控**(办单助手§3.3 merchant_order_control)、**联营内部快照**(§7.2)、**§11 默认费率表数据初始化 seeder**:未做,字段结构已留。
-- **平台订单门店分配**(运营端07 PENDING_STORE_ASSIGN)、**逾期费用**(运营端11)、**运营端办单助手配置界面**(办单助手§3):未做。
+- **平台订单门店分配**(运营端07 PENDING_STORE_ASSIGN)、**逾期费用**(运营端11)、**运营端办单助手配置界面**(办单助手§3)、**公证服务对接**(合同公证02):未做。
 
 ---
 
@@ -78,3 +95,4 @@ ReviewService 关键设计(降低耦合,便于接手):
 3. C 端任何输出都走 `Order::toCustomerArray()` 白名单,严禁泄露合作模式/资方/风控/服务费拆分等内部字段。
 4. 演示模式(EXTERNAL_MODE=mock)用 Mock* 桩;接真实中控台/支付/电子签时实现 Real* 并按 Contract 接口对接。
 5. 本轮所有提交 message 都标注了对应文档章节,可对照 PRD 复核。
+6. 骨架文件(ReviewService / ContractService)填充时,先读对应文档(运营端04 / 合同公证01),按方法注释里的"对应章节 + 状态 + 校验 + TODO"逐条实现;合规敏感处(资方/风控/合同三方)严格守注释里的边界。

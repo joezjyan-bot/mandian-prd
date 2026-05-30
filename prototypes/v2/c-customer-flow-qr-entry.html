@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>满点租赁 · C端流程线框:扫码进入与路由(演示原型)</title>
+<style>
+:root{
+  --blue:#1E3A8A;--blue-light:#3B82F6;--blue-bg:#EFF6FF;
+  --cta:#F97316;--cta-light:#FB923C;--cta-bg:#FFF7ED;
+  --red:#DC2626;--red-bg:#FEF2F2;--green:#16A34A;--green-bg:#F0FDF4;--yellow:#EAB308;--yellow-bg:#FEFCE8;
+  --ink:#0F172A;--ink2:#475569;--ink3:#94A3B8;--card:#FFFFFF;--page:#F8FAFC;--line:#E2E8F0;--disabled:#CBD5E1;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:#eef0f4;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;color:var(--ink);padding:24px 0 60px;display:flex;flex-direction:column;align-items:center;gap:8px;line-height:1.5;}
+.mono{font-variant-numeric:tabular-nums;}
+.demo-note{font-size:12.5px;color:var(--ink2);background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 16px;margin-bottom:4px;text-align:center;max-width:800px;}
+.flow-strip{font-size:12px;color:var(--ink3);margin-bottom:10px;}
+.flow-strip b{color:var(--blue);}
+.stage{display:flex;gap:28px;flex-wrap:wrap;justify-content:center;align-items:flex-start;max-width:1900px;}
+.phone-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;}
+.phone-label{font-size:13px;color:var(--ink2);font-weight:500;max-width:320px;text-align:center;}
+.phone{width:330px;height:710px;background:var(--page);border-radius:38px;border:10px solid #11193a;box-shadow:0 20px 50px rgba(20,30,50,.22);overflow:hidden;position:relative;display:flex;flex-direction:column;}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:148px;height:26px;background:#11193a;border-radius:0 0 16px 16px;z-index:30;}
+.statusbar{height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 22px 0 26px;font-size:12px;font-weight:600;flex-shrink:0;background:#fff;}
+.screen{flex:1;overflow-y:auto;overflow-x:hidden;position:relative;background:var(--page);display:flex;flex-direction:column;}
+.screen::-webkit-scrollbar{width:0;}
+.topnav{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20;}
+.topnav .back{font-size:22px;color:var(--ink);}
+.topnav .center-title{font-size:16px;font-weight:600;}
+.topnav .pill-native{display:flex;gap:2px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:3px 8px;color:var(--ink2);font-size:13px;}
+/* 加载中转 */
+.loading{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;}
+.qr-ghost{width:120px;height:120px;border-radius:16px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;margin-bottom:24px;position:relative;}
+.qr-grid{width:88px;height:88px;background-image:repeating-linear-gradient(0deg,#11193a 0 6px,transparent 6px 12px),repeating-linear-gradient(90deg,#11193a 0 6px,transparent 6px 12px);background-size:11px 11px;opacity:.85;border-radius:4px;}
+.scan-line{position:absolute;left:16px;right:16px;height:2px;background:var(--cta);box-shadow:0 0 8px var(--cta);top:30px;}
+.loading h2{font-size:17px;font-weight:600;}
+.loading p{font-size:13px;color:var(--ink3);margin-top:8px;}
+.route-pills{display:flex;flex-direction:column;gap:8px;margin-top:24px;width:100%;}
+.route-pill{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--page);font-size:12.5px;color:var(--ink2);text-align:left;}
+.route-pill .dot{width:8px;height:8px;border-radius:50%;background:var(--disabled);flex-shrink:0;}
+.route-pill.on{background:var(--blue-bg);color:var(--blue);font-weight:500;}
+.route-pill.on .dot{background:var(--blue);}
+/* 订单确认(办单码落地,精简) */
+.banner-store{background:linear-gradient(120deg,#1E3A8A,#3B82F6);color:#fff;padding:16px;margin:12px 14px;border-radius:14px;}
+.banner-store .from{font-size:12px;opacity:.9;}
+.banner-store .store{font-size:16px;font-weight:600;margin-top:3px;}
+.card{background:#fff;border-radius:14px;padding:16px;margin:12px 14px;box-shadow:0 1px 2px rgba(15,23,42,.04);}
+.card-t{font-size:15px;font-weight:600;margin-bottom:4px;}
+.card-sub{font-size:12px;color:var(--ink3);margin-bottom:10px;}
+.prod-line{display:flex;gap:12px;align-items:center;}
+.prod-line .img{width:60px;height:60px;border-radius:10px;background:linear-gradient(135deg,#eef1f6,#dde3ee);flex-shrink:0;}
+.prod-line .nm{font-weight:600;font-size:15px;}
+.prod-line .meta{font-size:12px;color:var(--ink3);margin-top:3px;}
+.lock-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--blue);background:var(--blue-bg);padding:2px 8px;border-radius:6px;margin-top:6px;}
+.kv{display:flex;justify-content:space-between;font-size:14px;padding:8px 0;border-bottom:1px solid var(--line);}
+.kv:last-child{border-bottom:none;}
+.kv .k{color:var(--ink2);}
+.kv .v{font-weight:500;}
+.pay-total{display:flex;justify-content:space-between;align-items:baseline;background:var(--cta-bg);border-radius:12px;padding:13px;margin-top:8px;}
+.pay-total .l{font-size:13px;color:var(--cta);font-weight:600;}
+.pay-total .v{font-size:24px;font-weight:700;color:var(--cta);}
+/* 商品详情(商品码落地) */
+.prod-hero{height:200px;background:linear-gradient(135deg,#eef1f6,#dde3ee);display:grid;place-items:center;color:var(--ink3);font-size:13px;}
+.prod-title{padding:14px 16px 4px;}
+.prod-title .nm{font-size:18px;font-weight:700;}
+.prod-title .from{font-size:12px;color:var(--ink3);margin-top:4px;}
+.spec-group{padding:10px 16px;}
+.spec-group .gt{font-size:13px;color:var(--ink2);font-weight:500;margin-bottom:8px;}
+.spec-chips{display:flex;gap:8px;flex-wrap:wrap;}
+.sc{padding:7px 14px;border:1px solid var(--line);border-radius:8px;font-size:13px;color:var(--ink2);}
+.sc.on{border-color:var(--blue);background:var(--blue-bg);color:var(--blue);font-weight:600;}
+.price-from{padding:8px 16px;font-size:13px;color:var(--ink2);}
+.price-from b{color:var(--red);font-size:20px;font-weight:700;}
+/* 失效页 */
+.invalid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px 28px;}
+.invalid .ico{width:78px;height:78px;border-radius:50%;background:var(--yellow-bg);display:grid;place-items:center;margin-bottom:18px;}
+.invalid h2{font-size:18px;font-weight:700;}
+.invalid p{font-size:13px;color:var(--ink2);margin-top:8px;line-height:1.7;}
+.invalid .acts{margin-top:26px;width:100%;display:flex;flex-direction:column;gap:10px;}
+.tip{font-size:11.5px;color:var(--ink3);padding:2px 18px 14px;line-height:1.6;}
+.footbar{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;gap:12px;}
+.footbar .pb-info{flex:0 0 auto;}
+.footbar .pb-label{font-size:11px;color:var(--ink3);}
+.footbar .pb-amt{font-size:20px;font-weight:700;color:var(--red);}
+.btn-cta{flex:1;height:50px;background:var(--cta);color:#fff;border:0;border-radius:26px;font-size:16px;font-weight:600;cursor:pointer;}
+.btn-line{height:48px;border-radius:24px;border:1px solid var(--line);background:#fff;color:var(--ink2);font-size:15px;width:100%;}
+.btn-line.blue{border-color:var(--blue);color:var(--blue);}
+</style>
+</head>
+<body>
+<div class="demo-note">C 端流程线框 · <b>扫码进入与路由</b> · 演示原型 · 视觉规范方案1 · 守 C 端红线(不暴露渠道佣金/合作模式)</div>
+<div class="flow-strip">入口:<b>扫码 → 跨端识别 → 路由</b>(办单码→订单确认 / 商品码→商品详情 / 入口码→首页)· 依据 C端 文档 01</div>
+<div class="stage">
+
+  <!-- ① 扫码中转/路由识别 -->
+  <div class="phone-wrap">
+    <div class="phone-label">① 扫码中转(文档01 §2/§5)<br>识别二维码类型 + 跨端跳转</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="loading">
+          <div class="qr-ghost"><div class="qr-grid"></div><div class="scan-line"></div></div>
+          <h2>正在识别二维码…</h2>
+          <p>请稍候,正在为您跳转</p>
+          <div class="route-pills">
+            <div class="route-pill on"><span class="dot"></span>办单二维码 → 订单确认页(锁定方案)</div>
+            <div class="route-pill"><span class="dot"></span>商品二维码 → 商品详情页(自由选套餐)</div>
+            <div class="route-pill"><span class="dot"></span>入口二维码 → 小程序首页</div>
+          </div>
+        </div>
+        <div class="tip">同一二维码可被支付宝 / 微信 / 浏览器识别,自动跳转到对应端入口并保留参数。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 办单码落地:订单确认(锁定方案) -->
+  <div class="phone-wrap">
+    <div class="phone-label">② 办单码 → 订单确认(文档01 §2.1)<br>锁定门店设好的方案,直接下单</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="topnav"><span class="back">‹</span><span class="center-title">确认订单</span><span class="pill-native">··· ⊙</span></div>
+        <div class="banner-store"><div class="from">扫码来自</div><div class="store">惠讯租 · 西丽店</div></div>
+        <div class="card">
+          <div class="prod-line"><div class="img"></div><div><div class="nm">iPhone 15 128G 蓝色</div><div class="meta">全新 · 12 期</div><span class="lock-tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>方案已锁定</span></div></div>
+        </div>
+        <div class="card">
+          <div class="card-t">费用方案</div>
+          <div class="kv"><span class="k">保证金</span><span class="v mono">¥800.00</span></div>
+          <div class="kv"><span class="k">首期应付</span><span class="v mono">¥800.00</span></div>
+          <div class="kv"><span class="k">每期应付 × 12</span><span class="v mono">¥800.00</span></div>
+          <div class="pay-total"><span class="l">首期合计应付</span><span class="v mono">¥1,600</span></div>
+        </div>
+        <div class="tip">办单码锁定门店设好的价格方案,有效期 24 小时。点击下单后进入实名 / 资料 / 签约流程。</div>
+      </div>
+      <div class="footbar">
+        <div class="pb-info"><div class="pb-label">首期合计</div><div class="pb-amt mono">¥1,600</div></div>
+        <button class="btn-cta">立即下单</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ 商品码落地:商品详情(自由选套餐) -->
+  <div class="phone-wrap">
+    <div class="phone-label">③ 商品码 → 商品详情(文档01 §2.2)<br>可自由选规格 / 套餐</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="topnav"><span class="back">‹</span><span class="center-title">商品详情</span><span class="pill-native">··· ⊙</span></div>
+        <div class="prod-hero">商品图</div>
+        <div class="prod-title"><div class="nm">iPhone 15 128G</div><div class="from">惠讯租 · 西丽店 · 正品保障 · 合同保障</div></div>
+        <div class="spec-group"><div class="gt">成色</div><div class="spec-chips"><span class="sc on">全新</span><span class="sc">99新</span><span class="sc">二手</span></div></div>
+        <div class="spec-group"><div class="gt">容量</div><div class="spec-chips"><span class="sc">128G</span><span class="sc on">256G</span></div></div>
+        <div class="spec-group"><div class="gt">颜色</div><div class="spec-chips"><span class="sc on">蓝色</span><span class="sc">黑色</span></div></div>
+        <div class="spec-group"><div class="gt">租期</div><div class="spec-chips"><span class="sc">6 期</span><span class="sc on">12 期</span></div></div>
+        <div class="price-from">每期低至 <b class="mono">¥800</b> / 期 · 保证金 ¥800</div>
+        <div class="tip">商品码贴在样机上,永久有效(商品下架前)。客户自由选规格套餐后下单。</div>
+      </div>
+      <div class="footbar">
+        <div class="pb-info"><div class="pb-label">每期起</div><div class="pb-amt mono">¥800</div></div>
+        <button class="btn-cta">选好了,去下单</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ④ 二维码失效页(文档01 §4) -->
+  <div class="phone-wrap">
+    <div class="phone-label">④ 二维码失效(文档01 §4)<br>友好提示 + 联系门店 / 返回首页</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="statusbar"><span>9:41</span><span>● ● ● ▮</span></div>
+      <div class="screen">
+        <div class="topnav"><span class="back">‹</span><span class="center-title">提示</span><span class="pill-native">··· ⊙</span></div>
+        <div class="invalid">
+          <div class="ico"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#EAB308" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></div>
+          <h2>此办单链接已失效</h2>
+          <p>该办单二维码已过期或对应订单已关闭,请联系门店重新生成办单码。</p>
+          <div class="acts">
+            <button class="btn-line blue">📞 联系门店(惠讯租 · 西丽店)</button>
+            <button class="btn-line">返回首页</button>
+          </div>
+        </div>
+        <div class="tip">失效提示对客户友好,不展示内部失效原因细节;商品码失效提示"该商品已下架",入口码永久有效。</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

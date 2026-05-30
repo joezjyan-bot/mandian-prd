@@ -114,6 +114,32 @@ StoreAssignService 关键设计:
 4. C 端红线(§6.2):分配过程/商家主体/收款账户/资金来源/合同模板均不暴露,客户签约后只显示"提货门店:XXX"。
 5. **状态口径冲突待确认**(见下方第五节)。
 
+### 模块 I:交付签收照片证据
+依据:`运营端/订单管理/02_交付签收照片证据` §2 / §4 / §5
+
+| 文件 | 状态 | 说明 |
+|---|---|---|
+| `app/Services/Delivery/DeliveryEvidenceService.php` | **骨架** | 证据动作:uploadEvidence(证据上传)/appendAnomalyNote(异常追加)/customerConfirm(客户确认)/requestFaceMatchAssist(人脸AI辅助核验)/manualVerify(人工核验)/recordReturnInspection(归还验收)。 |
+
+DeliveryEvidenceService 关键设计:
+1. 与 DeliveryService 互补,只管"证据链",不重复管订单状态流转(由 Controller 编排,避免双写)。
+2. 业务规则:车辆类必填设备识别码才能交付;门店只能传自己/被授权订单照片;客户签收后交付前照片不可删;全程操作日志。
+3. **人脸隐私红线**:AI 只辅助、不自动放行/拒绝(人工最终核验);不建可检索人脸库、只存结果/评分/流水号;C 端不出现"人脸比对/风控"字眼;失败/超时转人工;阈值待运营/算法确认,骨架不擅自设;不实现任何人脸特征提取/检索逻辑。
+
+### 模块 J:订单关闭 / 退款 / 售后
+依据:`运营端/订单管理/05_订单关闭退款与售后` §4 / §5 / §6 / §8 / §9
+
+| 文件 | 状态 | 说明 |
+|---|---|---|
+| `app/Services/Refund/OrderCloseRefundService.php` | **骨架** | 动作:closeOrder(关闭)/initiateRefund(发起退款)/simpleRefund(简单退款)/createRefundWorkflow(退款工单)/reverse(冲正)/requestEarlyReturn(提前归还)/recordInspectionAndFees(归还检测费用)。 |
+
+OrderCloseRefundService 关键设计:
+1. 高风险动作需权限 + 2FA + 原因 + 日志;涉钱必生成流水,不能只改状态(§2)。
+2. 退款路径分流(§5.3):未分账→简单退款原路退;已分账→退款工单(从门店追回→退客户→内部清算,不可原路退)。
+3. 冲正只生成反向流水(refund_deduction),**不删原流水**(§6);资方台账/授信按 refunded_amount 还原(资方部分骨架不实现)。
+4. 留购 A 口径(剩余租金+保证金),二期折旧余值口径挂起;提前归还**不默认要求结清全部未到期费用**(合规边界,同逾期§9.4)。
+5. 归还检测费用"以实际发生 + 凭证为准",每项费用须挂对应凭证;资方内部清算后台不暴露 C 端。
+
 ---
 
 ## 三、明确未做 / 留待对应模块(避免误以为已完成)
@@ -124,8 +150,8 @@ StoreAssignService 关键设计:
 - **归还申请表 / 续租申请表**:EndOfTermService 留 TODO,关联字段 return_request_id / renewal_request_id 未建表。
 - **首期支付单独立实体**(办单助手§8):当前首期支付沿用支付流水,未单独建实体。
 - **门店风控管控**(办单助手§3.3 merchant_order_control)、**联营内部快照**(§7.2)、**§11 默认费率表数据初始化 seeder**:未做,字段结构已留。
-- **运营端办单助手配置界面**(办单助手§3)、**公证服务对接**(合同公证02):未做。
-- **以上 D-H 骨架的落库表**:webhook_event、异常队列、order_penalty(及减免日志、规则配置)、order_store_assign_log 等,均由团队按对应文档建,骨架未擅自建表。
+- **运营端办单助手配置界面**(办单助手§3)、**公证服务对接**(合同公证02)、**撤单与补充合同**(运营端10)、**客服IM/改价**(运营端06):未做。
+- **以上 D-J 骨架的落库表**:webhook_event、异常队列、order_penalty(及减免日志、规则配置)、order_store_assign_log、交付证据表(含 AI 核验字段)、refund_application、refund_workflow、early_return_request、return_inspection_report、return_fee_item、purchase_requests 等,均由团队按对应文档建,骨架未擅自建表。
 
 ---
 
@@ -136,7 +162,7 @@ StoreAssignService 关键设计:
 3. C 端任何输出都走 `Order::toCustomerArray()` 白名单,严禁泄露合作模式/资方/风控/服务费拆分等内部字段。
 4. 演示模式(EXTERNAL_MODE=mock)用 Mock* 桩;接真实中控台/支付/电子签时实现 Real* 并按 Contract 接口对接。
 5. 本轮所有提交 message 都标注了对应文档章节,可对照 PRD 复核。
-6. 骨架文件填充时,先读对应文档,按方法注释里的"对应章节 + 状态 + 校验 + TODO"逐条实现;合规敏感处(资方/风控/合同三方/逾期赔偿口径)严格守注释里的边界。
+6. 骨架文件填充时,先读对应文档,按方法注释里的"对应章节 + 状态 + 校验 + TODO"逐条实现;合规敏感处(资方/风控/合同三方/逾期赔偿口径/人脸隐私)严格守注释里的边界。
 
 ---
 
@@ -146,3 +172,5 @@ StoreAssignService 关键设计:
    → 建议以 §0.1 收敛口径为准(不单设主状态)。StoreAssignService 骨架未写死状态置位,待确认。
 2. **逾期费用计算精度口径**:见模块 G,§4.3 比例算法存在 2 分差异,需与财务对齐"先取整再×天"还是"精确×天再取整"。
 3. **留购价二期残值口径**:当前 A 口径(剩余租金+保证金)已实现;二期残值口径(C端12 §4.2 注)挂起,待法务/合规复核后切换。
+4. **AI 人脸核验阈值**(运营端02 §5.1):high_match / suspect_mismatch 阈值待运营/算法确认。
+5. **退款工单 SLA**(运营端05 §12):门店线下转账 3 天还是 7 天。
